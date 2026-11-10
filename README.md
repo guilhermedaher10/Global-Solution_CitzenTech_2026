@@ -3,6 +3,21 @@
 Global Solution da FIAP · Engenharia de Software, 4º ano.
 Um único produto que atravessa 7 disciplinas: cada integrante cuida de uma pasta.
 
+## Ficha Técnica do MVP
+
+| Campo | Conteúdo |
+|---|---|
+| **Nome do produto** | _a definir_ |
+| **Cidadão e território** | Pedestres, ciclistas, motociclistas e moradores que circulam à noite em ruas com iluminação pública falha |
+| **Problema, em uma frase** | Ruas escuras geram medo, assaltos e acidentes, e a falha demora a chegar à prefeitura porque depende de alguém reclamar |
+| **Proposta de valor** | Ponte entre o cidadão e a prefeitura: o chamado chega confirmado, com localização, evidência e prioridade, e o cidadão acompanha até o conserto |
+| **Arquitetura: componentes** | App do cidadão · Visão (YOLO26) · GenAI local · RPA · Big Data · robô com sensor de luz · deploy seguro ([docs/arquitetura.md](docs/arquitetura.md)) |
+| **Fontes de dados** | Fotos do cidadão e do robô · datasets públicos de postes · dados abertos (SP156, Open-Meteo, IBGE) _a confirmar_ |
+| **Modelos de IA utilizados** | YOLO26 (detecção de postes acesos/apagados) · LLM local com RAG _a definir_ |
+| **URL do MVP e repositório** | _a definir_ · https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026 |
+| **Indicadores de impacto** | Tempo da falha até o chamado · tempo até o conserto · % de chamados válidos · chamados por mil habitantes, centro × periferia |
+| **ODS conectados** | 11, 3, 10 e 9 (detalhes abaixo) |
+
 ## Problema
 Ruas com iluminação pública falha geram medo, aumentam o risco de assalto e causam acidentes
 (quedas de pedestres, ciclistas e motociclistas). Isso afeta o bem-estar e a mobilidade das pessoas.
@@ -40,25 +55,45 @@ Nós não consertamos o poste: somos a **ponte entre o cidadão e a prefeitura**
 | `04-visao-computacional/` | Visão Computacional |
 | `05-rpa/` | RPA |
 | `06-devops-cloud/` | DevOps e Cloud |
+| `docs/` | Arquitetura e contratos entre os componentes (do grupo todo) |
 | `07-maker-lab/` | Maker Lab |
 
-## Como cada um commita
+## Como cada um trabalha (branches)
+
+**Ninguém commita direto na `main`.** Cada disciplina tem a sua branch, com o mesmo nome da pasta:
+
+| Pasta | Branch |
+|---|---|
+| `01-generative-ai/` | `01-generative-ai` |
+| `02-big-data/` | `02-big-data` |
+| `03-negocio-pitch/` | `03-negocio-pitch` |
+| `04-visao-computacional/` | `04-visao-computacional` |
+| `05-rpa/` | `05-rpa` |
+| `06-devops-cloud/` | `06-devops-cloud` |
+| `07-maker-lab/` | `07-maker-lab` |
+| raiz e `docs/` (do grupo) | `docs-projeto` |
 
 ```bash
+# primeira vez
 git clone https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026.git
 cd Global-Solution_CitzenTech_2026
+git checkout -b 05-rpa              # crie a branch da sua matéria (só na primeira vez)
 
-git pull                          # sempre antes de começar
+# no dia a dia
+git checkout 05-rpa
+git pull origin main                # traz o que os outros já juntaram na main
 # trabalhe só dentro da pasta da sua disciplina
-git add 05-rpa/                   # adicione só a sua pasta
+git add 05-rpa/
 git commit -m "rpa: primeira versão"
-git pull                          # de novo, antes de enviar
-git push
+git push -u origin 05-rpa
 ```
 
-- Mexa **só na sua pasta**. Se precisar mudar algo na raiz ou na pasta de outro, avise no grupo.
+Quando uma parte estiver pronta, abra um **Pull Request** da sua branch para a `main` no GitHub.
+Outra pessoa do grupo dá uma olhada e faz o merge.
+
+- Mexa **só na sua pasta**. Mudança na raiz ou em `docs/` vai pela branch `docs-projeto`, avisando o grupo.
 - Comece a mensagem do commit pelo nome da pasta (`rpa:`, `big-data:`, `visao:`...).
 - Nunca commite senha, chave de API ou `.env`.
-- Arquivos grandes (dataset, modelo pesado, vídeo) vão por link (Drive, YouTube), não pro Git.
+- Arquivos grandes (dataset, modelo pesado, vídeo) vão por link (Drive, YouTube), não para o Git.
 
 **Entrega:** 19/11/2026, até 23h55. O repositório precisa estar público durante a correção.
