@@ -78,7 +78,7 @@ jobs:
           [ "$erros" -eq 0 ] || exit 1
           echo "Arquivos OK"
 
-      - name: Título do PR no formato "pasta: descrição"
+      - name: 'Título do PR no formato "pasta: descrição"'
         env:
           TITULO: ${{ github.event.pull_request.title }}
         run: |
