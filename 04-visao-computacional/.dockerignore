@@ -1,0 +1,11 @@
+.venv/
+data/
+runs/
+results/
+notebooks/
+tests/
+docs/
+scripts/
+**/__pycache__/
+.env
+*.mp4
