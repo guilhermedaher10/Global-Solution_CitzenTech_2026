@@ -1,5 +1,5 @@
 # DevOps e Cloud
 
-**Professor:** Gabriel Henrique Boyczuk Arcanjo
+**Professores:** Gabriel Henrique Boyczuk Arcanjo e Cleórbete Santos
 
 **Responsável:** _nome completo e RM_
