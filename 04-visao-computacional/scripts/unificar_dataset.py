@@ -25,7 +25,7 @@ from pathlib import Path
 
 import yaml
 
-from _comum import BRUTO, DATA, EXTENSOES_IMAGEM, RAIZ
+from _comum import BRUTO, DATA, EXTENSOES_IMAGEM, RAIZ, fontes
 from visao.config import classes, normalizar_classe
 
 FINAL = DATA / "final"
@@ -34,8 +34,21 @@ ALIAS_SPLIT = {"train": "train", "valid": "valid", "val": "valid", "test": "test
 
 
 def fontes_disponiveis() -> list[Path]:
-    candidatas = sorted((BRUTO / "roboflow").glob("*")) + [DATA / "anotado"]
+    """Só as fontes listadas em configs/fontes.yaml (descartadas ficam de fora mesmo se baixadas)."""
+    listadas = {item["projeto"] for item in fontes().get("roboflow", [])}
+    candidatas = [p for p in sorted((BRUTO / "roboflow").glob("*")) if p.name in listadas]
+    candidatas.append(DATA / "anotado")
     return [p for p in candidatas if (p / "data.yaml").exists()]
+
+
+def traduzir(fonte: Path, nome: str) -> str | None:
+    """Mapa específico do dataset (fontes.yaml) tem prioridade sobre os aliases globais."""
+    for item in fontes().get("roboflow", []):
+        if item["projeto"] == fonte.name and "classes" in item:
+            especifico = item["classes"] or {}
+            if nome in especifico:
+                return especifico[nome]
+    return normalizar_classe(nome)
 
 
 def nomes_da_fonte(fonte: Path) -> list[str]:
@@ -86,7 +99,7 @@ def listar() -> None:
                 contagem.update(c for c, *_ in ler_label(lbl))
         print(f"\n{fonte.name}  (splits: {', '.join(pastas_split(fonte)) or 'nenhum'})")
         for i, nome in enumerate(nomes):
-            destino = normalizar_classe(nome) or "DESCARTADA"
+            destino = traduzir(fonte, nome) or "DESCARTADA"
             print(f"  {nome!r:32} {contagem[i]:6d} caixas  ->  {destino}")
     print("\nClasse marcada DESCARTADA que deveria contar? Adicione o nome em configs/classes.yaml.")
 
@@ -103,7 +116,7 @@ def unificar(teste_fontes: set[str]) -> None:
     descartadas = Counter()
     for fonte in fontes_disponiveis():
         nomes = nomes_da_fonte(fonte)
-        mapa = {i: (nossas.index(c) if (c := normalizar_classe(n)) in nossas else None)
+        mapa = {i: (nossas.index(c) if (c := traduzir(fonte, n)) in nossas else None)
                 for i, n in enumerate(nomes)}
         splits = pastas_split(fonte)
         redistribuir = not ("valid" in splits and "test" in splits)
