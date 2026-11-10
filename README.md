@@ -39,11 +39,11 @@ Nós não consertamos o poste: somos a **ponte entre o cidadão e a prefeitura**
 
 | Nome completo | RM | Disciplina |
 |---|---|---|
-| Guilherme Gonçalves Calil Daher | 98611 | Visão Computacional |
-| Gabriel Freitas | 550187 | _a definir_ |
-| Heitor Nobre | 551539 | _a definir_ |
-| Vinicius Yamashita | 550908 | _a definir_ |
-| Lucca Alexandre | 99700 | _a definir_ |
+| Guilherme Gonçalves Calil Daher | 98611 | Visão Computacional · DevOps e Cloud |
+| Gabriel Freitas | 550187 | Generative AI |
+| Heitor Nobre | 551539 | Maker Lab |
+| Vinicius Yamashita | 550908 | RPA |
+| Lucca Alexandre | 99700 | Big Data · Negócio e Pitch |
 
 > ⚠️ Vários professores tiram nota se faltar **nome completo** ou RM. Cada um confira e complete o seu nome.
 
