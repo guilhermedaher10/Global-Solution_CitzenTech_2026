@@ -90,7 +90,7 @@ git commit -m "rpa: primeira versão"
 git push -u origin 05-rpa
 ```
 
-Quando uma parte estiver pronta, abra um **Pull Request** da sua branch para a `main` no GitHub.
+Quando uma parte estiver pronta, abra um **Pull Request** da sua branch para a `main` no GitHub e marque o Guilherme como revisor.
 O merge só libera quando:
 
 1. **O robô aprova** (GitHub Actions `pr-validacao`). Ele confere:
@@ -100,7 +100,7 @@ O merge só libera quando:
    - não tem `.env`, vídeo, state do Terraform nem arquivo acima de 10 MB;
    - o Python não tem erro de sintaxe nem nome indefinido;
    - o título está no formato `pasta: descrição` (ex.: `rpa: fluxo de registro dos chamados`).
-2. **Outra pessoa do grupo aprova** o PR (1 revisão obrigatória).
+2. **O Guilherme (dono do repositório) aprova** o PR. Só a aprovação dele libera o merge (arquivo `.github/CODEOWNERS`).
 
 Se o robô reprovar, abra a aba **Checks** do PR: o erro diz o arquivo e o que fazer. Corrija, dê push na mesma
 branch e ele roda de novo sozinho.
