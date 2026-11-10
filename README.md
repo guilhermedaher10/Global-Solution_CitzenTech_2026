@@ -43,7 +43,7 @@ Nós não consertamos o poste: somos a **ponte entre o cidadão e a prefeitura**
 | Gabriel Freitas | 550187 | Generative AI |
 | Heitor Nobre | 551539 | Maker Lab |
 | Vinicius Yamashita | 550908 | RPA |
-| Lucca Alexandre | 99700 | Big Data |
+| Lucca Alexandre | 99700 | Big Data · Negócio e Pitch |
 
 > ⚠️ Vários professores tiram nota se faltar **nome completo** ou RM. Cada um confira e complete o seu nome.
 
