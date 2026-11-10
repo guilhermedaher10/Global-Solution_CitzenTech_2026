@@ -1,0 +1,9 @@
+requests
+numpy
+pandas
+fastapi
+uvicorn
+jupyter
+nbconvert
+nbformat
+ipykernel
