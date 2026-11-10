@@ -40,10 +40,12 @@ Nós não consertamos o poste: somos a **ponte entre o cidadão e a prefeitura**
 | Nome completo | RM | Disciplina |
 |---|---|---|
 | Guilherme Gonçalves Calil Daher | 98611 | Visão Computacional |
-| | | |
-| | | |
-| | | |
-| | | |
+| Gabriel Freitas | 550187 | _a definir_ |
+| Heitor Nobre | 551539 | _a definir_ |
+| Vinicius Yamashita | 550908 | _a definir_ |
+| Lucca Alexandre | 99700 | _a definir_ |
+
+> ⚠️ Vários professores tiram nota se faltar **nome completo** ou RM. Cada um confira e complete o seu nome.
 
 ## Pastas
 
@@ -89,7 +91,19 @@ git push -u origin 05-rpa
 ```
 
 Quando uma parte estiver pronta, abra um **Pull Request** da sua branch para a `main` no GitHub.
-Outra pessoa do grupo dá uma olhada e faz o merge.
+O merge só libera quando:
+
+1. **O robô aprova** (GitHub Actions `pr-validacao`). Ele confere:
+   - o nome da branch está na tabela acima;
+   - o PR só mexe na pasta da própria matéria;
+   - não tem senha ou chave vazada (Gitleaks);
+   - não tem `.env`, vídeo, state do Terraform nem arquivo acima de 10 MB;
+   - o Python não tem erro de sintaxe nem nome indefinido;
+   - o título está no formato `pasta: descrição` (ex.: `rpa: fluxo de registro dos chamados`).
+2. **Outra pessoa do grupo aprova** o PR (1 revisão obrigatória).
+
+Se o robô reprovar, abra a aba **Checks** do PR: o erro diz o arquivo e o que fazer. Corrija, dê push na mesma
+branch e ele roda de novo sozinho.
 
 - Mexa **só na sua pasta**. Mudança na raiz ou em `docs/` vai pela branch `docs-projeto`, avisando o grupo.
 - Comece a mensagem do commit pelo nome da pasta (`rpa:`, `big-data:`, `visao:`...).
