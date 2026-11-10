@@ -1,0 +1,24 @@
+# Regras de negócio que transformam detecções em decisão. Ajuste aqui, não no código.
+deteccao:
+  confianca_minima: 0.35      # abaixo disso a detecção é ignorada
+  iou: 0.5
+  tamanho_imagem: 640
+
+luminosidade:               # brilho médio da cena, de 0 (preto) a 255 (branco)
+  limiar_escuro: 55           # abaixo: cena escura
+  limiar_dia: 120             # acima: provavelmente foto de dia (não serve de evidência)
+
+validacao:                  # foto enviada pelo cidadão
+  lado_minimo_px: 320         # imagem menor que isso não serve
+  nitidez_minima: 8.0         # variância do Laplaciano; foto noturna é naturalmente pouco nítida
+
+prioridade:                 # pontuação de 0 a 100, sempre com os fatores explicados
+  pontos_por_poste_apagado: 25
+  max_pontos_postes: 50
+  pontos_trecho_escuro: 30
+  pontos_trecho_parcial: 15
+  pontos_sensor_lux_baixo: 20
+  limiar_sensor_lux: 5.0      # lux medido pelo robô; rua bem iluminada fica acima de ~10 lux
+  faixas:                     # pontuação mínima de cada nível
+    alta: 60
+    media: 30

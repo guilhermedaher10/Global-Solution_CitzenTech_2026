@@ -1,0 +1,27 @@
+# De onde vêm as imagens. Confira a licença de cada dataset na página do Roboflow Universe
+# antes de usar e registre em docs/dataset.md.
+
+roboflow:                 # workspace/projeto do link universe.roboflow.com/<workspace>/<projeto>
+  - {workspace: datasets-cobjh, projeto: street-light-off}
+  - {workspace: datasets-cobjh, projeto: light_off}
+  - {workspace: carsmoke-detection, projeto: street-light-lbrt8}
+  - {workspace: streetlight-detection, projeto: led-only}
+  - {workspace: sba-pothole, projeto: poles-dataset-e00t2}
+  - {workspace: sashank-s, projeto: streetlight-night}
+  - {workspace: street-lightv, projeto: nighttime-streetlight-detection}
+  - {workspace: cnn-maker, projeto: infras}
+  # versao: 3   <- opcional; sem isso baixa a mais recente
+
+busca_web:                # termos para scripts/coletar_web.py (Bing Imagens)
+  - rua escura poste apagado
+  - poste de luz apagado à noite
+  - rua sem iluminação pública
+  - iluminação pública queimada bairro
+  - moradores reclamam rua escura
+  - street light not working at night
+  - broken street light night
+  - dark street lamp off night
+  - streetlight outage night street
+
+videos:                   # vídeos noturnos para extrair frames (scripts/extrair_frames.py)
+  # - https://www.youtube.com/watch?v=XXXXXXXXXXX

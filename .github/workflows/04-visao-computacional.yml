@@ -1,0 +1,26 @@
+# Testes da Visão Computacional a cada push que mexe na pasta 04.
+# Não instala PyTorch: os testes usam um detector falso (rápido e leve).
+name: 04-visao-computacional
+
+on:
+  push:
+    paths: ["04-visao-computacional/**", ".github/workflows/04-visao-computacional.yml"]
+  pull_request:
+    paths: ["04-visao-computacional/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 04-visao-computacional
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install "opencv-python-headless>=4.9,<5" fastapi python-multipart pydantic PyYAML pillow numpy pytest httpx
+      - run: pytest -q
