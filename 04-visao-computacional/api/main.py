@@ -61,6 +61,34 @@ app.add_middleware(
 )
 
 
+def _openapi_formulario_simples() -> dict:
+    """Na página /docs, campo opcional (`float | None`) vira "número OU nulo" e o Swagger, sem saber
+    desenhar isso, preenche sozinho com "string"/0 e manda junto. Aqui simplificamos só os
+    esquemas de ENTRADA de formulário (Body_*); o contrato de resposta continua dizendo "pode ser nulo".
+    """
+    if app.openapi_schema:
+        return app.openapi_schema
+    from fastapi.openapi.utils import get_openapi
+
+    schema = get_openapi(title=app.title, version=app.version, description=app.description,
+                         routes=app.routes)
+    for nome, corpo in schema.get("components", {}).get("schemas", {}).items():
+        if not nome.startswith("Body_"):
+            continue
+        for campo in corpo.get("properties", {}).values():
+            opcoes = campo.get("anyOf")
+            if isinstance(opcoes, list) and {"type": "null"} in opcoes:
+                tipos = [o for o in opcoes if o != {"type": "null"}]
+                if len(tipos) == 1:
+                    del campo["anyOf"]
+                    campo.update(tipos[0])
+    app.openapi_schema = schema
+    return schema
+
+
+app.openapi = _openapi_formulario_simples
+
+
 def obter_detector():
     if _estado["detector"] is None:
         raise HTTPException(503, f"modelo indisponível: {_estado['erro']}")

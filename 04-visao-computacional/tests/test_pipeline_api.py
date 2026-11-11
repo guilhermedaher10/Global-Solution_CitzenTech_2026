@@ -103,3 +103,12 @@ def test_api_sem_modelo_responde_503():
         assert c.get("/saude").json()["status"] == "degradado"
         r = c.post("/v1/analisar", files={"imagem": ("rua.jpg", jpeg(cena(30)), "image/jpeg")})
         assert r.status_code == 503
+
+
+def test_docs_nao_preenche_campos_opcionais_sozinho(cliente):
+    """Sem o anyOf com null, o Swagger deixa o campo vazio em vez de mandar "string"/0."""
+    esquemas = cliente.get("/openapi.json").json()["components"]["schemas"]
+    form = next(v for k, v in esquemas.items() if k.startswith("Body_") and "analisar" in k)["properties"]
+    for campo in ("sensor_lux", "sensor_distancia_cm", "alerta", "latitude"):
+        assert "anyOf" not in form[campo] and "type" in form[campo], campo
+    assert "anyOf" in esquemas["Analise"]["properties"]["sensor_lux"]   # resposta continua anulável
