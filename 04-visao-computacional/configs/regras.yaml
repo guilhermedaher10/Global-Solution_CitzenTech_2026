@@ -10,7 +10,7 @@ luminosidade:               # brilho médio da cena, de 0 (preto) a 255 (branco)
 
 validacao:                  # foto enviada pelo cidadão
   lado_minimo_px: 320         # imagem menor que isso não serve
-  nitidez_minima: 8.0         # variância do Laplaciano; foto noturna é naturalmente pouco nítida
+  nitidez_minima: 5.0         # ver imagem.nitidez(): fotos boas >= 8, borradas <= 2.6
 
 prioridade:                 # pontuação de 0 a 100, sempre com os fatores explicados
   pontos_por_poste_apagado: 25
@@ -22,3 +22,19 @@ prioridade:                 # pontuação de 0 a 100, sempre com os fatores expl
   faixas:                     # pontuação mínima de cada nível
     alta: 60
     media: 30
+
+sensores:                   # robô do Maker Lab (LDR + ultrassônico + GPS)
+  # Se o robô não mandar a lista `alerta`, a API deduz pelos valores:
+  #   sensor_lux < prioridade.limiar_sensor_lux       -> "escuro"
+  #   sensor_distancia_cm >= distancia_buraco_cm      -> "buraco"
+  distancia_buraco_cm: 15.0   # ultrassônico apontado para o chão: acima disso = desnível. AJUSTAR com o Heitor
+
+fusao:                      # pontos extras quando sensor e foto são cruzados
+  pontos_buraco: 30           # buraco visto na foto
+  pontos_buraco_no_escuro: 25 # buraco + trecho escuro: risco de queda (ODS 3)
+  pontos_confirmado: 15       # o sensor do robô e a foto concordam
+
+alerta_robo:                # alerta só com sensores (sem foto): prioridade prévia
+  pontos_escuro: 30
+  pontos_buraco: 30
+  pontos_escuro_e_buraco: 25

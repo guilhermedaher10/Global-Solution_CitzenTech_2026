@@ -12,11 +12,12 @@ from datetime import datetime, timedelta, timezone
 import numpy as np
 
 from . import imagem as im
-from .config import CLASSE_ACESO, CLASSE_APAGADO
+from .config import CLASSE_ACESO, CLASSE_APAGADO, CLASSE_BURACO
 from .detector import Detector
+from .fusao import fundir, ler_sensores
 from .privacidade import BorradorRostos, ler_metadados
 from .regras import classificar_trecho, priorizar, validar
-from .schemas import Analise, Localizacao, ModeloInfo, Origem, Privacidade, Resumo
+from .schemas import Analise, Localizacao, ModeloInfo, Origem, Privacidade, Resumo, TipoAlerta
 
 FUSO_SP = timezone(timedelta(hours=-3))
 
@@ -27,7 +28,9 @@ class ImagemInvalida(ValueError):
 
 def analisar_imagem(img: np.ndarray, detector: Detector, *, origem: Origem | str = Origem.camera,
                     latitude: float | None = None, longitude: float | None = None,
-                    sensor_lux: float | None = None, borrador: BorradorRostos | None = None,
+                    sensor_lux: float | None = None, sensor_distancia_cm: float | None = None,
+                    alerta: list[TipoAlerta | str] | None = None,
+                    borrador: BorradorRostos | None = None,
                     retornar_imagem: bool = False, hora_captura: str | None = None,
                     fonte_localizacao: str = "informada", exif_removido: bool = True,
                     deteccoes=None) -> Analise:
@@ -37,14 +40,19 @@ def analisar_imagem(img: np.ndarray, detector: Detector, *, origem: Origem | str
 
     acesos = sum(d.classe == CLASSE_ACESO for d in deteccoes)
     apagados = sum(d.classe == CLASSE_APAGADO for d in deteccoes)
+    buracos = sum(d.classe == CLASSE_BURACO for d in deteccoes)
     lum = im.luminosidade_media(img)
     status = classificar_trecho(acesos, apagados, lum)
+    sinais = ler_sensores(sensor_lux, sensor_distancia_cm, alerta)
 
     validacao = validar(origem=origem.value, acesos=acesos, apagados=apagados, luminosidade=lum,
                         nitidez=im.nitidez(img), lado_menor=im.lado_menor(img), status=status,
-                        sensor_lux=sensor_lux)
+                        sensor_lux=sensor_lux, buracos=buracos, sensor_escuro=sinais.escuro)
+    fusao = fundir(sinais, acesos=acesos, apagados=apagados, buracos=buracos, status=status,
+                   foto_valida=validacao.foto_valida)
     prioridade = priorizar(apagados=apagados, status=status, sensor_lux=sensor_lux,
-                           abrir_chamado=validacao.abrir_chamado)
+                           abrir_chamado=validacao.abrir_chamado, buracos=buracos,
+                           sensor_escuro=sinais.escuro, fusao=fusao)
 
     borrador = borrador or BorradorRostos()
     anonimizada, n_rostos = borrador.borrar(img)
@@ -61,11 +69,13 @@ def analisar_imagem(img: np.ndarray, detector: Detector, *, origem: Origem | str
         origem=origem,
         localizacao=loc,
         sensor_lux=sensor_lux,
+        sensor_distancia_cm=sensor_distancia_cm,
         deteccoes=deteccoes,
         resumo=Resumo(postes_acesos=acesos, postes_apagados=apagados,
-                      luminosidade_media=lum, status_trecho=status),
+                      buracos=buracos, luminosidade_media=lum, status_trecho=status),
         validacao=validacao,
         prioridade=prioridade,
+        fusao=fusao,
         privacidade=Privacidade(rostos_borrados=n_rostos, exif_removido=exif_removido),
         modelo=ModeloInfo(nome=detector.nome, versao=detector.versao),
         imagem_anonimizada_base64=b64,
@@ -74,8 +84,9 @@ def analisar_imagem(img: np.ndarray, detector: Detector, *, origem: Origem | str
 
 def analisar_bytes(dados: bytes, detector: Detector, *, origem: Origem | str = Origem.cidadao,
                    latitude: float | None = None, longitude: float | None = None,
-                   sensor_lux: float | None = None, borrador: BorradorRostos | None = None,
-                   retornar_imagem: bool = False) -> Analise:
+                   sensor_lux: float | None = None, sensor_distancia_cm: float | None = None,
+                   alerta: list[TipoAlerta | str] | None = None,
+                   borrador: BorradorRostos | None = None, retornar_imagem: bool = False) -> Analise:
     """Entrada da API: lê EXIF (GPS/hora) antes de decodificar; a imagem decodificada já não tem EXIF."""
     img = im.decodificar(dados)
     if img is None:
@@ -90,5 +101,5 @@ def analisar_bytes(dados: bytes, detector: Detector, *, origem: Origem | str = O
             latitude = longitude = None
 
     return analisar_imagem(img, detector, origem=origem, latitude=latitude, longitude=longitude,
-                           sensor_lux=sensor_lux, borrador=borrador, retornar_imagem=retornar_imagem,
-                           hora_captura=meta.hora_captura, fonte_localizacao=fonte)
+                           sensor_lux=sensor_lux, sensor_distancia_cm=sensor_distancia_cm, alerta=alerta,
+                           borrador=borrador, retornar_imagem=retornar_imagem, hora_captura=meta.hora_captura, fonte_localizacao=fonte)

@@ -13,6 +13,7 @@ PASTA_CONFIGS = Path(os.getenv("VISAO_CONFIGS", RAIZ / "configs"))
 
 CLASSE_ACESO = "poste_aceso"
 CLASSE_APAGADO = "poste_apagado"
+CLASSE_BURACO = "buraco"      # entra no modelo quando o dataset de buraco for treinado
 
 
 def _ler_yaml(nome: str) -> dict[str, Any]:

@@ -8,6 +8,7 @@ from PIL import Image
 from conftest import DetectorFalso, cena, jpeg, poste
 from visao.pipeline import ImagemInvalida, analisar_bytes
 from visao.privacidade import ler_metadados
+from visao.schemas import VERSAO_CONTRATO
 
 
 def _jpeg_com_exif(img_bgr, lat=(23, 33, 1.8), lon=(46, 38, 0.0)) -> bytes:
@@ -80,7 +81,7 @@ def test_api_analisar(cliente):
                      data={"origem": "robo", "sensor_lux": "1.5", "latitude": "-23.55", "longitude": "-46.63"})
     assert r.status_code == 200, r.text
     j = r.json()
-    assert j["versao_contrato"] == "1.0"
+    assert j["versao_contrato"] == VERSAO_CONTRATO
     assert j["origem"] == "robo"
     assert j["validacao"]["abrir_chamado"] is True
     assert j["prioridade"]["nivel"] == "alta"
