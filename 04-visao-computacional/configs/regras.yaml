@@ -38,3 +38,10 @@ alerta_robo:                # alerta só com sensores (sem foto): prioridade pr�
   pontos_escuro: 30
   pontos_buraco: 30
   pontos_escuro_e_buraco: 25
+
+orientacao:                 # perguntas feitas ao GenAI (01) para cada tipo de chamado confirmado
+  perguntas:                # {cidade} = GENAI_CIDADE (padrão São Paulo)
+    conserto_poste: "Qual o prazo para consertar a iluminação pública em {cidade}?"
+    instalacao_iluminacao: "Como pedir a instalação de iluminação pública em uma rua sem poste em {cidade}?"
+    poda_ou_obstrucao: "O que pode atrasar o reparo da iluminação pública em {cidade}?"
+    buraco: "Qual o prazo para tapar um buraco na rua em {cidade}?"

@@ -10,6 +10,9 @@ Variáveis de ambiente (todas opcionais):
     MODELO_VERSAO    versão exibida no JSON (padrão: dev)
     CORS_ORIGENS     origens liberadas, separadas por vírgula (padrão: *)
     MAX_UPLOAD_MB    tamanho máximo da foto (padrão: 10)
+    GENAI_URL        API do GenAI (01-generative-ai), ex.: http://localhost:8001 (sem ela, sem orientação)
+    GENAI_TIMEOUT    segundos de espera pelo GenAI (padrão: 60)
+    GENAI_CIDADE     cidade usada nas perguntas ao GenAI (padrão: São Paulo)
 """
 from __future__ import annotations
 
@@ -18,9 +21,11 @@ import os
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 
 from visao.fusao import triar_alerta
+from visao.orientacao import ClienteGenAI
 from visao.pipeline import ImagemInvalida, analisar_bytes
 from visao.privacidade import BorradorRostos
 from visao.schemas import VERSAO_CONTRATO, AlertaRobo, Analise, Origem, RespostaAlerta, TipoAlerta
@@ -29,7 +34,7 @@ log = logging.getLogger("visao.api")
 MAX_BYTES = int(float(os.getenv("MAX_UPLOAD_MB", "10")) * 1024 * 1024)
 TIPOS_ACEITOS = {"image/jpeg", "image/png", "image/webp"}
 
-_estado: dict = {"detector": None, "erro": None, "borrador": None}
+_estado: dict = {"detector": None, "erro": None, "borrador": None, "genai": None}
 
 
 @asynccontextmanager
@@ -43,6 +48,7 @@ async def lifespan(app: FastAPI):
         _estado["erro"] = str(e)
         log.error("modelo não carregado: %s", e)
     _estado["borrador"] = BorradorRostos()
+    _estado["genai"] = ClienteGenAI()
     yield
 
 
@@ -97,6 +103,12 @@ def obter_detector():
     return _estado["detector"]
 
 
+def obter_genai() -> ClienteGenAI:
+    if _estado["genai"] is None:
+        _estado["genai"] = ClienteGenAI()
+    return _estado["genai"]
+
+
 def obter_borrador() -> BorradorRostos:
     if _estado["borrador"] is None:
         _estado["borrador"] = BorradorRostos()
@@ -111,6 +123,7 @@ def saude():
         "modelo_carregado": det is not None,
         "modelo": {"nome": det.nome, "versao": det.versao} if det else None,
         "erro": _estado["erro"],
+        "genai": obter_genai().saude(),       # dependência opcional: não deixa a Visão "degradada"
         "versao_contrato": VERSAO_CONTRATO,
     }
 
@@ -126,8 +139,11 @@ async def analisar(
     sensor_distancia_cm: float | None = Form(None, ge=0, description="Leitura do ultrassônico do robô"),
     alerta: str | None = Form(None, description="O que disparou no robô, separado por vírgula: escuro,buraco"),
     retornar_imagem: bool = Form(False, description="Devolver a imagem anonimizada em base64"),
+    incluir_orientacao: bool = Form(False, description="Perguntar ao GenAI o prazo/canal oficial "
+                                    "(só se abrir chamado; pode levar alguns segundos)"),
     detector=Depends(obter_detector),
     borrador: BorradorRostos = Depends(obter_borrador),
+    genai: ClienteGenAI = Depends(obter_genai),
 ):
     if imagem.content_type not in TIPOS_ACEITOS:
         raise HTTPException(415, f"tipo {imagem.content_type} não aceito; use JPEG, PNG ou WebP")
@@ -139,11 +155,15 @@ async def analisar(
     except ValueError as e:
         raise HTTPException(422, f"alerta inválido: {alerta!r}; use escuro e/ou buraco") from e
     try:
-        return analisar_bytes(dados, detector, origem=origem, latitude=latitude, longitude=longitude,
-                              sensor_lux=sensor_lux, sensor_distancia_cm=sensor_distancia_cm,
-                              alerta=alertas, borrador=borrador, retornar_imagem=retornar_imagem)
+        analise = analisar_bytes(dados, detector, origem=origem, latitude=latitude, longitude=longitude,
+                                 sensor_lux=sensor_lux, sensor_distancia_cm=sensor_distancia_cm,
+                                 alerta=alertas, borrador=borrador, retornar_imagem=retornar_imagem)
     except ImagemInvalida as e:
         raise HTTPException(422, str(e)) from e
+    if incluir_orientacao and analise.validacao.abrir_chamado:
+        # o LLM do GenAI roda em CPU e pode demorar: fora do loop de eventos
+        analise.orientacao = await run_in_threadpool(genai.orientar, analise.fusao.tipos_chamado)
+    return analise
 
 
 @app.post("/v1/alerta-robo", response_model=RespostaAlerta, tags=["robo"],
