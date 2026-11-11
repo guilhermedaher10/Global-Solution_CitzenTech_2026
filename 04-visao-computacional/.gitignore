@@ -4,3 +4,8 @@ runs/
 yolo26*.pt
 results/exemplos/*.json
 results/*.mp4
+# pesos baixados automaticamente pelo YOLO-World (pré-anotação) e logs de treino
+weights/
+yolov8*-world*.pt
+results/*.log
+results/base/

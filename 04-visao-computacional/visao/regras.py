@@ -7,7 +7,7 @@ configs/regras.yaml. Isso facilita auditoria pela prefeitura e ajuste sem retrei
 from __future__ import annotations
 
 from .config import regras
-from .schemas import NivelPrioridade, Prioridade, StatusTrecho, Validacao
+from .schemas import Confirmacao, Fusao, NivelPrioridade, Prioridade, StatusTrecho, Validacao
 
 
 def classificar_trecho(acesos: int, apagados: int, luminosidade: float) -> StatusTrecho:
@@ -23,7 +23,9 @@ def classificar_trecho(acesos: int, apagados: int, luminosidade: float) -> Statu
 
 
 def validar(*, origem: str, acesos: int, apagados: int, luminosidade: float, nitidez: float,
-            lado_menor: int, status: StatusTrecho, sensor_lux: float | None = None) -> Validacao:
+            lado_menor: int, status: StatusTrecho, sensor_lux: float | None = None,
+            buracos: int = 0, sensor_escuro: bool | None = None) -> Validacao:
+    """`sensor_escuro`: o robô sinalizou escuro (alerta ou LDR). None = deduz só do `sensor_lux`."""
     r = regras()
     motivos: list[str] = []
     foto_valida = True
@@ -37,20 +39,26 @@ def validar(*, origem: str, acesos: int, apagados: int, luminosidade: float, nit
     if luminosidade > r["luminosidade"]["limiar_dia"]:
         foto_valida = False
         motivos.append("a foto parece ter sido tirada de dia; poste apagado de dia não é falha")
-    # Foto do cidadão precisa mostrar pelo menos um poste; robô/câmera fixa têm sensor e posição
-    # conhecida, então uma cena escura sem poste visível também vale como evidência.
-    if origem == "cidadao" and acesos + apagados == 0:
+    lux_baixo = sensor_lux is not None and sensor_lux < r["prioridade"]["limiar_sensor_lux"]
+    if sensor_escuro is None:
+        sensor_escuro = lux_baixo
+    # Foto do cidadão precisa mostrar um poste (ou um buraco). Exceção: o robô já marcou escuro
+    # ali, e a foto da rua sem poste vira prova para o pedido de instalação de iluminação.
+    if origem == "cidadao" and acesos + apagados == 0 and buracos == 0 and not sensor_escuro:
         foto_valida = False
         motivos.append("nenhum poste identificado na foto; enquadre o poste")
 
-    lux_baixo = sensor_lux is not None and sensor_lux < r["prioridade"]["limiar_sensor_lux"]
-    falha = apagados > 0 or status == StatusTrecho.escura or lux_baixo
+    falha = apagados > 0 or status == StatusTrecho.escura or sensor_escuro or buracos > 0
     if apagados > 0:
         motivos.append(f"{apagados} poste(s) apagado(s) detectado(s)")
     if status == StatusTrecho.escura:
         motivos.append("trecho classificado como escuro")
     if lux_baixo:
         motivos.append(f"sensor de luz do robô marcou {sensor_lux} lux")
+    elif sensor_escuro:
+        motivos.append("o robô sinalizou trecho escuro")
+    if buracos > 0:
+        motivos.append(f"{buracos} buraco(s) detectado(s)")
     if not falha:
         motivos.append("nenhum sinal de falha na iluminação")
 
@@ -59,7 +67,8 @@ def validar(*, origem: str, acesos: int, apagados: int, luminosidade: float, nit
 
 
 def priorizar(*, apagados: int, status: StatusTrecho, sensor_lux: float | None,
-              abrir_chamado: bool) -> Prioridade:
+              abrir_chamado: bool, buracos: int = 0, sensor_escuro: bool = False,
+              fusao: Fusao | None = None) -> Prioridade:
     if not abrir_chamado:
         return Prioridade(nivel=NivelPrioridade.nenhuma, pontuacao=0, fatores=["sem chamado a abrir"])
 
@@ -79,6 +88,20 @@ def priorizar(*, apagados: int, status: StatusTrecho, sensor_lux: float | None,
     if sensor_lux is not None and sensor_lux < p["limiar_sensor_lux"]:
         pontos += p["pontos_sensor_lux_baixo"]
         fatores.append(f"+{p['pontos_sensor_lux_baixo']}: sensor de luz abaixo de {p['limiar_sensor_lux']} lux")
+    elif sensor_escuro:
+        pontos += p["pontos_sensor_lux_baixo"]
+        fatores.append(f"+{p['pontos_sensor_lux_baixo']}: robô sinalizou trecho escuro")
+
+    f = regras()["fusao"]
+    if buracos > 0:
+        pontos += f["pontos_buraco"]
+        fatores.append(f"+{f['pontos_buraco']}: {buracos} buraco(s) na via")
+        if status == StatusTrecho.escura or sensor_escuro:
+            pontos += f["pontos_buraco_no_escuro"]
+            fatores.append(f"+{f['pontos_buraco_no_escuro']}: buraco em trecho escuro (risco de queda)")
+    if fusao is not None and fusao.confirmacao == Confirmacao.confirmado:
+        pontos += f["pontos_confirmado"]
+        fatores.append(f"+{f['pontos_confirmado']}: sensor do robô e foto concordam")
 
     pontos = min(pontos, 100)
     if pontos >= p["faixas"]["alta"]:

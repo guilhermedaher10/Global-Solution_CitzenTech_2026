@@ -1,22 +1,29 @@
 # Integração: como os outros componentes usam a Visão
 
-A Visão expõe **uma API HTTP** e **um formato de JSON** (o contrato, versão `1.0`).
+A Visão expõe **uma API HTTP** e **um formato de JSON** (o contrato, versão `1.1`).
 Quem precisa saber se uma foto é evidência de rua escura chama a API. Ninguém precisa entender o YOLO.
 
 ```
-App do cidadão ──foto + GPS──────────┐
-Robô (Maker Lab) ──foto + lux + GPS──┼──► POST /v1/analisar ──► JSON do chamado ──► Backend / RPA / Big Data
-Câmera fixa / vídeo ─────────────────┘                                                    │
-                                                                                          ▼
-                                                                        atendente da prefeitura confirma
+Robô (Maker Lab: LDR + ultrassônico + GPS, SEM câmera)
+   └─ sensor dispara ──► POST /v1/alerta-robo ──► SUSPEITA + prioridade prévia + LED para o robô
+                                                   │ (sistema pede foto de confirmação no local)
+App do cidadão ──foto + GPS (+ leituras do robô)──┐ ▼
+Câmera / vídeo de patrulha ───────────────────────┴──► POST /v1/analisar ──► CHAMADO confirmado e tipado
+                                                                              │  (conserto, instalação, poda, buraco)
+                                                                              ▼
+                                                     Backend / RPA / Big Data → atendente da prefeitura confirma
 ```
+
+**O robô desconfia, a foto confirma.** Sensor sozinho gera suspeita; a foto transforma em chamado com prova e
+diz para qual setor ele vai.
 
 ## Endpoints
 
 | Método | Rota | Para quê |
 |---|---|---|
 | `GET` | `/saude` | Status da API e do modelo (DevOps: health check e monitoramento) |
-| `POST` | `/v1/analisar` | Analisa uma foto e devolve o JSON abaixo |
+| `POST` | `/v1/analisar` | Analisa uma foto (e cruza com os sensores, se vierem) e devolve o JSON abaixo |
+| `POST` | `/v1/alerta-robo` | Alerta do robô **sem foto**: registra a suspeita e diz qual LED acender |
 | `GET` | `/docs` | Documentação interativa (Swagger): dá para testar pelo navegador |
 
 ### `POST /v1/analisar` (multipart/form-data)
@@ -27,6 +34,8 @@ Câmera fixa / vídeo ─────────────────┘    
 | `origem` | texto | não | `cidadao` (padrão), `robo` ou `camera` |
 | `latitude`, `longitude` | número | não | Se não vier, a API tenta usar o GPS do EXIF da foto |
 | `sensor_lux` | número | não | Leitura do sensor de luz (LDR) do robô |
+| `sensor_distancia_cm` | número | não | Leitura do ultrassônico do robô |
+| `alerta` | texto | não | O que disparou, separado por vírgula: `escuro`, `buraco` ou `escuro,buraco` |
 | `retornar_imagem` | bool | não | Devolve a foto com rostos borrados, em base64 |
 
 ```bash
@@ -49,18 +58,19 @@ if analise["validacao"]["abrir_chamado"]:
 
 ```json
 {
-  "versao_contrato": "1.0",
+  "versao_contrato": "1.1",
   "id_captura": "b58cccb5-ab16-43cb-8f35-180c00b2939d",
   "timestamp": "2026-11-09T22:12:45-03:00",
   "hora_captura": null,
   "origem": "robo",
   "localizacao": { "latitude": -23.5505, "longitude": -46.6333, "fonte": "informada" },
   "sensor_lux": 2.4,
+  "sensor_distancia_cm": null,
   "deteccoes": [
     { "classe": "poste_apagado", "confianca": 0.91, "bbox": [412, 88, 470, 410], "id_rastreio": null },
     { "classe": "poste_aceso",   "confianca": 0.88, "bbox": [120, 60, 170, 400], "id_rastreio": null }
   ],
-  "resumo": { "postes_acesos": 1, "postes_apagados": 1, "luminosidade_media": 44.7, "status_trecho": "escura" },
+  "resumo": { "postes_acesos": 1, "postes_apagados": 1, "buracos": 0, "luminosidade_media": 44.7, "status_trecho": "escura" },
   "validacao": {
     "foto_valida": true,
     "falha_detectada": true,
@@ -70,8 +80,13 @@ if analise["validacao"]["abrir_chamado"]:
   },
   "prioridade": {
     "nivel": "alta",
-    "pontuacao": 75,
-    "fatores": ["+25: 1 poste(s) apagado(s)", "+30: trecho escuro", "+20: sensor de luz abaixo de 5.0 lux"]
+    "pontuacao": 90,
+    "fatores": ["+25: 1 poste(s) apagado(s)", "+30: trecho escuro", "+20: sensor de luz abaixo de 5.0 lux",
+                "+15: sensor do robô e foto concordam"]
+  },
+  "fusao": {
+    "alertas_sensor": ["escuro"], "tipos_chamado": ["conserto_poste"], "confirmacao": "confirmado",
+    "motivos": ["poste apagado na foto: conserto", "escuro: a foto confirma o sensor de luz"]
   },
   "privacidade": { "rostos_borrados": 0, "exif_removido": true, "imagem_armazenada": false },
   "modelo": { "nome": "yolo26n-postes", "versao": "1.0" },
@@ -87,8 +102,87 @@ if analise["validacao"]["abrir_chamado"]:
 | **RPA** | `prioridade.nivel`, `localizacao`, `id_captura` | Ordenar a fila, agrupar chamados do mesmo trecho e registrar no sistema da prefeitura (ex.: SP156) |
 | **Big Data** | o JSON inteiro (Bronze) | Prata: tipar e deduplicar por `id_captura`; Ouro: fato `capturas` com dimensões tempo, local, origem e modelo |
 | **GenAI** | `resumo`, `validacao.motivos`, `prioridade.fatores` | Gerar o texto do chamado e responder ao cidadão com base em dados, sem inventar |
-| **Maker Lab (robô)** | envia `sensor_lux` + foto; lê `status_trecho` | Decidir a ação do robô (alerta, LED, voz) a partir do que a câmera viu |
+| **Maker Lab (robô)** | envia o alerta a `/v1/alerta-robo`; lê `acao_robo` | Acender o LED/buzzer certo; o ponto vira suspeita até uma foto confirmar |
 | **DevOps** | `GET /saude`, código HTTP, latência | Health check, dashboard das 4 métricas de ouro, alerta se `modelo_carregado=false` |
+
+### Campo `fusao` (novo na 1.1): sensor + foto
+
+| Robô diz | Foto mostra | `tipos_chamado` | `confirmacao` |
+|---|---|---|---|
+| escuro | poste apagado | `conserto_poste` | `confirmado` |
+| escuro | nenhum poste, cena escura | `instalacao_iluminacao` | `confirmado` |
+| escuro | poste aceso, cena clara | `poda_ou_obstrucao` | `nao_confirmado` |
+| buraco | buraco | `buraco` | `confirmado` |
+| escuro + buraco | apagado + buraco | `conserto_poste`, `buraco` | `confirmado` (prioridade máxima: risco de queda) |
+| buraco | sem buraco | — | `parcial` / `nao_confirmado` (segue como suspeita) |
+| (nada) | — | conforme a foto | `sem_sensor` |
+| qualquer | foto inválida (de dia, tremida) | — | `nao_confirmado`: a suspeita continua aberta |
+
+```json
+"fusao": {
+  "alertas_sensor": ["escuro", "buraco"],
+  "tipos_chamado": ["conserto_poste"],
+  "confirmacao": "parcial",
+  "motivos": ["poste apagado na foto: conserto", "escuro: a foto confirma o sensor de luz",
+              "buraco: não aparece na foto; segue como suspeita"]
+}
+```
+
+> A classe `buraco` entra no modelo no próximo treino (dataset público de buracos). Até lá, buraco só do
+> ultrassônico fica como suspeita, que é o comportamento correto: não abrimos chamado sem prova.
+
+### `POST /v1/alerta-robo` (JSON, sem foto)
+
+É o que o robô do Maker Lab chama quando o LDR ou o ultrassônico dispara. Funciona **mesmo sem o modelo
+carregado**. Se `alerta` vier vazio, a API deduz pelas leituras (`sensor_lux < 5` → escuro;
+`sensor_distancia_cm >= 15` → buraco; limiares em `configs/regras.yaml`).
+
+```json
+{"origem":"robo","latitude":-23.55,"longitude":-46.63,"sensor_lux":3.2,"sensor_distancia_cm":12,"alerta":["escuro","buraco"]}
+```
+
+Resposta (curta, para a placa ler):
+```json
+{
+  "versao_contrato": "1.1", "recebido": true,
+  "id_alerta": "1f0c…", "timestamp": "2026-11-10T21:40:12-03:00",
+  "status": "suspeita",
+  "alertas": ["escuro", "buraco"],
+  "localizacao": {"latitude": -23.55, "longitude": -46.63, "fonte": "informada"},
+  "prioridade_previa": {"nivel": "alta", "pontuacao": 85,
+                        "fatores": ["o robô sinalizou 'escuro'", "o robô sinalizou 'buraco'", "+30: trecho escuro",
+                                    "+30: possível buraco", "+25: buraco no escuro (risco de queda)"]},
+  "proximo_passo": "aguardando foto de confirmação (cidadão próximo ou patrulha) para virar chamado",
+  "acao_robo": "led_vermelho"
+}
+```
+
+`acao_robo`: `led_vermelho` (prioridade alta), `led_amarelo` (suspeita registrada) ou `nenhuma` (`status: descartado`).
+
+**Simulador** (testa tudo sem o robô físico):
+```bash
+uvicorn api.main:app --port 8000                     # terminal 1
+python scripts/simular_robo.py                       # terminal 2: escuro, buraco, os dois, normal
+python scripts/simular_robo.py --patrulha 20         # robô andando por uma rua
+python scripts/simular_robo.py --cenario ambos --foto rua.jpg   # alerta + foto do mesmo ponto
+```
+
+Exemplo para o firmware (ESP32, Arduino IDE, bibliotecas `HTTPClient` e `ArduinoJson`):
+```cpp
+HTTPClient http;
+http.begin("http://IP_DA_API:8000/v1/alerta-robo");
+http.addHeader("Content-Type", "application/json");
+String corpo = String("{\"origem\":\"robo\",\"latitude\":") + String(lat, 6) +
+               ",\"longitude\":" + String(lon, 6) + ",\"sensor_lux\":" + String(lux, 1) +
+               ",\"sensor_distancia_cm\":" + String(dist, 1) + "}";
+if (http.POST(corpo) == 200) {
+  JsonDocument resp; deserializeJson(resp, http.getString());
+  String acao = resp["acao_robo"];            // "led_vermelho", "led_amarelo" ou "nenhuma"
+  digitalWrite(LED_VERMELHO, acao == "led_vermelho");
+  digitalWrite(LED_AMARELO,  acao == "led_amarelo");
+}
+http.end();
+```
 
 ### Códigos de erro
 
@@ -96,7 +190,7 @@ if analise["validacao"]["abrir_chamado"]:
 |---|---|
 | `413` | Imagem maior que o limite |
 | `415` | Arquivo não é JPEG, PNG ou WebP |
-| `422` | Arquivo corrompido ou campo inválido (ex.: latitude 200) |
+| `422` | Arquivo corrompido ou campo inválido (ex.: latitude 200, `alerta=fogo`) |
 | `503` | Modelo não carregado (o `/saude` explica o motivo) |
 
 ## Regras de versão

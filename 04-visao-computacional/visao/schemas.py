@@ -9,7 +9,7 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
-VERSAO_CONTRATO = "1.0"
+VERSAO_CONTRATO = "1.1"   # 1.1: campos do robô (ultrassônico, alertas) e fusão sensor + foto
 
 
 class Origem(str, Enum):
@@ -32,6 +32,33 @@ class NivelPrioridade(str, Enum):
     nenhuma = "nenhuma"
 
 
+class TipoAlerta(str, Enum):
+    """O que disparou no robô."""
+    escuro = "escuro"       # LDR marcou pouca luz
+    buraco = "buraco"       # ultrassônico achou desnível
+
+
+class TipoChamado(str, Enum):
+    """Para qual setor da prefeitura o chamado vai."""
+    conserto_poste = "conserto_poste"                 # poste existe e está apagado
+    instalacao_iluminacao = "instalacao_iluminacao"   # trecho escuro sem poste
+    poda_ou_obstrucao = "poda_ou_obstrucao"           # poste aceso, mas a luz não chega ao chão
+    buraco = "buraco"                                 # buraco na via
+
+
+class Confirmacao(str, Enum):
+    confirmado = "confirmado"            # a foto confirma tudo o que o sensor apontou
+    parcial = "parcial"                  # confirma parte
+    nao_confirmado = "nao_confirmado"    # o sensor disparou, mas a foto não mostra
+    sem_sensor = "sem_sensor"            # não veio leitura de sensor (ex.: foto de cidadão)
+
+
+class AcaoRobo(str, Enum):
+    led_vermelho = "led_vermelho"   # prioridade alta
+    led_amarelo = "led_amarelo"     # suspeita registrada
+    nenhuma = "nenhuma"
+
+
 class Localizacao(BaseModel):
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
@@ -48,6 +75,7 @@ class Deteccao(BaseModel):
 class Resumo(BaseModel):
     postes_acesos: int
     postes_apagados: int
+    buracos: int = Field(default=0, description="Só quando o modelo tiver a classe 'buraco'")
     luminosidade_media: float = Field(description="Brilho médio da cena, 0 a 255")
     status_trecho: StatusTrecho
 
@@ -71,6 +99,14 @@ class Privacidade(BaseModel):
     imagem_armazenada: bool = Field(default=False, description="A API nunca guarda a imagem")
 
 
+class Fusao(BaseModel):
+    """Cruzamento do que os sensores do robô disseram com o que a foto mostrou."""
+    alertas_sensor: list[TipoAlerta] = Field(description="Enviados pelo robô ou deduzidos das leituras")
+    tipos_chamado: list[TipoChamado] = Field(description="Setor(es) que devem receber o chamado")
+    confirmacao: Confirmacao
+    motivos: list[str]
+
+
 class ModeloInfo(BaseModel):
     nome: str
     versao: str
@@ -84,11 +120,42 @@ class Analise(BaseModel):
     origem: Origem
     localizacao: Localizacao | None
     sensor_lux: float | None
+    sensor_distancia_cm: float | None = None
     deteccoes: list[Deteccao]
     resumo: Resumo
     validacao: Validacao
     prioridade: Prioridade
+    fusao: Fusao
     privacidade: Privacidade
     modelo: ModeloInfo
     imagem_anonimizada_base64: str | None = Field(
         default=None, description="JPEG com rostos borrados; só quando pedido")
+
+
+class AlertaRobo(BaseModel):
+    """O que o robô manda quando um sensor dispara (sem foto)."""
+    origem: Origem = Origem.robo
+    latitude: float = Field(ge=-90, le=90)
+    longitude: float = Field(ge=-180, le=180)
+    sensor_lux: float | None = Field(default=None, ge=0, description="Leitura do LDR")
+    sensor_distancia_cm: float | None = Field(default=None, ge=0, description="Leitura do ultrassônico")
+    alerta: list[TipoAlerta] = Field(default_factory=list,
+                                     description="O que disparou; vazio = a API deduz pelas leituras")
+
+    model_config = {"json_schema_extra": {"examples": [
+        {"origem": "robo", "latitude": -23.55, "longitude": -46.63, "sensor_lux": 3.2,
+         "sensor_distancia_cm": 12, "alerta": ["escuro", "buraco"]}]}}
+
+
+class RespostaAlerta(BaseModel):
+    """Resposta curta, fácil de ler numa placa (ESP32/Arduino)."""
+    versao_contrato: str = VERSAO_CONTRATO
+    recebido: bool = True
+    id_alerta: str
+    timestamp: str
+    status: str = Field(description="'suspeita' (vira chamado quando uma foto confirmar) ou 'descartado'")
+    alertas: list[TipoAlerta]
+    localizacao: Localizacao
+    prioridade_previa: Prioridade
+    proximo_passo: str
+    acao_robo: AcaoRobo

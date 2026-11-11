@@ -61,3 +61,18 @@ def test_prioridade_explicavel():
     assert baixa.nivel == NivelPrioridade.media and baixa.pontuacao == 40
     nada = priorizar(apagados=2, status=StatusTrecho.escura, sensor_lux=None, abrir_chamado=False)
     assert nada.nivel == NivelPrioridade.nenhuma and nada.pontuacao == 0
+
+
+def test_nitidez_nao_pune_foto_grande_e_escura():
+    import cv2
+    import numpy as np
+
+    from visao.imagem import nitidez
+    rng = np.random.default_rng(1)
+    noite = np.full((3000, 4000, 3), 12, np.uint8)            # foto de celular, bem escura
+    for _ in range(60):                                        # postes, janelas, faróis
+        x, y = rng.integers(0, 3900), rng.integers(0, 2900)
+        cv2.rectangle(noite, (int(x), int(y)), (int(x) + 60, int(y) + 90), (200, 200, 180), -1)
+    limiar = 5.0
+    assert nitidez(noite) >= limiar
+    assert nitidez(cv2.GaussianBlur(noite, (0, 0), 25)) < limiar   # a mesma foto tremida

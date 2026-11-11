@@ -8,6 +8,7 @@ from PIL import Image
 from conftest import DetectorFalso, cena, jpeg, poste
 from visao.pipeline import ImagemInvalida, analisar_bytes
 from visao.privacidade import ler_metadados
+from visao.schemas import VERSAO_CONTRATO
 
 
 def _jpeg_com_exif(img_bgr, lat=(23, 33, 1.8), lon=(46, 38, 0.0)) -> bytes:
@@ -80,7 +81,7 @@ def test_api_analisar(cliente):
                      data={"origem": "robo", "sensor_lux": "1.5", "latitude": "-23.55", "longitude": "-46.63"})
     assert r.status_code == 200, r.text
     j = r.json()
-    assert j["versao_contrato"] == "1.0"
+    assert j["versao_contrato"] == VERSAO_CONTRATO
     assert j["origem"] == "robo"
     assert j["validacao"]["abrir_chamado"] is True
     assert j["prioridade"]["nivel"] == "alta"
@@ -102,3 +103,13 @@ def test_api_sem_modelo_responde_503():
         assert c.get("/saude").json()["status"] == "degradado"
         r = c.post("/v1/analisar", files={"imagem": ("rua.jpg", jpeg(cena(30)), "image/jpeg")})
         assert r.status_code == 503
+
+
+def test_docs_nao_preenche_campos_opcionais_sozinho(cliente):
+    """Sem o anyOf com null, o Swagger deixa o campo vazio em vez de mandar "string"/0."""
+    esquemas = cliente.get("/openapi.json").json()["components"]["schemas"]
+    form = next(v for k, v in esquemas.items() if k.startswith("Body_") and "analisar" in k)["properties"]
+    for campo in ("sensor_lux", "sensor_distancia_cm", "alerta", "latitude"):
+        assert "anyOf" not in form[campo] and "type" in form[campo], campo
+        assert form[campo]["example"] == "", campo     # sem isso o Swagger inventa 0 ou "string"
+    assert "anyOf" in esquemas["Analise"]["properties"]["sensor_lux"]   # resposta continua anulável

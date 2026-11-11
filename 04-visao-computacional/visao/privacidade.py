@@ -68,6 +68,7 @@ class BorradorRostos:
     """Usa o YuNet (mais preciso) se o arquivo existir em models/; senão, o Haar do OpenCV."""
 
     CAMINHO_YUNET = RAIZ / "models" / "face_detection_yunet_2023mar.onnx"
+    LADO_MAX_YUNET = 1280
 
     def __init__(self) -> None:
         self._yunet = None
@@ -85,10 +86,13 @@ class BorradorRostos:
 
     def _rostos(self, img: np.ndarray) -> list[tuple[int, int, int, int]]:
         if self._yunet is not None:
+            # foto de celular (4000+ px) é reduzida para detectar rápido; as caixas voltam à escala original
             h, w = img.shape[:2]
-            self._yunet.setInputSize((w, h))
-            _, faces = self._yunet.detect(img)
-            return [tuple(int(v) for v in f[:4]) for f in (faces if faces is not None else [])]
+            escala = min(1.0, self.LADO_MAX_YUNET / max(h, w))
+            menor = cv2.resize(img, None, fx=escala, fy=escala, interpolation=cv2.INTER_AREA) if escala < 1 else img
+            self._yunet.setInputSize((menor.shape[1], menor.shape[0]))
+            _, faces = self._yunet.detect(menor)
+            return [tuple(int(v / escala) for v in f[:4]) for f in (faces if faces is not None else [])]
         if self._haar is not None:
             cinza = cv2.equalizeHist(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY))
             return [tuple(int(v) for v in r) for r in

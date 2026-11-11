@@ -14,8 +14,6 @@ roboflow:                 # workspace/projeto do link universe.roboflow.com/<wor
   - workspace: street-lightv        # ruas à noite; "Streetlight" = cabeça da luminária acesa
     projeto: nighttime-streetlight-detection
     classes: {Streetlight: poste_aceso}   # "0" (poste inteiro) fica de fora: padrão de caixa diferente
-  - workspace: datasets-cobjh       # postes de dia; só a classe "off" (lâmpada apagada) entra
-    projeto: street-light-off
   - workspace: sba-pothole          # poste inteiro, dia e noite misturados: fica para relabel
     projeto: poles-dataset-e00t2
     classes: {}
@@ -24,6 +22,8 @@ roboflow:                 # workspace/projeto do link universe.roboflow.com/<wor
   # - datasets-cobjh/light_off: imagens geradas por IA (Gemini), caixas sem sentido
   # - cnn-maker/infras: banco de imagens/clipart (bueiro, placa, desenho de poste)
   # - carsmoke-detection/street-light-lbrt8: caixa do tamanho da imagem e rótulos on/off trocados
+  # - datasets-cobjh/street-light-off (10/11): a classe "off" ensinou o modelo a marcar a imagem
+  #   inteira como "apagado" no treino-base; postes de dia também não servem de evidência
   # versao: 3   <- opcional em cada item; sem isso baixa a mais recente
 
 busca_web:                # termos para scripts/coletar_web.py (Bing Imagens)
