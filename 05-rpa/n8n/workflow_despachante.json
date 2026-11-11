@@ -1,0 +1,85 @@
+{
+  "name": "Despachante - resumo da execucao",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "despachante-resumo",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0001-4000-8000-000000000001",
+      "name": "Webhook resumo",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "despachante-resumo"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.body.resumo.revisao_humana }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0002-4000-8000-000000000002",
+      "name": "Tem item para revisao?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "SEU_EMAIL@exemplo.com",
+        "subject": "=[Despachante] ATENCAO: {{ $json.body.resumo.revisao_humana }} ocorrencia(s) aguardam revisao humana",
+        "emailType": "text",
+        "message": "=Execucao {{ $json.body.execucao_id }} ({{ $json.body.data }})\n\nOcorrencias aguardando revisao humana: {{ $json.body.itens_revisao.join(', ') }}\nPara liberar, mude o status para APROVADO na tabela e rode o robo de novo.\n\nResumo: {{ $json.body.resumo.enviadas }} enviadas ({{ $json.body.resumo.urgentes }} urgentes), {{ $json.body.resumo.duplicadas }} duplicadas, {{ $json.body.resumo.falhas_dados }} com falha de dados, {{ $json.body.resumo.erros }} erros.",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0003-4000-8000-000000000003",
+      "name": "Gmail - precisa revisao",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [700, 200],
+      "credentials": { "gmailOAuth2": { "id": "CONFIGURAR", "name": "Gmail account" } }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "SEU_EMAIL@exemplo.com",
+        "subject": "=[Despachante] Execucao {{ $json.body.execucao_id }}: {{ $json.body.resumo.enviadas }} enviadas",
+        "emailType": "text",
+        "message": "=Execucao {{ $json.body.execucao_id }} ({{ $json.body.data }})\n\n{{ $json.body.resumo.enviadas }} enviadas ({{ $json.body.resumo.urgentes }} urgentes, {{ $json.body.resumo.normais }} normais)\n{{ $json.body.resumo.duplicadas }} duplicadas\n{{ $json.body.resumo.falhas_dados }} com falha de dados\n{{ $json.body.resumo.erros }} erros\n\nNenhuma ocorrencia aguardando revisao humana.",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0004-4000-8000-000000000004",
+      "name": "Gmail - resumo",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [700, 400],
+      "credentials": { "gmailOAuth2": { "id": "CONFIGURAR", "name": "Gmail account" } }
+    }
+  ],
+  "connections": {
+    "Webhook resumo": {
+      "main": [[{ "node": "Tem item para revisao?", "type": "main", "index": 0 }]]
+    },
+    "Tem item para revisao?": {
+      "main": [
+        [{ "node": "Gmail - precisa revisao", "type": "main", "index": 0 }],
+        [{ "node": "Gmail - resumo", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "tags": []
+}
