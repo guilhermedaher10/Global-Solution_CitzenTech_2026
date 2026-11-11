@@ -62,9 +62,9 @@ app.add_middleware(
 
 
 def _openapi_formulario_simples() -> dict:
-    """Na página /docs, campo opcional (`float | None`) vira "número OU nulo" e o Swagger, sem saber
-    desenhar isso, preenche sozinho com "string"/0 e manda junto. Aqui simplificamos só os
-    esquemas de ENTRADA de formulário (Body_*); o contrato de resposta continua dizendo "pode ser nulo".
+    """Na página /docs, o Swagger preenche sozinho os campos opcionais do formulário ("string", 0 ou o
+    mínimo permitido) e manda junto. Aqui, só nos esquemas de ENTRADA de formulário (Body_*), o
+    "número OU nulo" vira "número" com exemplo vazio; o contrato de resposta continua dizendo "pode ser nulo".
     """
     if app.openapi_schema:
         return app.openapi_schema
@@ -82,6 +82,8 @@ def _openapi_formulario_simples() -> dict:
                 if len(tipos) == 1:
                     del campo["anyOf"]
                     campo.update(tipos[0])
+                    # sem exemplo, o Swagger inventa um (0 = mínimo, "string"); vazio = não envia
+                    campo["example"] = ""
     app.openapi_schema = schema
     return schema
 

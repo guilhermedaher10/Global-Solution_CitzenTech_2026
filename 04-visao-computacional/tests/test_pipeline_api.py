@@ -111,4 +111,5 @@ def test_docs_nao_preenche_campos_opcionais_sozinho(cliente):
     form = next(v for k, v in esquemas.items() if k.startswith("Body_") and "analisar" in k)["properties"]
     for campo in ("sensor_lux", "sensor_distancia_cm", "alerta", "latitude"):
         assert "anyOf" not in form[campo] and "type" in form[campo], campo
+        assert form[campo]["example"] == "", campo     # sem isso o Swagger inventa 0 ou "string"
     assert "anyOf" in esquemas["Analise"]["properties"]["sensor_lux"]   # resposta continua anulável
