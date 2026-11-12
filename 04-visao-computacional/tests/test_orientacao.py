@@ -105,3 +105,13 @@ def test_api_continua_ok_com_genai_fora_do_ar():
         assert r.json()["orientacao"][0]["status"] == "indisponivel"
         saude = c.get("/saude").json()
         assert saude["status"] == "ok" and saude["genai"]["no_ar"] is False
+
+
+def test_aquecimento_enche_o_cache(genai_url):
+    cli = ClienteGenAI(genai_url, cidade="Aquecida")
+    cli.aquecer().join(timeout=10)
+    antes = len(PERGUNTAS_RECEBIDAS)
+    o = cli.orientar([TipoChamado.conserto_poste, TipoChamado.buraco])
+    assert len(PERGUNTAS_RECEBIDAS) == antes          # veio tudo do cache
+    assert o[0].status == StatusOrientacao.ok
+    assert ClienteGenAI("").aquecer() is None

@@ -9,13 +9,15 @@ o GenAI responde "não consta" e nós repassamos isso, sem inventar.
 - falha/timeout vira `status: indisponivel` com o motivo;
 - respostas iguais ficam em cache (o LLM roda com temperatura 0, então a resposta se repete).
 
-Variáveis: GENAI_URL (ex.: http://localhost:8001), GENAI_TIMEOUT (s, padrão 60), GENAI_CIDADE
+Variáveis: GENAI_URL (ex.: http://localhost:8001), GENAI_TIMEOUT (s, padrão 120), GENAI_CIDADE
 (padrão "São Paulo"). Perguntas por tipo de chamado em configs/regras.yaml (orientacao.perguntas).
 """
 from __future__ import annotations
 
 import json
+import logging
 import os
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -24,12 +26,13 @@ from .config import regras
 from .schemas import Orientacao, StatusOrientacao, TipoChamado
 
 CACHE_SEGUNDOS = 3600
+log = logging.getLogger("visao.orientacao")
 
 
 class ClienteGenAI:
     def __init__(self, url: str | None = None, timeout: float | None = None, cidade: str | None = None):
         self.url = (url if url is not None else os.getenv("GENAI_URL", "")).rstrip("/") or None
-        self.timeout = timeout if timeout is not None else float(os.getenv("GENAI_TIMEOUT", "60"))
+        self.timeout = timeout if timeout is not None else float(os.getenv("GENAI_TIMEOUT", "120"))
         self.cidade = cidade or os.getenv("GENAI_CIDADE", "São Paulo")
         self._cache: dict[str, tuple[float, dict]] = {}
 
@@ -37,10 +40,10 @@ class ClienteGenAI:
     def configurado(self) -> bool:
         return self.url is not None
 
-    def _post(self, rota: str, corpo: dict) -> dict:
+    def _post(self, rota: str, corpo: dict, timeout: float | None = None) -> dict:
         req = urllib.request.Request(f"{self.url}{rota}", data=json.dumps(corpo).encode(),
                                      headers={"Content-Type": "application/json"}, method="POST")
-        with urllib.request.urlopen(req, timeout=self.timeout) as r:
+        with urllib.request.urlopen(req, timeout=timeout or self.timeout) as r:
             return json.loads(r.read())
 
     def saude(self) -> dict:
@@ -53,14 +56,36 @@ class ClienteGenAI:
         except Exception as e:  # noqa: BLE001 - qualquer falha = fora do ar
             return {"configurado": True, "no_ar": False, "url": self.url, "erro": type(e).__name__}
 
-    def perguntar(self, pergunta: str) -> dict:
+    def perguntar(self, pergunta: str, timeout: float | None = None) -> dict:
         agora = time.monotonic()
         guardado = self._cache.get(pergunta)
         if guardado and agora - guardado[0] < CACHE_SEGUNDOS:
             return guardado[1]
-        resposta = self._post("/consulta", {"pergunta": pergunta})
+        resposta = self._post("/consulta", {"pergunta": pergunta}, timeout)
         self._cache[pergunta] = (agora, resposta)
         return resposta
+
+    def aquecer(self) -> threading.Thread | None:
+        """Em segundo plano, faz uma vez cada pergunta configurada.
+
+        Medido: a 1ª resposta do GenAI leva ~100 s (o Ollama carrega o modelo na GPU); depois, ~7 s.
+        Aquecendo na subida da API, o modelo já está carregado e as respostas ficam no cache
+        quando o primeiro cidadão chegar.
+        """
+        if not self.configurado:
+            return None
+
+        def _rodar():
+            for modelo in regras().get("orientacao", {}).get("perguntas", {}).values():
+                try:
+                    self.perguntar(modelo.format(cidade=self.cidade), timeout=max(self.timeout, 300))
+                except Exception as e:  # noqa: BLE001 - aquecimento é melhor esforço
+                    log.warning("aquecimento do GenAI falhou: %s", e)
+                    return
+
+        t = threading.Thread(target=_rodar, name="aquecer-genai", daemon=True)
+        t.start()
+        return t
 
     def orientar(self, tipos: list[TipoChamado]) -> list[Orientacao]:
         modelos = regras().get("orientacao", {}).get("perguntas", {})

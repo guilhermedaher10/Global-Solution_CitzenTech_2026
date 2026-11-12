@@ -166,6 +166,10 @@ GENAI_URL=http://localhost:8001 uvicorn api.main:app --port 8000      # PowerShe
 `configs/regras.yaml` (`orientacao.perguntas`) e a cidade em `GENAI_CIDADE` (padrão São Paulo). Respostas
 repetidas vêm do cache (o LLM roda com temperatura 0).
 
+**Tempo de resposta (medido com o GenAI real, RTX 4060 Ti):** a 1ª pergunta leva ~100 s (o Ollama carrega o
+modelo na GPU); com o modelo carregado, ~7 s; repetida, instantânea (cache). Por isso a Visão **aquece** o GenAI
+ao subir: faz cada pergunta configurada em segundo plano. `GENAI_TIMEOUT` padrão: 120 s.
+
 ### `POST /v1/alerta-robo` (JSON, sem foto)
 
 É o que o robô do Maker Lab chama quando o LDR ou o ultrassônico dispara. Funciona **mesmo sem o modelo

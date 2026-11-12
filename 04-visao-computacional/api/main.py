@@ -11,7 +11,7 @@ Variáveis de ambiente (todas opcionais):
     CORS_ORIGENS     origens liberadas, separadas por vírgula (padrão: *)
     MAX_UPLOAD_MB    tamanho máximo da foto (padrão: 10)
     GENAI_URL        API do GenAI (01-generative-ai), ex.: http://localhost:8001 (sem ela, sem orientação)
-    GENAI_TIMEOUT    segundos de espera pelo GenAI (padrão: 60)
+    GENAI_TIMEOUT    segundos de espera pelo GenAI (padrão: 120)
     GENAI_CIDADE     cidade usada nas perguntas ao GenAI (padrão: São Paulo)
 """
 from __future__ import annotations
@@ -49,6 +49,7 @@ async def lifespan(app: FastAPI):
         log.error("modelo não carregado: %s", e)
     _estado["borrador"] = BorradorRostos()
     _estado["genai"] = ClienteGenAI()
+    _estado["genai"].aquecer()   # carrega o LLM do GenAI e enche o cache em segundo plano
     yield
 
 
