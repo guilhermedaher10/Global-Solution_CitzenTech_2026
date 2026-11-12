@@ -95,9 +95,26 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v2
+      # Gitleaks direto (não o gitleaks-action): o action varre "primeiro_commit^..último" e quebra
+      # quando o PR começa num commit sem pai (ex.: upload pelo site, como no PR #8). Aqui varremos
+      # "commits do PR que não estão na base", que funciona com qualquer histórico.
+      - name: Gitleaks nos commits do PR
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          VERSAO: 8.24.3
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP"
+          curl -sSLO "https://github.com/gitleaks/gitleaks/releases/download/v${VERSAO}/gitleaks_${VERSAO}_linux_x64.tar.gz"
+          curl -sSLO "https://github.com/gitleaks/gitleaks/releases/download/v${VERSAO}/gitleaks_${VERSAO}_checksums.txt"
+          grep "gitleaks_${VERSAO}_linux_x64.tar.gz" "gitleaks_${VERSAO}_checksums.txt" | sha256sum -c -
+          tar xzf "gitleaks_${VERSAO}_linux_x64.tar.gz" gitleaks
+          cd "$GITHUB_WORKSPACE"
+          "$RUNNER_TEMP/gitleaks" git --redact -v --no-banner --log-opts="${BASE_SHA}..${HEAD_SHA}" . || {
+            echo "::error::Gitleaks encontrou senha/chave nos commits do PR. Remova o segredo, troque a chave e faça push de novo."
+            exit 1
+          }
 
   python:
     name: python
