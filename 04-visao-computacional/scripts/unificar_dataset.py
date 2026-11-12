@@ -86,7 +86,7 @@ def ler_label(caminho: Path) -> list[tuple[int, float, float, float, float]]:
 
 
 def split_por_hash(nome: str) -> str:
-    h = int(hashlib.md5(nome.encode()).hexdigest(), 16) % 100
+    h = int(hashlib.sha256(nome.encode()).hexdigest(), 16) % 100
     return "train" if h < 80 else ("valid" if h < 90 else "test")
 
 

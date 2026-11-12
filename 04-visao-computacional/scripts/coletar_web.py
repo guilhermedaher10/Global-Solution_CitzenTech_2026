@@ -121,7 +121,7 @@ def baixar(cliente: httpx.Client, item: dict, termo: str) -> dict | None:
     except httpx.HTTPError:
         return None
     ext = {"image/png": ".png", "image/webp": ".webp"}.get(tipo.split(";")[0], ".jpg")
-    nome = hashlib.sha1(item["url_imagem"].encode()).hexdigest()[:16] + ext
+    nome = hashlib.sha256(item["url_imagem"].encode()).hexdigest()[:16] + ext
     pasta = PASTA_WEB / item["fonte"].split("-")[0]
     pasta.mkdir(parents=True, exist_ok=True)
     (pasta / nome).write_bytes(r.content)
