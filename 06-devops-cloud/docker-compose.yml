@@ -1,0 +1,104 @@
+# Stack completa do MVP no seu PC: um comando sobe tudo, já integrado e monitorado.
+#
+#   cd 06-devops-cloud
+#   copy .env.example .env            # (Linux/Mac: cp) e troque a senha do Grafana
+#   docker compose up -d --build
+#
+#   Visão (API + /docs) ...... http://localhost:8000/docs
+#   GenAI (assistente) ....... http://localhost:8001/docs
+#   Prometheus ............... http://localhost:9090      (alertas em /alerts)
+#   Grafana .................. http://localhost:3000      (painel "Ruas Escuras · 4 métricas de ouro")
+#
+# Monitorar a NUVEM em vez do local: ver README (perfil "nuvem").
+name: ruas-escuras
+
+x-endurecido: &endurecido # boas práticas de container aplicadas a todos os serviços nossos
+  security_opt: ["no-new-privileges:true"]
+  cap_drop: [ALL]
+  restart: unless-stopped
+
+services:
+  # ---------------------------------------------------------------- produto
+  visao:
+    <<: *endurecido
+    build: ../04-visao-computacional
+    image: ruas-escuras/visao:local
+    ports: ["8000:8000"]
+    environment:
+      GENAI_URL: http://genai:8001
+      GENAI_CIDADE: São Paulo
+      METRICS_TOKEN: ${METRICS_TOKEN:-}
+    read_only: true            # sistema de arquivos imutável; só /tmp é gravável
+    tmpfs: [/tmp]
+    depends_on:
+      genai:
+        condition: service_started
+
+  genai:
+    <<: *endurecido
+    build:
+      context: ../01-generative-ai                       # código do Gabriel, sem mexer na pasta dele
+      dockerfile: ../06-devops-cloud/docker/genai.Dockerfile
+    image: ruas-escuras/genai:local
+    ports: ["8001:8001"]
+    environment:
+      OLLAMA_URL: http://ollama:11434
+    depends_on:
+      ollama-modelos:
+        condition: service_completed_successfully
+
+  ollama:
+    image: ollama/ollama:0.40.16
+    volumes: [ollama:/root/.ollama]
+    restart: unless-stopped
+    # Placa NVIDIA no Docker Desktop (WSL2)? Descomente: a resposta cai de ~1 min para ~7 s.
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices: [{ driver: nvidia, count: all, capabilities: [gpu] }]
+
+  ollama-modelos: # roda uma vez: baixa os 2 modelos do GenAI (~1,3 GB, fica no volume)
+    image: ollama/ollama:0.40.16
+    environment:
+      OLLAMA_HOST: ollama:11434
+    entrypoint: ["/bin/sh", "-c", "ollama pull nomic-embed-text && ollama pull qwen2.5:1.5b-instruct"]
+    depends_on: [ollama]
+    restart: "no"
+
+  # ---------------------------------------------------------------- observabilidade
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    ports: ["9090:9090"]
+    # o token do /metrics da nuvem vem do .env e vira um arquivo só dentro do container (/tmp)
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        printf '%s' "$${METRICS_TOKEN}" > /tmp/metrics-token &&
+        exec /bin/prometheus --config.file=/etc/prometheus/prometheus.yml
+        --storage.tsdb.path=/prometheus --storage.tsdb.retention.time=7d
+    environment:
+      METRICS_TOKEN: ${METRICS_TOKEN:-}
+    volumes:
+      - ./observabilidade/prometheus:/etc/prometheus:ro
+      - prometheus:/prometheus
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.3.1
+    ports: ["3000:3000"]
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_SENHA:?defina GRAFANA_SENHA no .env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+    volumes:
+      - ./observabilidade/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observabilidade/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana:/var/lib/grafana
+    depends_on: [prometheus]
+    restart: unless-stopped
+
+volumes:
+  ollama:
+  prometheus:
+  grafana:

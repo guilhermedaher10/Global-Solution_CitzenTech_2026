@@ -1,0 +1,8 @@
+# Copie para terraform.tfvars (o .gitignore da raiz já impede que *.tfvars vá para o Git).
+# E-mail é dado pessoal (LGPD): fica só na sua máquina e, no pipeline, no secret ALERTA_EMAIL.
+emails_alerta = ["seu-email@exemplo.com"]
+
+# 0 = dorme sem uso (padrão, custo ~zero) | 1 = sempre acordada (semana da demo)
+# visao_min_replicas = 0
+
+# orcamento_mensal = 100

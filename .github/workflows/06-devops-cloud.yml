@@ -1,0 +1,196 @@
+# Pipeline DevSecOps do MVP (disciplina Secure DevOps & Cloud).
+#
+#   PR para main   -> segurança (Gitleaks, Semgrep) + build + Trivy + terraform plan   (nada é publicado)
+#   push na main   -> tudo acima + publica a imagem no ACR + deploy no Container Apps + smoke test
+#
+# Qualquer achado HIGH/CRITICAL, segredo vazado ou código inseguro BARRA o deploy.
+# Autenticação na Azure por OIDC: nenhuma senha guardada no GitHub, só IDs (em Secrets).
+name: 06-devops-cloud
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "04-visao-computacional/**"
+      - "06-devops-cloud/**"
+      - ".github/workflows/06-devops-cloud.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "04-visao-computacional/**"
+      - "06-devops-cloud/**"
+      - ".github/workflows/06-devops-cloud.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # OIDC com a Azure
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  IMAGEM: visao
+  GITLEAKS_VERSAO: 8.24.3
+  TRIVY_IMAGEM: aquasec/trivy:0.57.1
+  TF_DIR: 06-devops-cloud/terraform
+  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_USE_OIDC: "true"
+
+jobs:
+  # ------------------------------------------------------------------ 1. segredos
+  gitleaks:
+    name: Gitleaks (segredos)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Instalar Gitleaks (checksum conferido)
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP"
+          base="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSAO}"
+          curl -sSLO "$base/gitleaks_${GITLEAKS_VERSAO}_linux_x64.tar.gz"
+          curl -sSLO "$base/gitleaks_${GITLEAKS_VERSAO}_checksums.txt"
+          grep "linux_x64.tar.gz" "gitleaks_${GITLEAKS_VERSAO}_checksums.txt" | sha256sum -c -
+          tar xzf "gitleaks_${GITLEAKS_VERSAO}_linux_x64.tar.gz" gitleaks
+      - name: Varrer os commits deste push/PR
+        env:
+          ANTES: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          DEPOIS: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          # 1º push de uma branch não tem "antes": varre o histórico inteiro
+          if [[ -z "$ANTES" || "$ANTES" =~ ^0+$ ]]; then intervalo="$DEPOIS"; else intervalo="$ANTES..$DEPOIS"; fi
+          "$RUNNER_TEMP/gitleaks" git --redact -v --no-banner --log-opts="$intervalo" .
+
+  # ------------------------------------------------------------------ 2. código inseguro
+  semgrep:
+    name: Semgrep (SAST)
+    runs-on: ubuntu-latest
+    container: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      - name: Regras de Python, Dockerfile, Terraform e segredos
+        run: |
+          semgrep scan --metrics=off --error \
+            --config p/python --config p/dockerfile --config p/terraform --config p/secrets \
+            04-visao-computacional 06-devops-cloud
+
+  # ------------------------------------------------------------------ 3. build + vulnerabilidades
+  build:
+    name: Build + Trivy
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: tag
+        run: echo "tag=${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+      - name: Build da imagem da Visão
+        run: docker build -t "$IMAGEM:${{ steps.tag.outputs.tag }}" 04-visao-computacional
+      - name: Trivy na imagem (barra HIGH/CRITICAL com correção disponível)
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock "$TRIVY_IMAGEM" image \
+            --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --no-progress \
+            "$IMAGEM:${{ steps.tag.outputs.tag }}"
+      - name: Trivy no Terraform (configuração insegura)
+        run: |
+          docker run --rm -v "$PWD:/src" "$TRIVY_IMAGEM" config \
+            --severity HIGH,CRITICAL --exit-code 1 /src/06-devops-cloud/terraform
+      - name: Guardar a imagem para o deploy
+        if: github.event_name != 'pull_request'
+        run: docker save "$IMAGEM:${{ steps.tag.outputs.tag }}" | gzip > imagem.tar.gz
+      - uses: actions/upload-artifact@v4
+        if: github.event_name != 'pull_request'
+        with:
+          name: imagem
+          path: imagem.tar.gz
+          retention-days: 1
+
+  # ------------------------------------------------------------------ 4. infraestrutura
+  terraform:
+    name: Terraform (plan / apply)
+    runs-on: ubuntu-latest
+    outputs:
+      acr: ${{ steps.saida.outputs.acr }}
+      app: ${{ steps.saida.outputs.app }}
+      url: ${{ steps.saida.outputs.url }}
+    defaults:
+      run:
+        working-directory: ${{ env.TF_DIR }}
+    env:
+      TF_VAR_emails_alerta: '["${{ secrets.ALERTA_EMAIL }}"]'
+      TF_IN_AUTOMATION: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.17.1
+          terraform_wrapper: false
+      - run: terraform fmt -check -recursive
+      - name: terraform init (state remoto, login OIDC)
+        run: |
+          terraform init -input=false \
+            -backend-config="resource_group_name=${{ secrets.TFSTATE_RG }}" \
+            -backend-config="storage_account_name=${{ secrets.TFSTATE_STORAGE }}" \
+            -backend-config="use_oidc=true"
+      - run: terraform validate
+      - run: terraform plan -input=false -out=plano.tfplan
+      - name: terraform apply (só na main)
+        if: github.event_name != 'pull_request'
+        run: terraform apply -input=false plano.tfplan
+      - id: saida
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "acr=$(terraform output -raw acr_nome)" >> "$GITHUB_OUTPUT"
+          echo "app=$(terraform output -raw container_app_nome)" >> "$GITHUB_OUTPUT"
+          echo "url=$(terraform output -raw url_visao)" >> "$GITHUB_OUTPUT"
+
+  # ------------------------------------------------------------------ 5. deploy
+  deploy:
+    name: Deploy no Azure Container Apps
+    if: github.event_name != 'pull_request'
+    needs: [gitleaks, semgrep, build, terraform] # qualquer um vermelho = não publica
+    runs-on: ubuntu-latest
+    # sem "environment:" de propósito: ele mudaria o subject do token OIDC e a credencial
+    # federada da Azure só confia em "refs/heads/main" e "pull_request" (bootstrap)
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: imagem
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Publicar a imagem no ACR
+        env:
+          ACR: ${{ needs.terraform.outputs.acr }}
+          TAG: ${{ needs.build.outputs.tag }}
+        run: |
+          docker load < imagem.tar.gz
+          az acr login --name "$ACR"
+          docker tag "$IMAGEM:$TAG" "$ACR.azurecr.io/$IMAGEM:$TAG"
+          docker push "$ACR.azurecr.io/$IMAGEM:$TAG"
+      - name: Trocar a versão em produção
+        env:
+          ACR: ${{ needs.terraform.outputs.acr }}
+          APP: ${{ needs.terraform.outputs.app }}
+          TAG: ${{ needs.build.outputs.tag }}
+        run: |
+          az containerapp update -n "$APP" -g rg-ruasescuras \
+            --image "$ACR.azurecr.io/$IMAGEM:$TAG" \
+            --set-env-vars MODELO_VERSAO="$TAG" -o none
+      - name: Smoke test (/saude responde 200)
+        env:
+          URL: ${{ needs.terraform.outputs.url }}
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS "$URL/saude"; then echo; echo "no ar: $URL"; exit 0; fi
+            sleep 10
+          done
+          echo "::error::$URL/saude não respondeu em 5 min"; exit 1
