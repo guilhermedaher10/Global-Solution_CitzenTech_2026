@@ -93,6 +93,22 @@ $federadas = @(
   @{ name = "github-main"; subject = "repo:${Repo}:ref:refs/heads/main" },
   @{ name = "github-pr";   subject = "repo:${Repo}:pull_request" }
 )
+# O GitHub passou a emitir o subject com os IDs imutáveis do dono e do repositório
+# ("repo:dono@123/repo@456:..."), que não mudam se o repositório for renomeado.
+# Cadastramos os dois formatos; os IDs vêm da API do GitHub (gh CLI).
+$gh = Get-Command gh -ErrorAction SilentlyContinue
+if ($gh) {
+  $ids = & gh api "repos/$Repo" --jq '"\(.owner.id) \(.id)"'
+  if ($LASTEXITCODE -eq 0 -and $ids) {
+    $donoId, $repoId = $ids -split " "
+    $dono, $nome = $Repo -split "/"
+    $base = "repo:${dono}@${donoId}/${nome}@${repoId}"
+    $federadas += @{ name = "github-main-id"; subject = "${base}:ref:refs/heads/main" }
+    $federadas += @{ name = "github-pr-id";   subject = "${base}:pull_request" }
+  }
+} else {
+  Write-Warning "gh CLI não encontrado: cadastre também o subject com IDs (repo:dono@ID/repo@ID:...)"
+}
 $atuais = AzOk ad app federated-credential list --id $appId --query "[].name" -o tsv
 foreach ($f in $federadas) {
   if ($atuais -notcontains $f.name) {
