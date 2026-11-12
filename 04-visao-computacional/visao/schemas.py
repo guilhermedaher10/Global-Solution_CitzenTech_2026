@@ -9,7 +9,7 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
-VERSAO_CONTRATO = "1.1"   # 1.1: campos do robô (ultrassônico, alertas) e fusão sensor + foto
+VERSAO_CONTRATO = "1.2"   # 1.1: robô (ultrassônico, alertas) e fusão; 1.2: orientação do GenAI
 
 
 class Origem(str, Enum):
@@ -107,6 +107,24 @@ class Fusao(BaseModel):
     motivos: list[str]
 
 
+class StatusOrientacao(str, Enum):
+    ok = "ok"                      # o GenAI respondeu citando a fonte oficial
+    nao_consta = "nao_consta"      # a base oficial não cobre: não inventamos
+    indisponivel = "indisponivel"  # GenAI desligado, fora do ar ou lento demais
+
+
+class Orientacao(BaseModel):
+    """Resposta do assistente do GenAI (01) para o tipo de chamado: prazo/canal com fonte citada."""
+    tipo_chamado: TipoChamado
+    pergunta: str
+    status: StatusOrientacao
+    resposta: str | None = None
+    citacao: str | None = Field(default=None, description="Id do trecho da base oficial usado")
+    trecho_citado: str | None = None
+    aviso: str | None = None
+    motivo: str | None = Field(default=None, description="Por que não há resposta (nao_consta/indisponivel)")
+
+
 class ModeloInfo(BaseModel):
     nome: str
     versao: str
@@ -130,6 +148,8 @@ class Analise(BaseModel):
     modelo: ModeloInfo
     imagem_anonimizada_base64: str | None = Field(
         default=None, description="JPEG com rostos borrados; só quando pedido")
+    orientacao: list[Orientacao] | None = Field(
+        default=None, description="Prazo/canal oficial via GenAI; só com incluir_orientacao e chamado aberto")
 
 
 class AlertaRobo(BaseModel):

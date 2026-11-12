@@ -38,10 +38,10 @@ O modelo **enxerga**. Quem **decide** são regras auditáveis e, no fim, uma pes
 | Caminho | O quê |
 |---|---|
 | `visao/` | Biblioteca: detector, regras, fusão sensor + foto, privacidade, pipeline, painel de RA, contrato (schemas) |
-| `api/main.py` | API FastAPI: `POST /v1/analisar` (foto + sensores), `POST /v1/alerta-robo` (só sensores), `GET /saude` |
+| `api/main.py` | API FastAPI: `POST /v1/analisar` (foto + sensores, orientação do GenAI), `POST /v1/alerta-robo` (só sensores), `GET /saude` |
 | `scripts/` | Coleta → unificação → treino → avaliação → tempo real (passo a passo abaixo) |
 | `configs/` | Classes e aliases, regras de negócio, fontes de dados |
-| `tests/` | 28 testes (regras, fusão com o robô, EXIF/privacidade, pipeline, API), sem precisar de GPU |
+| `tests/` | 35 testes (regras, fusão com o robô, integração GenAI, EXIF/privacidade, pipeline, API), sem precisar de GPU |
 | `docs/` | [Integração/contrato](docs/integracao.md) · [Dataset](docs/dataset.md) · [Ética e LGPD](docs/etica-lgpd.md) · [Relatório](docs/relatorio.md) · [Roteiro do vídeo](docs/roteiro-video.md) |
 | `results/` | Métricas, curvas, matriz de confusão e exemplos (gerados pelos scripts) |
 | `models/best.pt` | Modelo treinado |
@@ -57,7 +57,7 @@ python -m venv .venv
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
 pip install -r requirements-dados.txt -r requirements-dev.txt
 
-pytest                                     # 28 testes
+pytest                                     # 35 testes
 ```
 
 ### 1. Dataset → 2. Treino → 3. Avaliação
@@ -90,7 +90,11 @@ curl -F "imagem=@rua.jpg" -F "origem=cidadao" http://localhost:8000/v1/analisar
 docker build -t ruas-escuras-visao . && docker run -p 8000:8000 ruas-escuras-visao
 ```
 
-### 6. Robô do Maker Lab (LDR + ultrassônico + GPS, sem câmera)
+### 6. Integração com o GenAI (01)
+Com `GENAI_URL` definida, `incluir_orientacao=true` devolve o prazo/canal oficial do chamado com a fonte citada
+(ou "não consta"). Detalhes em [docs/integracao.md](docs/integracao.md).
+
+### 7. Robô do Maker Lab (LDR + ultrassônico + GPS, sem câmera)
 O robô **desconfia** (sensor dispara → `POST /v1/alerta-robo` → suspeita + LED) e a **foto confirma** e diz o tipo
 do chamado: conserto de poste, instalação de iluminação, poda ou buraco. Detalhes e exemplo para ESP32 em
 [docs/integracao.md](docs/integracao.md).

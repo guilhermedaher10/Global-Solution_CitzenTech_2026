@@ -1,6 +1,6 @@
 # Integração: como os outros componentes usam a Visão
 
-A Visão expõe **uma API HTTP** e **um formato de JSON** (o contrato, versão `1.1`).
+A Visão expõe **uma API HTTP** e **um formato de JSON** (o contrato, versão `1.2`).
 Quem precisa saber se uma foto é evidência de rua escura chama a API. Ninguém precisa entender o YOLO.
 
 ```
@@ -37,6 +37,7 @@ diz para qual setor ele vai.
 | `sensor_distancia_cm` | número | não | Leitura do ultrassônico do robô |
 | `alerta` | texto | não | O que disparou, separado por vírgula: `escuro`, `buraco` ou `escuro,buraco` |
 | `retornar_imagem` | bool | não | Devolve a foto com rostos borrados, em base64 |
+| `incluir_orientacao` | bool | não | Pergunta ao GenAI o prazo/canal oficial do chamado (ver abaixo) |
 
 ```bash
 curl -F "imagem=@rua.jpg" -F "origem=robo" -F "sensor_lux=2.4" \
@@ -58,7 +59,7 @@ if analise["validacao"]["abrir_chamado"]:
 
 ```json
 {
-  "versao_contrato": "1.1",
+  "versao_contrato": "1.2",
   "id_captura": "b58cccb5-ab16-43cb-8f35-180c00b2939d",
   "timestamp": "2026-11-09T22:12:45-03:00",
   "hora_captura": null,
@@ -101,7 +102,7 @@ if analise["validacao"]["abrir_chamado"]:
 | **Backend / app do cidadão** | `validacao.abrir_chamado`, `validacao.motivos` | Abrir o chamado ou dizer ao cidadão por que a foto não serviu ("parece ser de dia") |
 | **RPA** | `prioridade.nivel`, `localizacao`, `id_captura` | Ordenar a fila, agrupar chamados do mesmo trecho e registrar no sistema da prefeitura (ex.: SP156) |
 | **Big Data** | o JSON inteiro (Bronze) | Prata: tipar e deduplicar por `id_captura`; Ouro: fato `capturas` com dimensões tempo, local, origem e modelo |
-| **GenAI** | `resumo`, `validacao.motivos`, `prioridade.fatores` | Gerar o texto do chamado e responder ao cidadão com base em dados, sem inventar |
+| **GenAI** | é chamado pela Visão (`POST /consulta`) e aparece em `orientacao` | Prazo e canal oficiais com fonte citada, devolvidos junto com o chamado |
 | **Maker Lab (robô)** | envia o alerta a `/v1/alerta-robo`; lê `acao_robo` | Acender o LED/buzzer certo; o ponto vira suspeita até uma foto confirmar |
 | **DevOps** | `GET /saude`, código HTTP, latência | Health check, dashboard das 4 métricas de ouro, alerta se `modelo_carregado=false` |
 
@@ -131,6 +132,44 @@ if analise["validacao"]["abrir_chamado"]:
 > A classe `buraco` entra no modelo no próximo treino (dataset público de buracos). Até lá, buraco só do
 > ultrassônico fica como suspeita, que é o comportamento correto: não abrimos chamado sem prova.
 
+### Campo `orientacao` (novo na 1.2): integração com o GenAI
+
+Quando o chamado é aberto e o pedido traz `incluir_orientacao=true`, a Visão pergunta ao assistente do
+**GenAI (01-generative-ai)** o prazo/canal oficial daquele tipo de serviço e devolve a resposta **com o trecho
+da fonte oficial**. Se a base não cobre, vem `nao_consta` (não inventamos). Se o GenAI estiver desligado ou lento,
+vem `indisponivel` e a análise continua normal.
+
+```json
+"orientacao": [
+  {
+    "tipo_chamado": "conserto_poste",
+    "pergunta": "Qual o prazo para consertar a iluminação pública em São Paulo?",
+    "status": "ok",
+    "resposta": "Normalmente em até 24 horas.",
+    "citacao": "SP-prazo",
+    "trecho_citado": "São Paulo (capital): normalmente a manutenção da iluminação pública é concluída em até 24 horas. …",
+    "aviso": "Pré-orientação automática. Confirme com o canal oficial da prefeitura (humano no circuito).",
+    "motivo": null
+  }
+]
+```
+
+Como ligar (a API do GenAI usa a porta 8000 por padrão, então ela sobe na **8001**):
+```bash
+# terminal 1: GenAI (precisa do Ollama com qwen2.5:1.5b-instruct e nomic-embed-text)
+cd 01-generative-ai && uvicorn src.api:app --port 8001
+# terminal 2: Visão apontando para ele
+cd 04-visao-computacional
+GENAI_URL=http://localhost:8001 uvicorn api.main:app --port 8000      # PowerShell: $env:GENAI_URL="http://localhost:8001"
+```
+`GET /saude` mostra `"genai": {"configurado": true, "no_ar": true}`. As perguntas por tipo de chamado ficam em
+`configs/regras.yaml` (`orientacao.perguntas`) e a cidade em `GENAI_CIDADE` (padrão São Paulo). Respostas
+repetidas vêm do cache (o LLM roda com temperatura 0).
+
+**Tempo de resposta (medido com o GenAI real, RTX 4060 Ti):** a 1ª pergunta leva ~100 s (o Ollama carrega o
+modelo na GPU); com o modelo carregado, ~7 s; repetida, instantânea (cache). Por isso a Visão **aquece** o GenAI
+ao subir: faz cada pergunta configurada em segundo plano. `GENAI_TIMEOUT` padrão: 120 s.
+
 ### `POST /v1/alerta-robo` (JSON, sem foto)
 
 É o que o robô do Maker Lab chama quando o LDR ou o ultrassônico dispara. Funciona **mesmo sem o modelo
@@ -144,7 +183,7 @@ carregado**. Se `alerta` vier vazio, a API deduz pelas leituras (`sensor_lux < 5
 Resposta (curta, para a placa ler):
 ```json
 {
-  "versao_contrato": "1.1", "recebido": true,
+  "versao_contrato": "1.2", "recebido": true,
   "id_alerta": "1f0c…", "timestamp": "2026-11-10T21:40:12-03:00",
   "status": "suspeita",
   "alertas": ["escuro", "buraco"],
