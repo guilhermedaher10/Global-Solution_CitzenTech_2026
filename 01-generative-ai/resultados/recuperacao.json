@@ -1,0 +1,522 @@
+[
+ {
+  "id": "q01",
+  "split": "teste",
+  "tipo": "resposta",
+  "top1": 0.8020147085189819,
+  "ids": [
+   "POA-poste-caido-prazo",
+   "POA-poste-caido-descricao",
+   "POA-poste-caido-canais"
+  ],
+  "hit1": true,
+  "hit3": true
+ },
+ {
+  "id": "q02",
+  "split": "dev",
+  "tipo": "resposta",
+  "top1": 0.7913448810577393,
+  "ids": [
+   "POA-apagada-prazo",
+   "POA-apagada-descricao",
+   "POA-apagada-canais"
+  ],
+  "hit1": true,
+  "hit3": true
+ },
+ {
+  "id": "q03",
+  "split": "teste",
+  "tipo": "resposta",
+  "top1": 0.7703515887260437,
+  "ids": [
+   "POA-oscilante-descricao",
+   "POA-faiscando-descricao",
+   "POA-ausente-descricao"
+  ],
+  "hit1": true,
+  "hit3": true
+ },
+ {
+  "id": "q04",
+  "split": "teste",
+  "tipo": "resposta",
+  "top1": 0.8171172142028809,
+  "ids": [
+   "POA-faiscando-descricao",
+   "POA-faiscando-canais",
+   "POA-ausente-descricao"
+  ],
+  "hit1": false,
+  "hit3": true
+ },
+ {
+  "id": "q05",
+  "split": "dev",
+  "tipo": "resposta",
+  "top1": 0.8247144222259521,
+  "ids": [
+   "POA-contato-smsurb",
+   "POA-oscilante-descricao",
+   "POA-faiscando-descricao"
+  ],
+  "hit1": true,
+  "hit3": true
+ },
+ {
+  "id": "q06",
+  "split": "teste",
+  "tipo": "resposta",
+  "top1": 0.8093975782394409,
+  "ids": [
+   "POA-pendurado-prazo",
+   "POA-pendurado-descricao",
+   "POA-pendurado-canais"
+  ],
+  "hit1": true,
+  "hit3": true
+ },
+ {
+  "id": "q07",
+  "split": "teste",
+  "tipo": "resposta",
+  "top1": 0.8487404584884644,
+  "ids": [
+   "POA-legislacao",
+   "POA-atualizacao",
+   "POA-obstruidos-canais"
+  ],
+  "hit1": false,
+  "hit3": true
+ },
+ {
+  "id": "q08",
+  "split": "dev",
+  "tipo": "resposta",
+  "top1": 0.7550504803657532,
+  "ids": [
+   "POA-faiscando-prazo",
+   "POA-oscilante-descricao",
+   "POA-oscilante-prazo"
+  ],
+  "hit1": false,
+  "hit3": true
+ },
+ {
+  "id": "q09",
+  "split": "teste",
+  "tipo": "resposta",
+  "top1": 0.741119384765625,
+  "ids": [
+   "POA-acesa-dia-prazo",
+   "POA-acesa-dia-descricao",
+   "POA-apagada-prazo"
+  ],
+  "hit1": true,
+  "hit3": true
+ },
+ {
+  "id": "q10",
+  "split": "teste",
+  "tipo": "resposta",
+  "top1": 0.749312162399292,
+  "ids": [
+   "POA-ausente-descricao",
+   "POA-ausente-prazo",
+   "POA-oscilante-prazo"
+  ],
+  "hit1": false,
+  "hit3": true
+ },
+ {
+  "id": "q11",
+  "split": "teste",
+  "tipo": "resposta",
+  "top1": 0.8020410537719727,
+  "ids": [
+   "POA-obstruidos-prazo",
+   "POA-obstruidos-descricao",
+   "POA-obstruidos-canais"
+  ],
+  "hit1": true,
+  "hit3": true
+ },
+ {
+  "id": "q12",
+  "split": "teste",
+  "tipo": "resposta",
+  "top1": 0.8230417370796204,
+  "ids": [
+   "POA-poste-caido-descricao",
+   "POA-atualizacao",
+   "POA-obstruidos-canais"
+  ],
+  "hit1": false,
+  "hit3": true
+ },
+ {
+  "id": "q13",
+  "split": "dev",
+  "tipo": "resposta",
+  "top1": 0.8198956251144409,
+  "ids": [
+   "SP-prazo",
+   "POA-oscilante-descricao",
+   "POA-poste-caido-descricao"
+  ],
+  "hit1": true,
+  "hit3": true
+ },
+ {
+  "id": "q14",
+  "split": "teste",
+  "tipo": "resposta",
+  "top1": 0.8181046843528748,
+  "ids": [
+   "SP-prazo",
+   "SP-responsavel",
+   "POA-faiscando-descricao"
+  ],
+  "hit1": false,
+  "hit3": true
+ },
+ {
+  "id": "q15",
+  "split": "teste",
+  "tipo": "resposta",
+  "top1": 0.799083948135376,
+  "ids": [
+   "SP-canais",
+   "POA-contato-smsurb",
+   "POA-oscilante-descricao"
+  ],
+  "hit1": true,
+  "hit3": true
+ },
+ {
+  "id": "q16",
+  "split": "dev",
+  "tipo": "resposta",
+  "top1": 0.7052732706069946,
+  "ids": [
+   "SP-prazo",
+   "POA-ausente-descricao",
+   "POA-faiscando-descricao"
+  ],
+  "hit1": true,
+  "hit3": true
+ },
+ {
+  "id": "q17",
+  "split": "teste",
+  "tipo": "resposta",
+  "top1": 0.7637373805046082,
+  "ids": [
+   "POA-contato-smsurb",
+   "POA-apagada-prazo",
+   "POA-acesa-dia-descricao"
+  ],
+  "hit1": true,
+  "hit3": true
+ },
+ {
+  "id": "q18",
+  "split": "teste",
+  "tipo": "resposta",
+  "top1": 0.800974428653717,
+  "ids": [
+   "POA-faiscando-prazo",
+   "POA-faiscando-descricao",
+   "POA-oscilante-prazo"
+  ],
+  "hit1": true,
+  "hit3": true
+ },
+ {
+  "id": "q19",
+  "split": "teste",
+  "tipo": "resposta",
+  "top1": 0.9123445749282837,
+  "ids": [
+   "POA-atualizacao",
+   "POA-legislacao",
+   "POA-obstruidos-canais"
+  ],
+  "hit1": true,
+  "hit3": true
+ },
+ {
+  "id": "q20",
+  "split": "dev",
+  "tipo": "resposta",
+  "top1": 0.7797411680221558,
+  "ids": [
+   "POA-poste-caido-descricao",
+   "POA-poste-caido-prazo",
+   "POA-poste-caido-canais"
+  ],
+  "hit1": false,
+  "hit3": true
+ },
+ {
+  "id": "q21",
+  "split": "teste",
+  "tipo": "resposta",
+  "top1": 0.8512886166572571,
+  "ids": [
+   "POA-ausente-descricao",
+   "POA-faiscando-descricao",
+   "POA-oscilante-descricao"
+  ],
+  "hit1": true,
+  "hit3": true
+ },
+ {
+  "id": "q22",
+  "split": "teste",
+  "tipo": "resposta",
+  "top1": 0.8265032768249512,
+  "ids": [
+   "POA-oscilante-prazo",
+   "POA-oscilante-descricao",
+   "POA-faiscando-descricao"
+  ],
+  "hit1": false,
+  "hit3": true
+ },
+ {
+  "id": "q23",
+  "split": "dev",
+  "tipo": "resposta",
+  "top1": 0.8681410551071167,
+  "ids": [
+   "POA-poste-caido-prazo",
+   "POA-poste-caido-canais",
+   "POA-poste-caido-descricao"
+  ],
+  "hit1": false,
+  "hit3": true
+ },
+ {
+  "id": "q24",
+  "split": "teste",
+  "tipo": "resposta",
+  "top1": 0.7190459370613098,
+  "ids": [
+   "POA-faiscando-descricao",
+   "POA-legislacao",
+   "POA-oscilante-descricao"
+  ],
+  "hit1": false,
+  "hit3": false
+ },
+ {
+  "id": "q25",
+  "split": "teste",
+  "tipo": "resposta",
+  "top1": 0.8252629637718201,
+  "ids": [
+   "POA-apagada-descricao",
+   "POA-apagada-canais",
+   "POA-oscilante-descricao"
+  ],
+  "hit1": true,
+  "hit3": true
+ },
+ {
+  "id": "q26",
+  "split": "teste",
+  "tipo": "resposta",
+  "top1": 0.7905993461608887,
+  "ids": [
+   "SP-responsavel",
+   "SP-prazo",
+   "POA-faiscando-descricao"
+  ],
+  "hit1": true,
+  "hit3": true
+ },
+ {
+  "id": "n01",
+  "split": "dev",
+  "tipo": "nao_consta",
+  "top1": 0.8131638169288635,
+  "ids": [
+   "POA-legislacao",
+   "POA-faiscando-descricao",
+   "POA-oscilante-descricao"
+  ],
+  "hit1": false,
+  "hit3": false
+ },
+ {
+  "id": "n02",
+  "split": "teste",
+  "tipo": "nao_consta",
+  "top1": 0.690099835395813,
+  "ids": [
+   "POA-poste-caido-prazo",
+   "POA-poste-caido-descricao",
+   "SP-causas"
+  ],
+  "hit1": false,
+  "hit3": false
+ },
+ {
+  "id": "n03",
+  "split": "teste",
+  "tipo": "nao_consta",
+  "top1": 0.6296805739402771,
+  "ids": [
+   "POA-apagada-prazo",
+   "POA-poste-caido-prazo",
+   "POA-poste-caido-descricao"
+  ],
+  "hit1": false,
+  "hit3": false
+ },
+ {
+  "id": "n04",
+  "split": "dev",
+  "tipo": "nao_consta",
+  "top1": 0.7695910334587097,
+  "ids": [
+   "POA-oscilante-descricao",
+   "POA-faiscando-descricao",
+   "POA-atualizacao"
+  ],
+  "hit1": false,
+  "hit3": false
+ },
+ {
+  "id": "n05",
+  "split": "teste",
+  "tipo": "nao_consta",
+  "top1": 0.7269651889801025,
+  "ids": [
+   "POA-faiscando-descricao",
+   "POA-oscilante-descricao",
+   "POA-obstruidos-descricao"
+  ],
+  "hit1": false,
+  "hit3": false
+ },
+ {
+  "id": "n06",
+  "split": "teste",
+  "tipo": "nao_consta",
+  "top1": 0.6513673067092896,
+  "ids": [
+   "POA-apagada-descricao",
+   "POA-poste-caido-descricao",
+   "POA-apagada-canais"
+  ],
+  "hit1": false,
+  "hit3": false
+ },
+ {
+  "id": "n07",
+  "split": "teste",
+  "tipo": "nao_consta",
+  "top1": 0.8013941049575806,
+  "ids": [
+   "POA-poste-caido-descricao",
+   "POA-poste-caido-prazo",
+   "POA-poste-caido-canais"
+  ],
+  "hit1": false,
+  "hit3": false
+ },
+ {
+  "id": "n08",
+  "split": "dev",
+  "tipo": "nao_consta",
+  "top1": 0.7264607548713684,
+  "ids": [
+   "POA-poste-caido-descricao",
+   "POA-poste-caido-canais",
+   "POA-poste-caido-prazo"
+  ],
+  "hit1": false,
+  "hit3": false
+ },
+ {
+  "id": "n09",
+  "split": "teste",
+  "tipo": "nao_consta",
+  "top1": 0.7888049483299255,
+  "ids": [
+   "POA-poste-caido-prazo",
+   "POA-pendurado-prazo",
+   "POA-poste-caido-descricao"
+  ],
+  "hit1": false,
+  "hit3": false
+ },
+ {
+  "id": "n10",
+  "split": "teste",
+  "tipo": "nao_consta",
+  "top1": 0.8025833368301392,
+  "ids": [
+   "POA-contato-smsurb",
+   "POA-faiscando-descricao",
+   "POA-oscilante-descricao"
+  ],
+  "hit1": false,
+  "hit3": false
+ },
+ {
+  "id": "n11",
+  "split": "teste",
+  "tipo": "nao_consta",
+  "top1": 0.7507479190826416,
+  "ids": [
+   "POA-poste-caido-descricao",
+   "POA-poste-caido-canais",
+   "POA-atualizacao"
+  ],
+  "hit1": false,
+  "hit3": false
+ },
+ {
+  "id": "n12",
+  "split": "teste",
+  "tipo": "nao_consta",
+  "top1": 0.7735452651977539,
+  "ids": [
+   "POA-obstruidos-canais",
+   "POA-poste-caido-canais",
+   "POA-atualizacao"
+  ],
+  "hit1": false,
+  "hit3": false
+ },
+ {
+  "id": "n13",
+  "split": "teste",
+  "tipo": "nao_consta",
+  "top1": 0.7180514335632324,
+  "ids": [
+   "POA-faiscando-descricao",
+   "POA-apagada-descricao",
+   "POA-poste-caido-descricao"
+  ],
+  "hit1": false,
+  "hit3": false
+ },
+ {
+  "id": "n14",
+  "split": "teste",
+  "tipo": "nao_consta",
+  "top1": 0.7826211452484131,
+  "ids": [
+   "POA-ausente-descricao",
+   "POA-faiscando-descricao",
+   "POA-oscilante-descricao"
+  ],
+  "hit1": false,
+  "hit3": false
+ }
+]

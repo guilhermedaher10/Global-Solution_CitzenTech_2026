@@ -1,0 +1,43 @@
+# Classes do nosso detector. A ordem define o id usado no treino (0, 1, ...).
+classes:
+  - poste_aceso
+  - poste_apagado
+
+# Datasets públicos usam outros nomes. Na unificação, cada nome (minúsculo, sem espaços
+# nas pontas) é traduzido para uma das nossas classes. O que não estiver aqui é DESCARTADO.
+# Ao adicionar um dataset novo, rode `python scripts/unificar_dataset.py --listar` para ver
+# os nomes que ele usa e complete esta tabela.
+aliases:
+  poste_aceso:
+    - poste_aceso
+    - "on"
+    - light_on
+    - lights-on
+    - light-on
+    - street_light_on
+    - street-light-on
+    - streetlight_on
+    - led on
+    - led_on
+    - working
+    - operational
+  poste_apagado:
+    - poste_apagado
+    - "off"
+    - light_off
+    - lights-off
+    - light-off
+    - street_light_off
+    - street-light-off
+    - street light off
+    - streetlight_off
+    - street_lamp_off
+    - led off
+    - led_off
+    - sodium off
+    - sodium_off
+    - not working
+    - not_working
+    - inoperable
+    - broken streetlamp
+    - broken_streetlamp
