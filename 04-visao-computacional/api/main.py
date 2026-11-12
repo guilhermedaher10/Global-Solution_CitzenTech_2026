@@ -13,17 +13,20 @@ Variáveis de ambiente (todas opcionais):
     GENAI_URL        API do GenAI (01-generative-ai), ex.: http://localhost:8001 (sem ela, sem orientação)
     GENAI_TIMEOUT    segundos de espera pelo GenAI (padrão: 120)
     GENAI_CIDADE     cidade usada nas perguntas ao GenAI (padrão: São Paulo)
+    METRICS_TOKEN    se definido, GET /metrics exige 'Authorization: Bearer <token>' (use na nuvem)
 """
 from __future__ import annotations
 
+import hmac
 import logging
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Response, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 
+from visao import metricas
 from visao.fusao import triar_alerta
 from visao.orientacao import ClienteGenAI
 from visao.pipeline import ImagemInvalida, analisar_bytes
@@ -96,6 +99,8 @@ def _openapi_formulario_simples() -> dict:
 
 
 app.openapi = _openapi_formulario_simples
+app.middleware("http")(metricas.middleware)
+metricas.vigiar_modelo(lambda: _estado["detector"] is not None)
 
 
 def obter_detector():
@@ -164,6 +169,7 @@ async def analisar(
     if incluir_orientacao and analise.validacao.abrir_chamado:
         # o LLM do GenAI roda em CPU e pode demorar: fora do loop de eventos
         analise.orientacao = await run_in_threadpool(genai.orientar, analise.fusao.tipos_chamado)
+    metricas.registrar_analise(analise)
     return analise
 
 
@@ -176,4 +182,16 @@ def alerta_robo(alerta: AlertaRobo):
     para a placa ler: `acao_robo` diz se acende LED vermelho (prioridade alta) ou amarelo.
     O ponto vira chamado quando uma foto do lugar for enviada a /v1/analisar com os mesmos sensores.
     """
-    return triar_alerta(alerta)
+    resposta = triar_alerta(alerta)
+    metricas.registrar_alerta(resposta)
+    return resposta
+
+
+@app.get("/metrics", include_in_schema=False)
+def metrics(authorization: str | None = Header(None)):
+    """Métricas para o Prometheus. Na nuvem, protegido por token (METRICS_TOKEN)."""
+    token = os.getenv("METRICS_TOKEN")
+    if token and not hmac.compare_digest(authorization or "", f"Bearer {token}"):
+        raise HTTPException(401, "token do /metrics ausente ou inválido")
+    corpo, tipo = metricas.exportar()
+    return Response(corpo, media_type=tipo)

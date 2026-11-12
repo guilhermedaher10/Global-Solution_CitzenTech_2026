@@ -25,6 +25,7 @@ diz para qual setor ele vai.
 | `POST` | `/v1/analisar` | Analisa uma foto (e cruza com os sensores, se vierem) e devolve o JSON abaixo |
 | `POST` | `/v1/alerta-robo` | Alerta do robô **sem foto**: registra a suspeita e diz qual LED acender |
 | `GET` | `/docs` | Documentação interativa (Swagger): dá para testar pelo navegador |
+| `GET` | `/metrics` | Métricas Prometheus (4 métricas de ouro + chamados, robô, modelo). Com `METRICS_TOKEN` definido, exige `Authorization: Bearer <token>` |
 
 ### `POST /v1/analisar` (multipart/form-data)
 
@@ -104,7 +105,7 @@ if analise["validacao"]["abrir_chamado"]:
 | **Big Data** | o JSON inteiro (Bronze) | Prata: tipar e deduplicar por `id_captura`; Ouro: fato `capturas` com dimensões tempo, local, origem e modelo |
 | **GenAI** | é chamado pela Visão (`POST /consulta`) e aparece em `orientacao` | Prazo e canal oficiais com fonte citada, devolvidos junto com o chamado |
 | **Maker Lab (robô)** | envia o alerta a `/v1/alerta-robo`; lê `acao_robo` | Acender o LED/buzzer certo; o ponto vira suspeita até uma foto confirmar |
-| **DevOps** | `GET /saude`, código HTTP, latência | Health check, dashboard das 4 métricas de ouro, alerta se `modelo_carregado=false` |
+| **DevOps** | `GET /saude` (health check) e `GET /metrics` | Grafana com as 4 métricas de ouro e os chamados por tipo/prioridade; alertas no Prometheus (ver `06-devops-cloud/`) |
 
 ### Campo `fusao` (novo na 1.1): sensor + foto
 
