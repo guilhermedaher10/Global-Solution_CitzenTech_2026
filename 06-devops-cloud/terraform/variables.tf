@@ -27,6 +27,12 @@ variable "visao_max_replicas" {
   default     = 2
 }
 
+variable "visao_imagem_inicial" {
+  description = "Imagem só da CRIAÇÃO do app; depois a versão em produção é do pipeline (ignore_changes)"
+  type        = string
+  default     = "mcr.microsoft.com/k8se/quickstart:latest"
+}
+
 variable "visao_cpu" {
   description = "vCPU por réplica (Container Apps aceita pares cpu/memória fixos: 1.0 -> 2Gi)"
   type        = number

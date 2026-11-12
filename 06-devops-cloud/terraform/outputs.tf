@@ -3,6 +3,11 @@ output "url_visao" {
   value       = "https://${azurerm_container_app.visao.ingress[0].fqdn}"
 }
 
+output "modo_ambiente" {
+  description = "Deve ser WorkloadProfiles (não Express)"
+  value       = azapi_resource.env.output.properties.environmentMode
+}
+
 output "acr_login_server" {
   description = "Registro onde o pipeline publica as imagens"
   value       = azurerm_container_registry.acr.login_server

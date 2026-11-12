@@ -4,7 +4,7 @@
 
 **Responsável:** Guilherme Gonçalves Calil Daher · RM 98611
 
-**URL pública do MVP:** _preenchida após o 1º deploy_ · **Vídeo:** _(link)_
+**URL pública do MVP:** https://ca-ruasescuras-visao.bravehill-24590cb4.eastus.azurecontainerapps.io/docs · **Vídeo:** _(link)_
 
 O MVP Ruas Escuras vai para a nuvem **sem ninguém clicar em botão**: cada push na `main` passa por um pipeline que
 barra segredo vazado, código inseguro e dependência vulnerável; só então publica na Azure, em infraestrutura
@@ -51,6 +51,13 @@ flowchart LR
 **Por que Container Apps:** é serverless. Não existe VM, logo **não existe porta de administração** (SSH/RDP) para
 ficar exposta; a única entrada é HTTPS 443 com certificado gerenciado. Escala a zero quando ninguém usa (custo ~0)
 e sobe sozinho com o tráfego.
+
+**Por que o ambiente é criado pelo `azapi`:** em nov/2026 a Azure passou a criar ambientes novos no modo
+**Express** (preview) quando o pedido não diz o modo. Nesse modo a configuração de registro privado é ignorada e o
+container não consegue puxar a imagem do ACR com identidade gerenciada (erro `BuildFailed ... registryCredentials`).
+O provedor `azurerm` 4.x ainda não tem o campo `environmentMode`, então o ambiente é declarado pelo `azapi`
+(provedor oficial da Microsoft para a API mais nova) com `environmentMode = "WorkloadProfiles"` e o perfil
+`Consumption`, que continua serverless e escala a zero. Diagnóstico registrado no histórico do PR #10.
 
 **Divisão Terraform × pipeline:** o Terraform cria e mantém a infraestrutura; a **versão** em produção é trocada pelo
 pipeline (`az containerapp update`). O Terraform ignora a imagem depois de criada, então um `terraform apply`

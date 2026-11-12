@@ -4,7 +4,7 @@
 #   ├── Log Analytics            logs dos containers (cota diária: custo nunca dispara)
 #   ├── Container Registry       imagens privadas; puxadas por identidade gerenciada, sem senha
 #   ├── Identidade gerenciada    "crachá" do container para puxar a imagem (AcrPull)
-#   ├── Container Apps Env       ambiente serverless, sem VM e sem porta de administração
+#   ├── Container Apps Env       ambiente serverless (WorkloadProfiles/Consumption, via azapi), sem VM nem porta de admin
 #   ├── Container App "visao"    API da Visão, HTTPS público, escala 0..N
 #   └── Orçamento + alertas      e-mail em 50/80/100% do valor mensal
 #
@@ -29,8 +29,6 @@ resource "random_string" "sufixo" {
 locals {
   sufixo = random_string.sufixo.result
   local  = data.azurerm_resource_group.app.location
-  # imagem pública de exemplo da Microsoft: só na 1ª criação, antes do pipeline publicar a nossa
-  imagem_inicial = "mcr.microsoft.com/k8se/quickstart:latest"
 }
 
 # ---------------------------------------------------------------- logs
@@ -71,19 +69,52 @@ resource "azurerm_role_assignment" "visao_puxa_imagem" {
 }
 
 # ---------------------------------------------------------------- Container Apps
-resource "azurerm_container_app_environment" "env" {
-  name                       = "cae-${var.prefixo}"
-  location                   = local.local
-  resource_group_name        = data.azurerm_resource_group.app.name
-  log_analytics_workspace_id = azurerm_log_analytics_workspace.logs.id
-  tags                       = var.tags
+# Ambiente criado pelo azapi (provedor oficial da Microsoft, fala direto com a API do Azure):
+# sem "environmentMode", a Azure passou a criar ambientes no modo "Express" (preview), que
+# ignora a configuração de registro privado e não puxa imagem do ACR com identidade gerenciada.
+# O azurerm 4.x ainda não tem esse campo, então declaramos o modo tradicional explicitamente:
+# WorkloadProfiles + perfil Consumption (serverless, paga só pelo uso, escala a zero).
+resource "azapi_resource" "env" {
+  type                      = "Microsoft.App/managedEnvironments@2026-07-01"
+  name                      = "cae-${var.prefixo}-wp"
+  parent_id                 = data.azurerm_resource_group.app.id
+  location                  = local.local
+  tags                      = var.tags
+  schema_validation_enabled = false # versão da API mais nova que o schema embutido no provedor
+
+  body = {
+    properties = {
+      environmentMode  = "WorkloadProfiles"
+      workloadProfiles = [{ name = "Consumption", workloadProfileType = "Consumption" }]
+      appLogsConfiguration = {
+        destination = "log-analytics"
+        logAnalyticsConfiguration = {
+          customerId = azurerm_log_analytics_workspace.logs.workspace_id
+        }
+      }
+    }
+  }
+
+  # a chave do workspace não aparece no plan nem nos logs do pipeline
+  sensitive_body = {
+    properties = {
+      appLogsConfiguration = {
+        logAnalyticsConfiguration = {
+          sharedKey = azurerm_log_analytics_workspace.logs.primary_shared_key
+        }
+      }
+    }
+  }
+
+  response_export_values = ["properties.environmentMode", "properties.defaultDomain"]
 }
 
 resource "azurerm_container_app" "visao" {
   name                         = "ca-${var.prefixo}-visao"
-  container_app_environment_id = azurerm_container_app_environment.env.id
+  container_app_environment_id = azapi_resource.env.id
   resource_group_name          = data.azurerm_resource_group.app.name
   revision_mode                = "Single"
+  workload_profile_name        = "Consumption"
   tags                         = var.tags
 
   identity {
@@ -117,7 +148,7 @@ resource "azurerm_container_app" "visao" {
 
     container {
       name   = "visao"
-      image  = local.imagem_inicial
+      image  = var.visao_imagem_inicial
       cpu    = var.visao_cpu
       memory = var.visao_memoria
 
