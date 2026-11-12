@@ -56,7 +56,8 @@ $tenant = AzOk account show --query tenantId -o tsv
 $euId   = AzOk ad signed-in-user show --query id -o tsv
 
 Write-Host "==> Provedores de recurso (assinatura nova vem com eles desligados)" -ForegroundColor Cyan
-foreach ($p in "Microsoft.App", "Microsoft.OperationalInsights", "Microsoft.Storage", "Microsoft.Consumption") {
+foreach ($p in "Microsoft.App", "Microsoft.OperationalInsights", "Microsoft.Storage", "Microsoft.Consumption",
+               "Microsoft.ContainerRegistry", "Microsoft.ManagedIdentity") {
   AzOk provider register --namespace $p --wait | Out-Null
   Write-Host "    $p registrado"
 }
