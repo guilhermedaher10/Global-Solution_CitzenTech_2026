@@ -21,10 +21,13 @@ import hmac
 import logging
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Response, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from visao import metricas
 from visao.fusao import triar_alerta
@@ -100,6 +103,38 @@ def _openapi_formulario_simples() -> dict:
 
 app.openapi = _openapi_formulario_simples
 app.middleware("http")(metricas.middleware)
+
+# ---------------------------------------------------------------- front do cidadão (web/)
+WEB = Path(__file__).resolve().parent.parent / "web"
+# CSP só na página e nos estáticos (o /docs usa o CDN do Swagger e ficaria quebrado).
+# Script só da própria origem; imagens também do mapa (OpenStreetMap); nada de iframe de terceiros.
+CSP = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+       "img-src 'self' data: blob: https://tile.openstreetmap.org; connect-src 'self'; "
+       "frame-ancestors 'none'; base-uri 'self'; form-action 'self'")
+
+
+@app.middleware("http")
+async def cabecalhos_de_seguranca(request, call_next):
+    resposta = await call_next(request)
+    resposta.headers.setdefault("X-Content-Type-Options", "nosniff")
+    resposta.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    if request.url.path == "/" or request.url.path.startswith("/static/"):
+        resposta.headers["Content-Security-Policy"] = CSP
+        resposta.headers["Permissions-Policy"] = "geolocation=(self), camera=(self), microphone=()"
+    return resposta
+
+
+if WEB.is_dir():
+    app.mount("/static", StaticFiles(directory=WEB), name="static")
+
+
+@app.get("/", include_in_schema=False)
+def pagina_inicial():
+    """Front do MVP: cidadão (foto), robô (sensores) e prefeitura (mapa e fila)."""
+    if not (WEB / "index.html").exists():
+        raise HTTPException(404, "front não incluído nesta imagem")
+    return FileResponse(WEB / "index.html", headers={"Cache-Control": "no-cache"})
+
 metricas.vigiar_modelo(lambda: _estado["detector"] is not None)
 
 

@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Reporte uma rua escura com uma foto: a IA confirma, prioriza e o chamado chega à prefeitura com evidência.">
+  <meta name="theme-color" content="#0b1020">
+  <title>Ruas Escuras · ponte entre cidadão e prefeitura</title>
+  <link rel="icon" href="/static/icone.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header class="topo">
+    <a class="marca" href="#cidadao" aria-label="Início">
+      <svg class="marca-icone" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M14 30V9a5 5 0 0 1 5-5h5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M20 4h7l-2 4h-4z" fill="currentColor"/>
+        <circle class="marca-luz" cx="23" cy="11" r="3"/>
+      </svg>
+      <span class="marca-nome" data-nome-produto>Ruas Escuras</span>
+    </a>
+    <nav class="abas" role="tablist" aria-label="Telas">
+      <button role="tab" class="aba" data-tela="cidadao" aria-selected="true">📸 <span>Cidadão</span></button>
+      <button role="tab" class="aba" data-tela="robo" aria-selected="false">🤖 <span>Robô</span></button>
+      <button role="tab" class="aba" data-tela="prefeitura" aria-selected="false">🏛️ <span>Prefeitura</span></button>
+      <button role="tab" class="aba" data-tela="sobre" aria-selected="false">💡 <span>Como funciona</span></button>
+    </nav>
+    <div class="status-api" id="status-api" role="status" aria-live="polite">
+      <span class="ponto"></span><span class="texto">verificando…</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- ======================================================= CIDADÃO -->
+    <section class="tela ativa" id="tela-cidadao" role="tabpanel" aria-label="Cidadão">
+      <div class="hero">
+        <h1>Viu uma rua escura? <em>Acenda o alerta.</em></h1>
+        <p>Tire uma foto do poste. A inteligência artificial confirma a falha, calcula a prioridade
+          e o chamado chega à prefeitura com localização e evidência. Sem cadastro.</p>
+      </div>
+
+      <div class="grade-cidadao">
+        <form class="cartao envio" id="form-foto" novalidate>
+          <label class="soltar" id="soltar" for="arquivo">
+            <input type="file" id="arquivo" accept="image/jpeg,image/png,image/webp" capture="environment" hidden>
+            <img id="previa" alt="" hidden>
+            <span class="soltar-texto" id="soltar-texto">
+              <span class="soltar-icone" aria-hidden="true">📷</span>
+              <strong>Tirar ou escolher uma foto</strong>
+              <small>De noite, com o poste aparecendo. JPEG, PNG ou WebP.</small>
+            </span>
+          </label>
+
+          <div class="opcoes">
+            <label class="chave">
+              <input type="checkbox" id="usar-gps" checked>
+              <span>Enviar minha localização</span>
+            </label>
+            <span class="gps-info" id="gps-info"></span>
+          </div>
+
+          <div class="sensores-vinculados" id="sensores-vinculados" hidden>
+            <span>🤖 Confirmando o alerta do robô:</span>
+            <strong id="sensores-resumo"></strong>
+            <button type="button" class="link" id="desvincular">remover</button>
+          </div>
+
+          <button class="botao primario" id="enviar" type="submit" disabled>Analisar e abrir chamado</button>
+          <ol class="etapas" id="etapas" hidden>
+            <li data-etapa="1">Enviando a foto com segurança</li>
+            <li data-etapa="2">Procurando postes acesos e apagados</li>
+            <li data-etapa="3">Validando a evidência e borrando rostos</li>
+            <li data-etapa="4">Calculando prioridade e setor</li>
+          </ol>
+          <p class="erro" id="erro-envio" role="alert" hidden></p>
+        </form>
+
+        <article class="cartao resultado" id="resultado" hidden aria-live="polite">
+          <div class="resultado-imagem">
+            <canvas id="canvas-resultado" aria-label="Foto analisada com os postes marcados"></canvas>
+            <div class="legenda">
+              <span class="tag aceso">poste aceso</span>
+              <span class="tag apagado">poste apagado</span>
+            </div>
+          </div>
+
+          <div class="resultado-corpo">
+            <div class="veredito" id="veredito"></div>
+
+            <div class="prioridade" id="bloco-prioridade">
+              <div class="prioridade-topo">
+                <span>Prioridade</span><strong id="prioridade-nivel"></strong>
+              </div>
+              <div class="barra"><span id="prioridade-barra"></span></div>
+              <ul class="fatores" id="prioridade-fatores"></ul>
+            </div>
+
+            <div class="linha-info">
+              <div><span>Trecho</span><strong id="info-trecho"></strong></div>
+              <div><span>Postes</span><strong id="info-postes"></strong></div>
+              <div><span>Setor</span><strong id="info-setor"></strong></div>
+            </div>
+
+            <details class="motivos">
+              <summary>Por que a IA decidiu assim?</summary>
+              <ul id="lista-motivos"></ul>
+            </details>
+
+            <div class="orientacao" id="orientacao" hidden></div>
+
+            <ul class="selos">
+              <li>🔒 Foto não armazenada</li>
+              <li id="selo-rostos">🙂 Rostos borrados</li>
+              <li>🧭 Dados da foto (EXIF) descartados</li>
+            </ul>
+            <p class="protocolo" id="protocolo"></p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ======================================================= ROBÔ -->
+    <section class="tela" id="tela-robo" role="tabpanel" aria-label="Robô" hidden>
+      <div class="hero">
+        <h1>O robô <em>desconfia</em>, a foto <em>confirma</em>.</h1>
+        <p>O robô do Maker Lab patrulha a rua com um sensor de luz e um sensor de distância. Quando algo
+          dispara, ele registra uma suspeita com GPS e acende o LED. Aqui você simula as leituras.</p>
+      </div>
+
+      <div class="grade-robo">
+        <div class="cartao controles">
+          <div class="controle">
+            <label for="lux">Sensor de luz (LDR) <strong id="lux-valor">20 lux</strong></label>
+            <input type="range" id="lux" min="0" max="50" step="0.5" value="20">
+            <small>Abaixo de 5 lux = trecho escuro</small>
+          </div>
+          <div class="controle">
+            <label for="dist">Sensor de distância (ultrassônico) <strong id="dist-valor">8 cm</strong></label>
+            <input type="range" id="dist" min="2" max="40" step="1" value="8">
+            <small>15 cm ou mais = desnível (buraco)</small>
+          </div>
+          <div class="cenarios">
+            <button class="botao" data-cenario="normal">Rua normal</button>
+            <button class="botao" data-cenario="escuro">Escuro</button>
+            <button class="botao" data-cenario="buraco">Buraco</button>
+            <button class="botao" data-cenario="ambos">Buraco no escuro</button>
+          </div>
+          <button class="botao primario" id="enviar-alerta">Enviar leitura do robô</button>
+          <button class="botao fantasma" id="patrulha">▶ Simular patrulha (12 pontos)</button>
+        </div>
+
+        <div class="cartao painel-robo">
+          <div class="led" id="led" data-acao="nenhuma" aria-label="LED do robô"></div>
+          <div class="robo-resposta" id="robo-resposta">
+            <strong>Aguardando leitura…</strong>
+            <span>Mova os sensores ou escolha um cenário.</span>
+          </div>
+          <ul class="fatores" id="robo-fatores"></ul>
+          <button class="botao" id="confirmar-foto" hidden>📸 Confirmar com foto</button>
+          <div class="trilha" id="trilha" aria-label="Patrulha"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================= PREFEITURA -->
+    <section class="tela" id="tela-prefeitura" role="tabpanel" aria-label="Prefeitura" hidden>
+      <div class="hero">
+        <h1>Chamados <em>confirmados</em>, em ordem de prioridade.</h1>
+        <p>Cada chamado chega com local, evidência validada e o motivo da prioridade. O atendente confirma
+          e o setor certo é acionado.</p>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><span>Chamados</span><strong id="kpi-total">0</strong></div>
+        <div class="kpi alta"><span>Prioridade alta</span><strong id="kpi-alta">0</strong></div>
+        <div class="kpi"><span>Conserto de poste</span><strong id="kpi-conserto">0</strong></div>
+        <div class="kpi"><span>Suspeitas do robô</span><strong id="kpi-robo">0</strong></div>
+      </div>
+
+      <div class="grade-prefeitura">
+        <div class="cartao mapa-cartao"><div id="mapa" aria-label="Mapa dos chamados"></div></div>
+        <div class="cartao fila">
+          <div class="fila-topo">
+            <h2>Fila</h2>
+            <button class="link" id="limpar-fila">limpar</button>
+          </div>
+          <ol id="lista-chamados" class="lista-chamados"></ol>
+          <p class="vazio" id="fila-vazia">Nenhum chamado ainda. Envie uma foto na aba Cidadão ou uma leitura na aba Robô.</p>
+          <p class="nota">Demonstração: mostra os chamados feitos neste navegador. Só dados do chamado são guardados
+            (tipo, prioridade, local), nunca a foto.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================= COMO FUNCIONA -->
+    <section class="tela" id="tela-sobre" role="tabpanel" aria-label="Como funciona" hidden>
+      <div class="hero">
+        <h1>Nós não consertamos o poste. <em>Somos a ponte.</em></h1>
+        <p>Rua escura gera medo, assaltos e quedas. Hoje a falha só chega à prefeitura quando alguém reclama,
+          sem prova nem prioridade. Aqui o chamado já chega confirmado.</p>
+      </div>
+      <ol class="fluxo">
+        <li><span>1</span><strong>Descobrir</strong><p>Cidadão tira a foto ou o robô detecta com sensores de luz e distância.</p></li>
+        <li><span>2</span><strong>Confirmar</strong><p>Visão computacional (YOLO) acha postes acesos e apagados e valida a foto.</p></li>
+        <li><span>3</span><strong>Priorizar</strong><p>Regras explicáveis somam pontos e definem o setor: conserto, instalação, poda ou buraco.</p></li>
+        <li><span>4</span><strong>Orientar</strong><p>IA generativa local informa o prazo oficial, citando a fonte.</p></li>
+        <li><span>5</span><strong>Encaminhar</strong><p>Robô de RPA registra o chamado no sistema da prefeitura.</p></li>
+        <li><span>6</span><strong>Medir</strong><p>Big Data mostra os bairros mais escuros e o tempo até o conserto.</p></li>
+      </ol>
+      <div class="grade-sobre">
+        <div class="cartao"><h2>Privacidade (LGPD)</h2><p>A foto não é armazenada. Rostos são borrados antes de qualquer retorno, os dados escondidos da foto (EXIF) são descartados e as métricas não têm dado pessoal.</p></div>
+        <div class="cartao"><h2>IA responsável</h2><p>A IA enxerga; quem decide são regras auditáveis, sempre com o motivo. Um atendente humano confirma antes do conserto.</p></div>
+        <div class="cartao"><h2>ODS</h2><p><strong>11</strong> cidades sustentáveis · <strong>3</strong> saúde (acidentes) · <strong>10</strong> menos desigualdade · <strong>9</strong> infraestrutura.</p></div>
+      </div>
+      <p class="rodape-tecnico">Para desenvolvedores: <a href="/docs">documentação da API</a> · <a href="/saude">saúde do sistema</a> ·
+        <a href="https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026" rel="noopener">código no GitHub</a></p>
+    </section>
+  </main>
+
+  <footer class="rodape">FIAP · Global Solution 2026.2 · CitizenTech · <span data-nome-produto>Ruas Escuras</span></footer>
+
+  <script src="/static/vendor/leaflet/leaflet.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
