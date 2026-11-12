@@ -26,6 +26,7 @@ RUN pip install -r requirements.txt
 COPY configs/ configs/
 COPY visao/ visao/
 COPY api/ api/
+COPY web/ web/
 COPY models/ models/
 
 # usuário sem privilégios
