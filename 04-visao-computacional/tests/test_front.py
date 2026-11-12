@@ -19,8 +19,9 @@ def cliente():
 def test_pagina_inicial_e_estaticos(cliente):
     r = cliente.get("/")
     assert r.status_code == 200 and "text/html" in r.headers["content-type"]
-    assert 'id="tela-cidadao"' in r.text and "/static/app.js" in r.text
-    for arquivo in ("/static/app.js", "/static/app.css", "/static/icone.svg", "/static/vendor/leaflet/leaflet.js"):
+    assert "Vésper" in r.text and 'id="tela-reportar"' in r.text and "/static/app.js" in r.text
+    for arquivo in ("/static/app.js", "/static/app.css", "/static/icone.svg", "/static/vendor/leaflet/leaflet.js",
+                    "/static/fontes/inter-latin-400-normal.woff2"):
         assert cliente.get(arquivo).status_code == 200, arquivo
 
 
@@ -28,6 +29,7 @@ def test_cabecalhos_de_seguranca_na_pagina(cliente):
     h = cliente.get("/").headers
     assert "script-src 'self'" in h["content-security-policy"]
     assert "frame-ancestors 'none'" in h["content-security-policy"]
+    assert "https://nominatim.openstreetmap.org" in h["content-security-policy"]
     assert h["x-content-type-options"] == "nosniff"
     assert "geolocation=(self)" in h["permissions-policy"]
 

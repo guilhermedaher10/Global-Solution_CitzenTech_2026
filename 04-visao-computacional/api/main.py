@@ -109,9 +109,11 @@ app.middleware("http")(metricas.middleware)
 # ---------------------------------------------------------------- front do cidadão (web/)
 WEB = Path(__file__).resolve().parent.parent / "web"
 # CSP só na página e nos estáticos (o /docs usa o CDN do Swagger e ficaria quebrado).
-# Script só da própria origem; imagens também do mapa (OpenStreetMap); nada de iframe de terceiros.
+# Script e fontes só da própria origem; imagens também do mapa e busca de endereço do OpenStreetMap
+# (Nominatim); nada de iframe de terceiros.
 CSP = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
-       "img-src 'self' data: blob: https://tile.openstreetmap.org; connect-src 'self'; "
+       "img-src 'self' data: blob: https://tile.openstreetmap.org; font-src 'self'; "
+       "connect-src 'self' https://nominatim.openstreetmap.org; "
        "frame-ancestors 'none'; base-uri 'self'; form-action 'self'")
 
 
