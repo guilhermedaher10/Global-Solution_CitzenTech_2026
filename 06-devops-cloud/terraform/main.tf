@@ -178,8 +178,9 @@ resource "azurerm_container_app" "visao" {
   }
 
   lifecycle {
-    # a versão em produção é do pipeline (az containerapp update), não do Terraform
-    ignore_changes = [template[0].container[0].image, template[0].container[0].env]
+    # a versão em produção e os segredos (METRICS_TOKEN) são do pipeline, não do Terraform:
+    # sem "secret" aqui, o apply tentava apagar o segredo que o container usa (ContainerAppSecretRefNotFound)
+    ignore_changes = [secret, template[0].container[0].image, template[0].container[0].env]
   }
 
   depends_on = [azurerm_role_assignment.visao_puxa_imagem]
