@@ -181,10 +181,14 @@ jobs:
           ACR: ${{ needs.terraform.outputs.acr }}
           APP: ${{ needs.terraform.outputs.app }}
           TAG: ${{ needs.build.outputs.tag }}
+          METRICS_TOKEN: ${{ secrets.METRICS_TOKEN }}
         run: |
+          # o token do /metrics vira um SEGREDO do Container App (não aparece na config nem nos logs)
+          az containerapp secret set -n "$APP" -g rg-ruasescuras \
+            --secrets metrics-token="$METRICS_TOKEN" -o none
           az containerapp update -n "$APP" -g rg-ruasescuras \
             --image "$ACR.azurecr.io/$IMAGEM:$TAG" \
-            --set-env-vars MODELO_VERSAO="$TAG" -o none
+            --set-env-vars MODELO_VERSAO="$TAG" METRICS_TOKEN=secretref:metrics-token -o none
       - name: Smoke test (/saude responde 200)
         env:
           URL: ${{ needs.terraform.outputs.url }}
