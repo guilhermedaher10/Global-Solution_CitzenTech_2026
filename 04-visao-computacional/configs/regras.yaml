@@ -3,10 +3,12 @@ deteccao:
   confianca_minima: 0.35      # abaixo disso a detecção é ignorada
   iou: 0.5
   tamanho_imagem: 640
+  area_maxima: 0.5           # caixa cobrindo mais que isso da foto não é luminária: descartada
 
 luminosidade:               # brilho médio da cena, de 0 (preto) a 255 (branco)
   limiar_escuro: 55           # abaixo: cena escura
   limiar_dia: 120             # acima: provavelmente foto de dia (não serve de evidência)
+  limiar_breu: 25             # abaixo: breu, quase nenhuma luz; o poste pode nem aparecer na foto
 
 validacao:                  # foto enviada pelo cidadão
   lado_minimo_px: 320         # imagem menor que isso não serve
@@ -45,3 +47,4 @@ orientacao:                 # perguntas feitas ao GenAI (01) para cada tipo de c
     instalacao_iluminacao: "Como pedir a instalação de iluminação pública em uma rua sem poste em {cidade}?"
     poda_ou_obstrucao: "O que pode atrasar o reparo da iluminação pública em {cidade}?"
     buraco: "Qual o prazo para tapar um buraco na rua em {cidade}?"
+    trecho_sem_luz: "Qual o prazo para consertar a iluminação pública em {cidade}?"

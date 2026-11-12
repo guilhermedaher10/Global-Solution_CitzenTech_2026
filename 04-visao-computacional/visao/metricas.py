@@ -30,6 +30,7 @@ EM_ANDAMENTO = Gauge("http_requisicoes_em_andamento", "Requisições sendo proce
 ANALISES = Counter("visao_analises_total", "Fotos analisadas", ["origem", "foto_valida", "abriu_chamado"])
 CHAMADOS = Counter("visao_chamados_total", "Chamados abertos", ["tipo", "prioridade"])
 ALERTAS_ROBO = Counter("visao_alertas_robo_total", "Alertas recebidos do robô", ["status", "acao"])
+RELATOS = Counter("visao_relatos_total", "Relatos de cidadãos sem foto", ["status"])
 MODELO_CARREGADO = Gauge("visao_modelo_carregado", "1 se o modelo YOLO está carregado")
 
 ROTAS_IGNORADAS = {"/metrics"}   # o próprio Prometheus não entra na latência/tráfego do produto
@@ -67,6 +68,10 @@ def registrar_analise(analise) -> None:
 
 def registrar_alerta(resposta) -> None:
     ALERTAS_ROBO.labels(resposta.status, resposta.acao_robo.value).inc()
+
+
+def registrar_relato(resposta) -> None:
+    RELATOS.labels(resposta.status).inc()
 
 
 def exportar() -> tuple[bytes, str]:

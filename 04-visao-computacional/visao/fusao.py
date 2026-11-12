@@ -59,7 +59,7 @@ def ler_sensores(sensor_lux: float | None = None, sensor_distancia_cm: float | N
 
 
 def fundir(sinais: Sinais, *, acesos: int, apagados: int, buracos: int,
-           status: StatusTrecho, foto_valida: bool = True) -> Fusao:
+           status: StatusTrecho, foto_valida: bool = True, luminosidade: float | None = None) -> Fusao:
     if not foto_valida:
         # foto ruim não confirma nem desmente o sensor: a suspeita do robô continua aberta
         return Fusao(alertas_sensor=sinais.alertas, tipos_chamado=[],
@@ -74,7 +74,11 @@ def fundir(sinais: Sinais, *, acesos: int, apagados: int, buracos: int,
     if apagados > 0:
         tipos.append(TipoChamado.conserto_poste)
         motivos.append("poste apagado na foto: conserto")
-    if sem_poste and (trecho_escuro or sinais.escuro):
+    breu = luminosidade is not None and luminosidade < regras()["luminosidade"]["limiar_breu"]
+    if sem_poste and breu:
+        tipos.append(TipoChamado.trecho_sem_luz)
+        motivos.append("breu sem poste visível: poste apagado no escuro ou inexistente; inspeção no local")
+    elif sem_poste and (trecho_escuro or sinais.escuro):
         tipos.append(TipoChamado.instalacao_iluminacao)
         motivos.append("trecho escuro sem poste visível: pedido de instalação de iluminação")
     if sinais.escuro and acesos > 0 and apagados == 0 and not trecho_escuro:
@@ -117,7 +121,9 @@ def triar_alerta(alerta: AlertaRobo) -> RespostaAlerta:
     sinais = ler_sensores(alerta.sensor_lux, alerta.sensor_distancia_cm, alerta.alerta)
     p = regras()["alerta_robo"]
     faixas = regras()["prioridade"]["faixas"]
-    loc = Localizacao(latitude=alerta.latitude, longitude=alerta.longitude, fonte="informada")
+    loc = Localizacao(latitude=alerta.latitude, longitude=alerta.longitude, fonte="informada",
+                      endereco=alerta.endereco)
+    cidadao = alerta.origem.value == "cidadao"
     base = dict(id_alerta=str(uuid.uuid4()),
                 timestamp=datetime.now(FUSO_SP).isoformat(timespec="seconds"),
                 alertas=sinais.alertas, localizacao=loc)
@@ -145,6 +151,8 @@ def triar_alerta(alerta: AlertaRobo) -> RespostaAlerta:
     return RespostaAlerta(
         **base, status="suspeita",
         prioridade_previa=Prioridade(nivel=nivel, pontuacao=pontos, fatores=fatores),
-        proximo_passo="aguardando foto de confirmação (cidadão próximo ou patrulha) para virar chamado",
+        proximo_passo=("relato registrado: envie uma foto do local para confirmar e acelerar o atendimento"
+                       if cidadao else
+                       "aguardando foto de confirmação (cidadão próximo ou patrulha) para virar chamado"),
         acao_robo=AcaoRobo.led_vermelho if nivel == NivelPrioridade.alta else AcaoRobo.led_amarelo,
     )

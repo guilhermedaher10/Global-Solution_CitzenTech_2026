@@ -34,7 +34,9 @@ from visao.fusao import triar_alerta
 from visao.orientacao import ClienteGenAI
 from visao.pipeline import ImagemInvalida, analisar_bytes
 from visao.privacidade import BorradorRostos
-from visao.schemas import VERSAO_CONTRATO, AlertaRobo, Analise, Origem, RespostaAlerta, TipoAlerta
+from visao.schemas import (
+    VERSAO_CONTRATO, AlertaRobo, Analise, Origem, RelatoCidadao, RespostaAlerta, TipoAlerta,
+)
 
 log = logging.getLogger("visao.api")
 MAX_BYTES = int(float(os.getenv("MAX_UPLOAD_MB", "10")) * 1024 * 1024)
@@ -179,6 +181,7 @@ async def analisar(
     sensor_lux: float | None = Form(None, ge=0, description="Leitura do sensor de luz do robô"),
     sensor_distancia_cm: float | None = Form(None, ge=0, description="Leitura do ultrassônico do robô"),
     alerta: str | None = Form(None, description="O que disparou no robô, separado por vírgula: escuro,buraco"),
+    endereco: str | None = Form(None, max_length=200, description="Endereço legível do local (opcional)"),
     retornar_imagem: bool = Form(False, description="Devolver a imagem anonimizada em base64"),
     incluir_orientacao: bool = Form(False, description="Perguntar ao GenAI o prazo/canal oficial "
                                     "(só se abrir chamado; pode levar alguns segundos)"),
@@ -198,7 +201,8 @@ async def analisar(
     try:
         analise = analisar_bytes(dados, detector, origem=origem, latitude=latitude, longitude=longitude,
                                  sensor_lux=sensor_lux, sensor_distancia_cm=sensor_distancia_cm,
-                                 alerta=alertas, borrador=borrador, retornar_imagem=retornar_imagem)
+                                 alerta=alertas, borrador=borrador, retornar_imagem=retornar_imagem,
+                                 endereco=endereco)
     except ImagemInvalida as e:
         raise HTTPException(422, str(e)) from e
     if incluir_orientacao and analise.validacao.abrir_chamado:
@@ -219,6 +223,20 @@ def alerta_robo(alerta: AlertaRobo):
     """
     resposta = triar_alerta(alerta)
     metricas.registrar_alerta(resposta)
+    return resposta
+
+
+@app.post("/v1/relatos", response_model=RespostaAlerta, tags=["cidadao"],
+          summary="Relato do cidadão SEM foto (só o local): registra a suspeita")
+def relato_cidadao(relato: RelatoCidadao):
+    """Para quem não consegue fotografar (breu total, celular sem câmera, acessibilidade).
+
+    Vira uma suspeita com prioridade prévia, como o alerta do robô; uma foto do mesmo local enviada a
+    /v1/analisar confirma. Funciona mesmo sem o modelo carregado.
+    """
+    resposta = triar_alerta(AlertaRobo(origem=Origem.cidadao, latitude=relato.latitude, longitude=relato.longitude,
+                                       endereco=relato.endereco, alerta=relato.problema))
+    metricas.registrar_relato(resposta)
     return resposta
 
 

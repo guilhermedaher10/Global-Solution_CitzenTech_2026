@@ -42,9 +42,11 @@ def validar(*, origem: str, acesos: int, apagados: int, luminosidade: float, nit
     lux_baixo = sensor_lux is not None and sensor_lux < r["prioridade"]["limiar_sensor_lux"]
     if sensor_escuro is None:
         sensor_escuro = lux_baixo
-    # Foto do cidadão precisa mostrar um poste (ou um buraco). Exceção: o robô já marcou escuro
-    # ali, e a foto da rua sem poste vira prova para o pedido de instalação de iluminação.
-    if origem == "cidadao" and acesos + apagados == 0 and buracos == 0 and not sensor_escuro:
+    # Foto do cidadão precisa mostrar um poste (ou um buraco). Exceções: o robô já marcou escuro
+    # ali, ou a cena é BREU (quase nenhuma luz): aí o poste apagado nem aparece na foto, e a própria
+    # escuridão é a evidência (a equipe verifica no local se o poste está apagado ou se não existe).
+    breu = luminosidade < r["luminosidade"]["limiar_breu"]
+    if origem == "cidadao" and acesos + apagados == 0 and buracos == 0 and not sensor_escuro and not breu:
         foto_valida = False
         motivos.append("nenhum poste identificado na foto; enquadre o poste")
 
@@ -53,6 +55,8 @@ def validar(*, origem: str, acesos: int, apagados: int, luminosidade: float, nit
         motivos.append(f"{apagados} poste(s) apagado(s) detectado(s)")
     if status == StatusTrecho.escura:
         motivos.append("trecho classificado como escuro")
+    if breu and acesos + apagados == 0:
+        motivos.append("breu: quase nenhuma luz na cena; poste apagado ou inexistente (verificação no local)")
     if lux_baixo:
         motivos.append(f"sensor de luz do robô marcou {sensor_lux} lux")
     elif sensor_escuro:

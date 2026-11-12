@@ -10,6 +10,7 @@ const NOMES_TIPO = {
   instalacao_iluminacao: "Instalação de iluminação",
   poda_ou_obstrucao: "Poda / obstrução",
   buraco: "Buraco na via",
+  trecho_sem_luz: "Trecho sem luz (inspeção)",
 };
 const NOMES_TRECHO = { iluminada: "Iluminado", parcial: "Parcialmente escuro", escura: "Escuro", sem_postes_visiveis: "Sem postes visíveis" };
 const CORES_CLASSE = { poste_aceso: "#4ade80", poste_apagado: "#ff5d5d", buraco: "#ff9f1c" };
