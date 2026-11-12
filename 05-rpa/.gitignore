@@ -1,0 +1,15 @@
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+
+# o .gitignore da raiz do repo ignora .env.*; aqui reabrimos so o modelo
+!.env.example
+
+# saidas geradas a cada execucao (nao versionar)
+logs/*.log
+logs/auditoria.csv
+outbox/emails/
+outbox/chamados/
+outbox/*.csv

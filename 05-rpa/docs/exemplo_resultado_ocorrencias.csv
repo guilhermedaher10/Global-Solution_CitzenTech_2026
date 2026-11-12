@@ -1,0 +1,12 @@
+id,poste_id,data_hora,latitude,longitude,lux_medido,foto,descricao_ia,confianca_ia,severidade,escola_proxima,ponto_onibus_proximo,status,prioridade,protocolo,data_envio,chamado_pdf,observacao
+O-000,P-104,2026-10-28T19:40:00,-23.5521,-46.6342,1,fotos/P-104.jpg,Lampada apagada em via residencial,0.93,moderada,0,0,ENVIADO,NORMAL,CH-20261028-O-000,2026-10-28,chamado_O-000.pdf,chamado anterior (ja enviado)
+O-001,P-101,2026-11-08T20:10:00,-23.5505,-46.6333,3,fotos/P-101.jpg,Poste sem iluminacao em rua residencial,0.91,moderada,0,0,ENVIADO,NORMAL,CH-20261109-O-001,2026-11-09,chamado_O-001.pdf,sem fatores de risco adicionais
+O-002,P-102,2026-11-08T20:25:00,-23.5532,-46.6361,2,fotos/P-102.jpg,Trecho escuro em frente a escola,0.88,moderada,1,0,ENVIADO,URGENTE,CH-20261109-O-002,2026-11-09,chamado_O-002.pdf,escola proxima
+O-003,P-103,2026-11-08T21:02:00,-23.5548,-46.6390,0,fotos/P-103.jpg,Escuridao total em passagem estreita,0.95,severa,0,0,ENVIADO,URGENTE,CH-20261109-O-003,2026-11-09,chamado_O-003.pdf,escuridao severa
+O-004,P-104,2026-11-08T21:15:00,-23.5521,-46.6342,1,fotos/P-104.jpg,Lampada apagada em via residencial,0.90,moderada,0,0,DESCARTADO_DUPLICADO,,,,,ja existe chamado O-000 para o poste P-104
+O-005,P-105,2026-11-08T21:30:00,,,4,fotos/P-105.jpg,Poste com luz fraca,0.86,leve,0,0,FALHA_DADOS,,,,,latitude ausente; longitude ausente
+O-006,P-106,2026-11-08T21:44:00,-23.5570,-46.6410,6,fotos/P-106.jpg,Imagem desfocada; possivel poste sem luz,0.55,leve,0,0,REVISAO_HUMANA,,,,,confianca 0.55 abaixo do limiar 0.70
+O-007,P-107,2026-11-08T22:01:00,-23.5590,-46.6425,2,fotos/P-107.jpg,Poste apagado em avenida,0.89,moderada,0,0,FALHA_DADOS,,,,,arquivo de foto nao encontrado: fotos/P-107.jpg
+O-008,P-101,2026-11-08T22:20:00,-23.5505,-46.6333,3,fotos/P-101.jpg,Poste sem iluminacao em rua residencial,0.92,moderada,0,0,DESCARTADO_DUPLICADO,,,,,ja existe chamado O-001 para o poste P-101
+O-009,P-109,2026-11-08T22:35:00,-23.5610,-46.6440,1,fotos/P-109.jpg,Ponto de onibus sem iluminacao,0.90,moderada,0,1,ENVIADO,URGENTE,CH-20261109-O-009,2026-11-09,chamado_O-009.pdf,ponto de onibus proximo
+O-010,P-110,2026-11-08T22:50:00,-23.5625,-46.6455,5,fotos/P-110.jpg,Possivel lampada queimada,0.60,leve,0,0,ENVIADO,NORMAL,CH-20261109-O-010,2026-11-09,chamado_O-010.pdf,sem fatores de risco adicionais

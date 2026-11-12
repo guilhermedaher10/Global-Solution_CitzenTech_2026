@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portal de Zeladoria (MOCK)</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 560px; margin: 2rem auto; padding: 0 1rem; }
+  .aviso { background: #fff3cd; border: 1px solid #e0c36a; padding: .6rem .8rem; border-radius: 6px; font-size: .9rem; }
+  label { display: block; margin-top: .8rem; font-weight: 600; }
+  input, select, textarea { width: 100%; padding: .5rem; box-sizing: border-box; }
+  button { margin-top: 1rem; padding: .6rem 1.2rem; cursor: pointer; }
+  #resultado { margin-top: 1.2rem; padding: .8rem; background: #e7f6ea; border-radius: 6px; }
+  [hidden] { display: none; }
+</style>
+</head>
+<body>
+  <h1>Portal de Zeladoria</h1>
+  <p class="aviso">Portal SIMULADO para demonstracao do robo. Nao e um sistema de nenhuma prefeitura.</p>
+
+  <form id="form-chamado">
+    <label for="id_ocorrencia">ID da ocorrencia</label>
+    <input id="id_ocorrencia" name="id_ocorrencia" required>
+
+    <label for="poste_id">Poste</label>
+    <input id="poste_id" name="poste_id" required>
+
+    <label for="latitude">Latitude</label>
+    <input id="latitude" name="latitude" required>
+
+    <label for="longitude">Longitude</label>
+    <input id="longitude" name="longitude" required>
+
+    <label for="prioridade">Prioridade</label>
+    <select id="prioridade" name="prioridade">
+      <option value="NORMAL">Normal</option>
+      <option value="URGENTE">Urgente</option>
+    </select>
+
+    <label for="descricao">Descricao</label>
+    <textarea id="descricao" name="descricao" rows="3"></textarea>
+
+    <button id="btn_enviar" type="submit">Enviar chamado</button>
+  </form>
+
+  <div id="resultado" hidden>
+    Chamado registrado. Protocolo: <strong id="protocolo_gerado"></strong>
+  </div>
+
+<script>
+  let seq = 0;
+  document.getElementById("form-chamado").addEventListener("submit", function (e) {
+    e.preventDefault();
+    seq += 1;
+    const ano = new Date().getFullYear();
+    const protocolo = "PM-" + ano + "-" + String(seq).padStart(4, "0");
+    document.getElementById("protocolo_gerado").textContent = protocolo;
+    document.getElementById("resultado").hidden = false;
+  });
+</script>
+</body>
+</html>
