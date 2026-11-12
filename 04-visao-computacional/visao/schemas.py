@@ -9,7 +9,7 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
-VERSAO_CONTRATO = "1.2"   # 1.1: robô (ultrassônico, alertas) e fusão; 1.2: orientação do GenAI
+VERSAO_CONTRATO = "1.3"   # 1.1: robô e fusão; 1.2: orientação do GenAI; 1.3: breu, endereço, relato sem foto
 
 
 class Origem(str, Enum):
@@ -44,6 +44,7 @@ class TipoChamado(str, Enum):
     instalacao_iluminacao = "instalacao_iluminacao"   # trecho escuro sem poste
     poda_ou_obstrucao = "poda_ou_obstrucao"           # poste aceso, mas a luz não chega ao chão
     buraco = "buraco"                                 # buraco na via
+    trecho_sem_luz = "trecho_sem_luz"                 # breu: poste apagado invisível no escuro ou inexistente
 
 
 class Confirmacao(str, Enum):
@@ -63,6 +64,7 @@ class Localizacao(BaseModel):
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
     fonte: str = Field(description="'informada' (app/robô) ou 'exif' (GPS da foto)")
+    endereco: str | None = Field(default=None, max_length=200, description="Endereço legível, se informado")
 
 
 class Deteccao(BaseModel):
@@ -159,6 +161,7 @@ class AlertaRobo(BaseModel):
     longitude: float = Field(ge=-180, le=180)
     sensor_lux: float | None = Field(default=None, ge=0, description="Leitura do LDR")
     sensor_distancia_cm: float | None = Field(default=None, ge=0, description="Leitura do ultrassônico")
+    endereco: str | None = Field(default=None, max_length=200)
     alerta: list[TipoAlerta] = Field(default_factory=list,
                                      description="O que disparou; vazio = a API deduz pelas leituras")
 
@@ -179,3 +182,16 @@ class RespostaAlerta(BaseModel):
     prioridade_previa: Prioridade
     proximo_passo: str
     acao_robo: AcaoRobo
+
+
+class RelatoCidadao(BaseModel):
+    """Relato SEM foto (só o local): vira suspeita, como o alerta do robô, até uma foto confirmar."""
+    latitude: float = Field(ge=-90, le=90)
+    longitude: float = Field(ge=-180, le=180)
+    endereco: str | None = Field(default=None, max_length=200)
+    problema: list[TipoAlerta] = Field(default_factory=lambda: [TipoAlerta.escuro], min_length=1,
+                                       description="O que o cidadão viu: escuro e/ou buraco")
+
+    model_config = {"json_schema_extra": {"examples": [
+        {"latitude": -23.5614, "longitude": -46.6559, "endereco": "Av. Paulista, 1578 - Bela Vista, São Paulo",
+         "problema": ["escuro"]}]}}

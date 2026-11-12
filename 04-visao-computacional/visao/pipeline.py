@@ -12,7 +12,7 @@ from datetime import datetime, timedelta, timezone
 import numpy as np
 
 from . import imagem as im
-from .config import CLASSE_ACESO, CLASSE_APAGADO, CLASSE_BURACO
+from .config import CLASSE_ACESO, CLASSE_APAGADO, CLASSE_BURACO, regras
 from .detector import Detector
 from .fusao import fundir, ler_sensores
 from .privacidade import BorradorRostos, ler_metadados
@@ -33,10 +33,15 @@ def analisar_imagem(img: np.ndarray, detector: Detector, *, origem: Origem | str
                     borrador: BorradorRostos | None = None,
                     retornar_imagem: bool = False, hora_captura: str | None = None,
                     fonte_localizacao: str = "informada", exif_removido: bool = True,
+                    endereco: str | None = None,
                     deteccoes=None) -> Analise:
     origem = Origem(origem)
     if deteccoes is None:
         deteccoes = detector.detectar(img)
+    # sanidade: nenhuma luminária ocupa metade da foto; caixa assim é erro do modelo, não evidência
+    h, w = img.shape[:2]
+    limite = regras()["deteccao"].get("area_maxima", 0.5) * h * w
+    deteccoes = [d for d in deteccoes if (d.bbox[2] - d.bbox[0]) * (d.bbox[3] - d.bbox[1]) <= limite]
 
     acesos = sum(d.classe == CLASSE_ACESO for d in deteccoes)
     apagados = sum(d.classe == CLASSE_APAGADO for d in deteccoes)
@@ -49,7 +54,7 @@ def analisar_imagem(img: np.ndarray, detector: Detector, *, origem: Origem | str
                         nitidez=im.nitidez(img), lado_menor=im.lado_menor(img), status=status,
                         sensor_lux=sensor_lux, buracos=buracos, sensor_escuro=sinais.escuro)
     fusao = fundir(sinais, acesos=acesos, apagados=apagados, buracos=buracos, status=status,
-                   foto_valida=validacao.foto_valida)
+                   foto_valida=validacao.foto_valida, luminosidade=lum)
     prioridade = priorizar(apagados=apagados, status=status, sensor_lux=sensor_lux,
                            abrir_chamado=validacao.abrir_chamado, buracos=buracos,
                            sensor_escuro=sinais.escuro, fusao=fusao)
@@ -60,7 +65,8 @@ def analisar_imagem(img: np.ndarray, detector: Detector, *, origem: Origem | str
 
     loc = None
     if latitude is not None and longitude is not None:
-        loc = Localizacao(latitude=latitude, longitude=longitude, fonte=fonte_localizacao)
+        loc = Localizacao(latitude=latitude, longitude=longitude, fonte=fonte_localizacao,
+                          endereco=(endereco or None) and endereco.strip()[:200])
 
     return Analise(
         id_captura=str(uuid.uuid4()),
@@ -86,7 +92,8 @@ def analisar_bytes(dados: bytes, detector: Detector, *, origem: Origem | str = O
                    latitude: float | None = None, longitude: float | None = None,
                    sensor_lux: float | None = None, sensor_distancia_cm: float | None = None,
                    alerta: list[TipoAlerta | str] | None = None,
-                   borrador: BorradorRostos | None = None, retornar_imagem: bool = False) -> Analise:
+                   borrador: BorradorRostos | None = None, retornar_imagem: bool = False,
+                   endereco: str | None = None) -> Analise:
     """Entrada da API: lê EXIF (GPS/hora) antes de decodificar; a imagem decodificada já não tem EXIF."""
     img = im.decodificar(dados)
     if img is None:
@@ -102,4 +109,5 @@ def analisar_bytes(dados: bytes, detector: Detector, *, origem: Origem | str = O
 
     return analisar_imagem(img, detector, origem=origem, latitude=latitude, longitude=longitude,
                            sensor_lux=sensor_lux, sensor_distancia_cm=sensor_distancia_cm, alerta=alerta,
-                           borrador=borrador, retornar_imagem=retornar_imagem, hora_captura=meta.hora_captura, fonte_localizacao=fonte)
+                           borrador=borrador, retornar_imagem=retornar_imagem, endereco=endereco,
+                           hora_captura=meta.hora_captura, fonte_localizacao=fonte)
