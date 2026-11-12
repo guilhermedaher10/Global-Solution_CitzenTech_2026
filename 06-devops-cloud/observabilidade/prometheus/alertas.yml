@@ -1,0 +1,43 @@
+# Alertas sobre as 4 métricas de ouro + o que importa para o produto.
+# Para disparar um de propósito (evidência do PDF): pare a Visão  ->  "VisaoForaDoAr" em ~1 min.
+groups:
+  - name: ruas-escuras
+    rules:
+      - alert: VisaoForaDoAr
+        expr: up{job=~"visao.*"} == 0
+        for: 1m
+        labels: { severidade: critica }
+        annotations:
+          resumo: "API da Visão fora do ar ({{ $labels.ambiente }})"
+          descricao: "O Prometheus não consegue ler {{ $labels.instance }} há 1 minuto. Cidadãos e o robô não conseguem abrir chamados."
+
+      - alert: TaxaDeErrosAlta # erros
+        expr: |
+          sum by (ambiente) (rate(http_requisicoes_total{status=~"5.."}[5m]))
+            / clamp_min(sum by (ambiente) (rate(http_requisicoes_total[5m])), 1e-9) > 0.05
+        for: 2m
+        labels: { severidade: alta }
+        annotations:
+          resumo: "Mais de 5% das requisições com erro 5xx ({{ $labels.ambiente }})"
+
+      - alert: LatenciaAlta # latência
+        expr: |
+          histogram_quantile(0.95, sum by (le, ambiente) (rate(http_duracao_segundos_bucket{rota="/v1/analisar"}[5m]))) > 3
+        for: 5m
+        labels: { severidade: media }
+        annotations:
+          resumo: "p95 da análise de foto acima de 3 s ({{ $labels.ambiente }})"
+
+      - alert: SaturacaoAlta # saturação
+        expr: sum by (ambiente) (http_requisicoes_em_andamento) > 8
+        for: 2m
+        labels: { severidade: media }
+        annotations:
+          resumo: "Mais de 8 análises simultâneas: perto do limite de escala (10 por réplica)"
+
+      - alert: ModeloNaoCarregado # produto
+        expr: visao_modelo_carregado == 0
+        for: 1m
+        labels: { severidade: critica }
+        annotations:
+          resumo: "A Visão subiu sem o modelo YOLO: /v1/analisar está respondendo 503"

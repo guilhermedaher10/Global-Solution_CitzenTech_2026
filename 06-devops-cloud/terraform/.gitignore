@@ -1,0 +1,2 @@
+# planos salvos (terraform plan -out) carregam valores sensíveis: nunca versionar
+*.tfplan
