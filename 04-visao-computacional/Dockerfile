@@ -9,13 +9,17 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     YOLO_CONFIG_DIR=/tmp/ultralytics \
     MODELO_PATH=/app/models/best.pt
 
+# upgrade: aplica as correções de segurança do Debian publicadas depois da imagem base (Trivy)
 RUN apt-get update \
+ && apt-get upgrade -y \
  && apt-get install -y --no-install-recommends libgl1 libglib2.0-0 \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-# PyTorch CPU (imagem ~1 GB menor que a versão com CUDA)
-RUN pip install torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cpu
+# setuptools/wheel novos: os antigos trazem dependências embutidas com CVE (Trivy)
+RUN pip install --upgrade pip "setuptools>=80" "wheel>=0.46.2"
+# PyTorch CPU (imagem ~1 GB menor que a versão com CUDA); 2.10: corrige CVE da 2.6 (Trivy)
+RUN pip install torch==2.10.0 torchvision==0.25.0 --index-url https://download.pytorch.org/whl/cpu
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 

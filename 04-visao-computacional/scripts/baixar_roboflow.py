@@ -32,7 +32,7 @@ MAX_NOME = 60
 def nome_curto(stem: str) -> str:
     if len(stem) <= MAX_NOME:
         return stem
-    return f"{stem[:40]}_{hashlib.md5(stem.encode()).hexdigest()[:10]}"
+    return f"{stem[:40]}_{hashlib.sha256(stem.encode()).hexdigest()[:10]}"
 
 
 def link_export(cliente: httpx.Client, ws: str, proj: str, versao: int, chave: str) -> str:

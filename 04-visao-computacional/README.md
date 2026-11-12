@@ -38,10 +38,10 @@ O modelo **enxerga**. Quem **decide** são regras auditáveis e, no fim, uma pes
 | Caminho | O quê |
 |---|---|
 | `visao/` | Biblioteca: detector, regras, fusão sensor + foto, privacidade, pipeline, painel de RA, contrato (schemas) |
-| `api/main.py` | API FastAPI: `POST /v1/analisar` (foto + sensores, orientação do GenAI), `POST /v1/alerta-robo` (só sensores), `GET /saude` |
+| `api/main.py` | API FastAPI: `POST /v1/analisar` (foto + sensores, orientação do GenAI), `POST /v1/alerta-robo` (só sensores), `GET /saude`, `GET /metrics` |
 | `scripts/` | Coleta → unificação → treino → avaliação → tempo real (passo a passo abaixo) |
 | `configs/` | Classes e aliases, regras de negócio, fontes de dados |
-| `tests/` | 35 testes (regras, fusão com o robô, integração GenAI, EXIF/privacidade, pipeline, API), sem precisar de GPU |
+| `tests/` | 40 testes (regras, fusão com o robô, integração GenAI, EXIF/privacidade, pipeline, API), sem precisar de GPU |
 | `docs/` | [Integração/contrato](docs/integracao.md) · [Dataset](docs/dataset.md) · [Ética e LGPD](docs/etica-lgpd.md) · [Relatório](docs/relatorio.md) · [Roteiro do vídeo](docs/roteiro-video.md) |
 | `results/` | Métricas, curvas, matriz de confusão e exemplos (gerados pelos scripts) |
 | `models/best.pt` | Modelo treinado |
@@ -57,7 +57,7 @@ python -m venv .venv
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
 pip install -r requirements-dados.txt -r requirements-dev.txt
 
-pytest                                     # 35 testes
+pytest                                     # 40 testes
 ```
 
 ### 1. Dataset → 2. Treino → 3. Avaliação
