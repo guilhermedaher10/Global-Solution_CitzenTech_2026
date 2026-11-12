@@ -9,6 +9,9 @@ scrape_configs:
   # Visão rodando no docker compose (local)
   - job_name: visao-local
     metrics_path: /metrics
+    authorization: # o compose passa o mesmo METRICS_TOKEN para a Visão local
+      type: Bearer
+      credentials_file: /tmp/metrics-token
     static_configs:
       - targets: ["visao:8000"]
         labels: { ambiente: local }

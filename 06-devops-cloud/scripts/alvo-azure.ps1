@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Aponta o Prometheus local para a Visão publicada na Azure.
 

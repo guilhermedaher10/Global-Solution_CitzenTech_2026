@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Prepara a assinatura Azure para o Terraform e o pipeline (rodar UMA vez, por quem é Owner).
 
