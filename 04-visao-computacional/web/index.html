@@ -4,16 +4,47 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Vésper · da escuridão à luz</title>
-  <meta name="description" content="Vésper é a ponte entre a rua escura e quem pode acendê-la: uma foto, a IA confirma, prioriza e o chamado chega à prefeitura com evidência.">
+  <meta name="description" content="Rua sem luz ou apagão? Mostre pelo celular. A IA confirma a falha e o chamado chega a quem resolve.">
   <meta name="theme-color" content="#0a1e13">
   <meta property="og:title" content="Vésper · da escuridão à luz">
-  <meta property="og:description" content="Reporte uma rua escura. A IA confirma, prioriza e encaminha.">
+  <meta property="og:description" content="Rua sem luz? Mostre pelo celular. A IA confirma e encaminha.">
   <link rel="icon" href="/static/icone.svg" type="image/svg+xml">
   <link rel="preload" href="/static/fontes/cormorant-garamond-latin-600-italic.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/static/vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="/static/app.css">
 </head>
 <body>
+  <!-- Ícones de linha (padrão Lucide, ISC), inline: sem CDN e todos com o mesmo traço -->
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-video" viewBox="0 0 24 24"><path d="m16 13 5.2 3.5a.5.5 0 0 0 .8-.4V7.9a.5.5 0 0 0-.8-.4L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 5-5.5 10.2-7.4 11.8a1 1 0 0 1-1.2 0C9.5 20.2 4 15 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></symbol>
+    <symbol id="i-nav" viewBox="0 0 24 24"><path d="M3 11 22 2l-9 19-2-8z"/></symbol>
+    <symbol id="i-bot" viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2M20 14h2M15 13v2M9 13v2"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.7 9a1 1 0 0 1-.6 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.2-2.7a1.2 1.2 0 0 1 1.6 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M14.5 21.7a.5.5 0 0 0 .9 0l6.5-19a.5.5 0 0 0-.6-.6l-19 6.5a.5.5 0 0 0 0 .9l7.9 3.2a2 2 0 0 1 1.1 1.1z"/><path d="m21.9 2.1-11 11"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.8-1.6l9.9-10.2a.5.5 0 0 1 .9.5l-1.9 6A1 1 0 0 0 13 10h7a1 1 0 0 1 .8 1.6l-9.9 10.2a.5.5 0 0 1-.9-.5l1.9-6A1 1 0 0 0 11 14z"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2m-7.1-17.1 1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.7 18-8-14a2 2 0 0 0-3.5 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3"/><path d="M12 9v4M12 17h.01"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M21.8 10A10 10 0 1 1 17 3.3"/><path d="m9 11 3 3L22 4"/></symbol>
+    <symbol id="i-phone-call" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+    <symbol id="i-face" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M6 3l14 9-14 9z"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.8 9.8 0 0 1 6.7 2.7L21 8"/><path d="M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.8 9.8 0 0 1-6.7-2.7L3 16"/><path d="M8 16H3v5"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12.8 2.2a2 2 0 0 0-1.7 0L2.6 6.1a1 1 0 0 0 0 1.8l8.6 3.9a2 2 0 0 0 1.7 0l8.6-3.9a1 1 0 0 0 0-1.8z"/><path d="m22 17.7-9.2 4.1a2 2 0 0 1-1.7 0L2 17.7M22 12.7l-9.2 4.1a2 2 0 0 1-1.7 0L2 12.7"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+    <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M15 2v2M15 20v2M2 15h2M2 9h2M20 15h2M20 9h2M9 2v2M9 20v2"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  </svg>
+
   <a class="pular" href="#conteudo">Pular para o conteúdo</a>
 
   <header class="topo" id="topo">
@@ -28,7 +59,7 @@
       <a href="#robo" data-rota="robo">Robô</a>
       <a href="#central" data-rota="central">Central</a>
     </nav>
-    <button type="button" class="botao-qr" id="abrir-qr" aria-haspopup="dialog" title="Abrir no celular pelo QR Code">📱<span> No celular</span></button>
+    <button type="button" class="botao-qr" id="abrir-qr" aria-haspopup="dialog" title="Abrir no celular pelo QR Code"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg><span>No celular</span></button>
     <div class="status-api" id="status-api" role="status" aria-live="polite"><span class="ponto"></span><span class="texto">conectando…</span></div>
   </header>
 
@@ -53,112 +84,117 @@
           <g id="postes"></g>
         </svg>
         <div class="abertura-texto">
-          <p class="sobretitulo">FIAP · Global Solution · CitizenTech</p>
           <h1><span class="wordmark">Vésper</span><em>da escuridão à luz.</em></h1>
-          <p class="lead">A ponte entre a rua escura e quem pode acendê-la. Aponte o celular, filme ou fotografe ao vivo:
-            a inteligência artificial confirma a falha, explica a prioridade e entrega o chamado a quem resolve.</p>
+          <p class="lead">Rua sem luz ou apagão? Mostre pelo celular. A IA confirma a falha e o chamado chega a quem resolve.</p>
           <div class="ctas">
-            <a class="botao primario agora" href="#agora">🚨 Estou no escuro agora</a>
-            <a class="botao" href="#reportar">Reportar com calma</a>
-            <a class="botao fantasma" href="#central">Ver a central</a>
+            <a class="botao agora" href="#agora"><svg class="ic" aria-hidden="true"><use href="#i-video"/></svg>Estou no escuro agora</a>
+            <a class="botao fantasma" href="#acompanhar">Acompanhar chamado</a>
           </div>
+          <p class="nota-cta">Sem cadastro, sem instalar nada. Sua imagem não é guardada.</p>
         </div>
       </div>
 
-      <div class="faixa-numeros">
-        <div><strong>3 s</strong><span>da foto ao chamado priorizado</span></div>
-        <div><strong>0</strong><span>fotos armazenadas (LGPD)</span></div>
-        <div><strong>100%</strong><span>das decisões com motivo explicado</span></div>
-        <div><strong>4</strong><span>portas: vídeo ao vivo, foto, relato e robô</span></div>
-      </div>
+      <section class="bloco" aria-labelledby="t-acoes">
+        <h2 class="titulo-secao" id="t-acoes">Escolha como reportar</h2>
+        <div class="acoes">
+          <a class="porta principal" href="#agora">
+            <span class="porta-icone"><svg class="ic" aria-hidden="true"><use href="#i-video"/></svg></span>
+            <h3>Ao vivo</h3><p>Filme ou fotografe a rua agora.</p>
+            <span class="porta-acao">Abrir câmera <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></span>
+          </a>
+          <a class="porta" href="#reportar">
+            <span class="porta-icone"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg></span>
+            <h3>Foto da galeria</h3><p>Envie uma foto que você já tirou.</p>
+            <span class="porta-acao">Enviar foto <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></span>
+          </a>
+          <a class="porta" href="#reportar" data-modo="relato">
+            <span class="porta-icone"><svg class="ic" aria-hidden="true"><use href="#i-pin"/></svg></span>
+            <h3>Sem foto</h3><p>Escuro demais? Informe só o endereço.</p>
+            <span class="porta-acao">Informar endereço <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></span>
+          </a>
+        </div>
+      </section>
 
-      <section class="bloco">
-        <h2 class="titulo-secao">Uma rua escura não é só escuridão.</h2>
-        <p class="subtitulo">É medo de voltar para casa, assalto e queda. E hoje ela só chega à prefeitura quando alguém
-          reclama, sem prova nem prioridade. O Vésper muda o começo dessa história.</p>
+      <section class="bloco" aria-labelledby="t-como">
+        <h2 class="titulo-secao" id="t-como">Como funciona</h2>
         <ol class="jornada">
-          <li><span class="num">1</span><h3>Descobrir</h3><p>O cidadão fotografa, relata o endereço ou o robô detecta com sensores de luz e distância.</p></li>
-          <li><span class="num">2</span><h3>Confirmar</h3><p>Visão computacional encontra postes acesos e apagados e lê a cena inteira: rua escura, breu ou apagão na região.</p></li>
-          <li><span class="num">3</span><h3>Priorizar</h3><p>Regras auditáveis somam pontos e definem o setor: conserto, inspeção, poda ou buraco.</p></li>
-          <li><span class="num">4</span><h3>Orientar</h3><p>IA generativa local informa o prazo oficial e cita a fonte.</p></li>
-          <li><span class="num">5</span><h3>Encaminhar</h3><p>Robô de RPA registra no sistema da prefeitura; o cidadão acompanha cada etapa.</p></li>
+          <li><span class="num">1</span><h3>Você mostra</h3><p>Vídeo, foto ou endereço.</p></li>
+          <li><span class="num">2</span><h3>A IA confirma</h3><p>Postes apagados, rua escura ou apagão.</p></li>
+          <li><span class="num">3</span><h3>Prioridade</h3><p>Calculada e explicada.</p></li>
+          <li><span class="num">4</span><h3>Encaminhamento</h3><p>Prefeitura ou distribuidora de energia.</p></li>
+          <li><span class="num">5</span><h3>Você acompanha</h3><p>Pelo protocolo, até a luz voltar.</p></li>
         </ol>
       </section>
 
-      <section class="bloco portas">
-        <h2 class="titulo-secao">Quatro portas de entrada</h2>
-        <div class="grade-3 grade-4">
-          <a class="porta destaque" href="#agora"><span class="icone">🎥</span><h3>Ao vivo, agora</h3><p>Abra o site (até pelo QR Code), filme alguns segundos e envie. A localização vai junto, sem cadastro.</p></a>
-          <a class="porta" href="#reportar"><span class="icone">📷</span><h3>Foto do cidadão</h3><p>Câmera ou galeria, com GPS ou endereço. A IA marca os postes e decide.</p></a>
-          <a class="porta" href="#reportar" data-modo="relato"><span class="icone">📍</span><h3>Relato sem foto</h3><p>Breu total ou sem câmera? Informe o endereço; vira suspeita até alguém confirmar.</p></a>
-          <a class="porta" href="#robo"><span class="icone">🤖</span><h3>Robô patrulheiro</h3><p>Sensores de luz e distância disparam alertas com GPS; a foto confirma.</p></a>
-        </div>
-      </section>
-
-      <section class="bloco confianca">
-        <div class="grade-3">
-          <div class="cartao"><h3>Privacidade por padrão</h3><p>A foto não é guardada. Rostos são borrados antes de qualquer retorno, os dados escondidos da imagem (EXIF) são descartados e as métricas não carregam dado pessoal.</p></div>
-          <div class="cartao"><h3>IA que se explica</h3><p>A IA enxerga; quem decide são regras auditáveis, sempre com o motivo de cada ponto. Um atendente humano confirma antes do conserto.</p></div>
-          <div class="cartao"><h3>Feito para a cidade</h3><p>ODS <strong>11</strong> cidades sustentáveis · <strong>3</strong> saúde e menos acidentes · <strong>10</strong> menos desigualdade · <strong>9</strong> infraestrutura.</p></div>
-        </div>
-      </section>
-
-      <section class="bloco equipe">
-        <h2 class="titulo-secao">Um produto, sete disciplinas</h2>
-        <ul class="disciplinas">
-          <li><strong>Visão Computacional</strong><span>YOLO, validação, prioridade, privacidade</span></li>
-          <li><strong>IA Generativa</strong><span>assistente local com fontes oficiais</span></li>
-          <li><strong>Maker Lab</strong><span>robô com sensores de luz e distância</span></li>
-          <li><strong>RPA</strong><span>despacho automático dos chamados</span></li>
-          <li><strong>Big Data</strong><span>bairros mais escuros e tempo até o conserto</span></li>
-          <li><strong>DevOps &amp; Cloud</strong><span>Azure, pipeline seguro, observabilidade</span></li>
-          <li><strong>Negócio &amp; Pitch</strong><span>modelo de negócio e impacto</span></li>
+      <section class="bloco" aria-label="Compromissos">
+        <ul class="garantias">
+          <li><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><div><strong>Privacidade</strong><span>Imagem não guardada, rostos borrados.</span></div></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-info"/></svg><div><strong>Decisão explicada</strong><span>Cada prioridade mostra o motivo.</span></div></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-users"/></svg><div><strong>Pessoa no circuito</strong><span>A central confirma antes do conserto.</span></div></li>
         </ul>
+      </section>
+
+      <section class="bloco construido" aria-labelledby="t-construido">
+        <h2 class="titulo-pequeno" id="t-construido">Como o Vésper foi construído</h2>
+        <dl class="disciplinas">
+          <div><dt>Visão Computacional</dt><dd>detecção de postes, leitura da cena e câmera ao vivo</dd></div>
+          <div><dt>IA Generativa</dt><dd>prazos e canais oficiais, com a fonte citada</dd></div>
+          <div><dt>Maker Lab</dt><dd>robô de patrulha com sensores de luz e distância</dd></div>
+          <div><dt>RPA</dt><dd>despacho automático dos chamados</dd></div>
+          <div><dt>Big Data</dt><dd>bairros mais escuros e tempo até o conserto</dd></div>
+          <div><dt>DevOps e Cloud</dt><dd>Azure, pipeline seguro e monitoramento</dd></div>
+          <div><dt>Negócio e Pitch</dt><dd>modelo de negócio e impacto</dd></div>
+        </dl>
+        <p class="ods">FIAP Global Solution 2026.2 · CitizenTech · ODS 11, 3, 10, 9 e 16</p>
       </section>
     </section>
 
     <!-- =========================================================== REPORTAR -->
     <section class="tela" id="tela-reportar" data-tela="reportar" hidden>
-      <header class="cabecalho-tela">
+      <header class="cabecalho-tela centro">
         <p class="sobretitulo">Reportar</p>
-        <h1>Mostre onde a luz <em>falta</em>.</h1>
-        <p class="lead">Três passos. Sem cadastro, sem guardar sua foto.</p>
+        <h1>Mostre onde falta <em>luz</em>.</h1>
+        <p class="lead">Sem cadastro. Sua imagem não é guardada.</p>
       </header>
 
-      <div class="grade-reportar">
+      <div class="grade-reportar" id="grade-reportar">
         <form class="cartao assistente" id="form-relato" novalidate>
           <div class="seletor-modo" role="radiogroup" aria-label="Tipo de relato">
-            <button type="button" role="radio" class="modo ativo" data-modo="foto" aria-checked="true">📷 Com foto</button>
-            <button type="button" role="radio" class="modo" data-modo="relato" aria-checked="false">📍 Sem foto</button>
+            <button type="button" role="radio" class="modo ativo" data-modo="foto" aria-checked="true"><svg class="ic" aria-hidden="true"><use href="#i-camera"/></svg>Com imagem</button>
+            <button type="button" role="radio" class="modo" data-modo="relato" aria-checked="false"><svg class="ic" aria-hidden="true"><use href="#i-pin"/></svg>Sem imagem</button>
           </div>
 
           <fieldset class="passo" id="passo-evidencia">
-            <legend><span class="num">1</span> Evidência</legend>
+            <legend><span class="num">1</span> Imagem</legend>
             <div id="area-foto">
-              <div class="ao-vivo">
-                <button type="button" class="botao primario largo" id="abrir-camera">🎥 Câmera ao vivo · filmar ou fotografar</button>
-                <p class="dica">Abre a câmera aqui mesmo, sem instalar nada. A localização é pedida junto.</p>
+              <div class="opcoes-captura">
+                <button type="button" class="opcao principal" id="abrir-camera">
+                  <svg class="ic" aria-hidden="true"><use href="#i-video"/></svg><strong>Câmera ao vivo</strong><small>Vídeo ou foto agora</small>
+                </button>
+                <label class="opcao" for="arquivo-camera">
+                  <input type="file" id="arquivo-camera" accept="image/*" capture="environment" class="oculto">
+                  <svg class="ic" aria-hidden="true"><use href="#i-camera"/></svg><strong>Tirar foto</strong><small>Câmera do aparelho</small>
+                </label>
+                <label class="opcao" for="arquivo">
+                  <input type="file" id="arquivo" accept="image/jpeg,image/png,image/webp" class="oculto">
+                  <svg class="ic" aria-hidden="true"><use href="#i-image"/></svg><strong>Escolher da galeria</strong><small>Foto já tirada</small>
+                </label>
               </div>
               <label class="soltar" id="soltar" for="arquivo">
-                <input type="file" id="arquivo" accept="image/jpeg,image/png,image/webp" capture="environment" hidden>
-                <img id="previa" alt="" hidden>
-                <video id="previa-video" muted playsinline loop hidden></video>
-                <span class="soltar-texto" id="soltar-texto">
-                  <span class="soltar-icone" aria-hidden="true">📷</span>
-                  <strong>Ou escolha uma foto da galeria</strong>
-                  <small>À noite, com o poste ou a rua escura aparecendo.</small>
-                </span>
+                <img id="previa" alt="Prévia da imagem escolhida" hidden>
+                <video id="previa-video" muted playsinline loop hidden aria-label="Prévia do vídeo gravado"></video>
+                <span class="soltar-texto" id="soltar-texto">Ou arraste uma foto para cá</span>
               </label>
             </div>
             <div id="area-relato" hidden>
-              <p class="dica">Sem foto, o relato vira uma <strong>suspeita</strong>: a prefeitura vê no mapa e o robô ou outro cidadão confirma.</p>
+              <p class="dica">Sem imagem, o relato fica como suspeita até ser confirmado por outra pessoa ou pelo robô.</p>
               <div class="checks">
-                <label><input type="checkbox" name="problema" value="escuro" checked> Rua escura / poste apagado</label>
+                <label><input type="checkbox" name="problema" value="escuro" checked> Rua escura ou poste apagado</label>
                 <label><input type="checkbox" name="problema" value="buraco"> Buraco ou desnível</label>
               </div>
             </div>
             <div class="sensores-vinculados" id="sensores-vinculados" hidden>
-              🤖 Confirmando o alerta do robô: <strong id="sensores-resumo"></strong>
+              <svg class="ic" aria-hidden="true"><use href="#i-bot"/></svg> Confirmando o alerta do robô: <strong id="sensores-resumo"></strong>
               <button type="button" class="link" id="desvincular">remover</button>
             </div>
           </fieldset>
@@ -166,37 +202,42 @@
           <fieldset class="passo" id="passo-local">
             <legend><span class="num">2</span> Local</legend>
             <div class="local-acoes">
-              <button type="button" class="botao" id="usar-gps">📡 Usar minha localização</button>
+              <button type="button" class="botao" id="usar-gps"><svg class="ic" aria-hidden="true"><use href="#i-nav"/></svg>Usar minha localização</button>
               <div class="busca">
-                <input type="search" id="busca-endereco" placeholder="Ou digite o endereço…" autocomplete="off" aria-label="Buscar endereço" aria-controls="sugestoes">
+                <input type="search" id="busca-endereco" placeholder="Ou digite o endereço" autocomplete="off" aria-label="Buscar endereço" aria-controls="sugestoes">
                 <ul class="sugestoes" id="sugestoes" role="listbox" hidden></ul>
               </div>
             </div>
             <div class="mapa-local" id="mapa-local" aria-label="Toque no mapa para marcar o local"></div>
-            <p class="endereco-escolhido" id="endereco-escolhido">Nenhum local marcado. Toque no mapa, busque o endereço ou use o GPS.</p>
+            <p class="endereco-escolhido" id="endereco-escolhido">Nenhum local marcado.</p>
           </fieldset>
 
           <fieldset class="passo">
             <legend><span class="num">3</span> Enviar</legend>
-            <button class="botao primario largo" id="enviar" type="submit" disabled>Analisar e abrir chamado</button>
+            <button class="botao primario largo" id="enviar" type="submit" disabled><svg class="ic" aria-hidden="true"><use href="#i-send"/></svg><span>Analisar e abrir chamado</span></button>
             <ol class="etapas" id="etapas" hidden>
               <li>Enviando com segurança</li>
               <li id="etapa-detectar">Procurando postes acesos e apagados</li>
-              <li>Validando a evidência e borrando rostos</li>
-              <li>Calculando prioridade e setor</li>
+              <li>Validando e borrando rostos</li>
+              <li>Calculando prioridade</li>
             </ol>
             <p class="erro" id="erro-envio" role="alert" hidden></p>
           </fieldset>
         </form>
 
-        <article class="cartao resultado" id="resultado" hidden aria-live="polite">
+        <article class="resultado" id="resultado" hidden aria-live="polite">
           <div class="resultado-imagem" id="resultado-imagem">
-            <canvas id="canvas-resultado" aria-label="Foto analisada com os postes marcados"></canvas>
+            <canvas id="canvas-resultado" aria-label="Imagem analisada com os postes marcados"></canvas>
             <div class="legenda"><span class="tag aceso">aceso</span><span class="tag apagado">apagado</span></div>
-            <button class="botao mapa-luz" id="ver-mapa-luz" type="button" aria-pressed="false">🌗 Mapa de luz</button>
+            <button class="botao mapa-luz" id="ver-mapa-luz" type="button" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="#i-layers"/></svg>Mapa de luz</button>
           </div>
           <div class="resultado-corpo">
             <div class="veredito" id="veredito"></div>
+            <div class="protocolo-caixa" id="protocolo-caixa" hidden>
+              <span>Protocolo</span><strong id="protocolo"></strong>
+              <a class="botao primario" id="ir-acompanhar" href="#acompanhar">Acompanhar chamado <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+            </div>
+            <div class="encaminhamento" id="encaminhamento" hidden></div>
             <div class="cena" id="cena" hidden></div>
             <div class="prioridade" id="bloco-prioridade">
               <div class="prioridade-topo"><span>Prioridade</span><strong id="prioridade-nivel"></strong></div>
@@ -209,14 +250,10 @@
               <div><span>Setor</span><strong id="info-setor"></strong></div>
             </div>
             <p class="endereco-resultado" id="endereco-resultado"></p>
-            <details class="motivos"><summary>Por que a IA decidiu assim?</summary><ul id="lista-motivos"></ul></details>
-            <div class="encaminhamento" id="encaminhamento" hidden></div>
             <div class="orientacao" id="orientacao" hidden></div>
+            <details class="motivos"><summary>Por que a IA decidiu assim?</summary><ul id="lista-motivos"></ul></details>
             <ul class="selos" id="selos"></ul>
-            <div class="protocolo-caixa" id="protocolo-caixa" hidden>
-              <span>Protocolo</span><strong id="protocolo"></strong>
-              <a class="botao" id="ir-acompanhar" href="#acompanhar">Acompanhar →</a>
-            </div>
+            <button type="button" class="botao fantasma largo" id="novo-relato"><svg class="ic" aria-hidden="true"><use href="#i-refresh"/></svg>Fazer outro relato</button>
           </div>
         </article>
       </div>
@@ -224,17 +261,21 @@
 
     <!-- =========================================================== ACOMPANHAR -->
     <section class="tela" id="tela-acompanhar" data-tela="acompanhar" hidden>
-      <header class="cabecalho-tela">
+      <header class="cabecalho-tela centro">
         <p class="sobretitulo">Acompanhar</p>
-        <h1>Da denúncia até a <em>luz acesa</em>.</h1>
-        <p class="lead">Cada mudança de status feita pela prefeitura aparece aqui.</p>
+        <h1>Da denúncia à <em>luz acesa</em>.</h1>
+        <p class="lead">Digite o protocolo para ver cada etapa do seu chamado.</p>
       </header>
-      <form class="cartao busca-protocolo" id="form-protocolo">
-        <label for="campo-protocolo">Número do protocolo</label>
-        <div class="linha"><input id="campo-protocolo" placeholder="VSP-0000" autocomplete="off"><button class="botao primario">Buscar</button></div>
+      <form class="busca-protocolo" id="form-protocolo" role="search">
+        <label for="campo-protocolo" class="visualmente-oculto">Número do protocolo</label>
+        <div class="linha">
+          <svg class="ic" aria-hidden="true"><use href="#i-search"/></svg>
+          <input id="campo-protocolo" placeholder="VSP-000000" autocomplete="off" spellcheck="false">
+          <button class="botao primario">Buscar</button>
+        </div>
         <div class="meus" id="meus-protocolos"></div>
       </form>
-      <article class="cartao linha-tempo" id="linha-tempo" hidden></article>
+      <article class="linha-tempo" id="linha-tempo" hidden></article>
     </section>
 
     <!-- =========================================================== ROBÔ -->
@@ -242,8 +283,7 @@
       <header class="cabecalho-tela">
         <p class="sobretitulo">Maker Lab</p>
         <h1>O robô <em>desconfia</em>. A foto <em>confirma</em>.</h1>
-        <p class="lead">Um robô de patrulha com dois sensores percorre a rua à noite. Quando algo dispara, ele manda um
-          alerta com GPS ao Vésper e acende um LED. Abaixo, o robô explicado e um painel para simular as leituras.</p>
+        <p class="lead">Um robô de patrulha mede a luz e o chão à noite. Quando algo dispara, envia um alerta com GPS e acende um LED.</p>
       </header>
 
       <div class="grade-robo-intro">
@@ -263,11 +303,11 @@
           </svg>
         </figure>
         <ol class="cartao robo-passos">
-          <li><strong>Patrulha</strong> mede a luz (lux) e a distância até o chão a cada metro.</li>
-          <li><strong>Dispara</strong> quando a luz cai abaixo de 5 lux (escuro) ou o chão some 15 cm ou mais (buraco).</li>
-          <li><strong>Avisa</strong>: manda <code>POST /v1/alerta-robo</code> com lux, distância e GPS.</li>
-          <li><strong>Reage</strong>: LED <span class="pill vermelho">vermelho</span> = prioridade alta, <span class="pill amarelo">amarelo</span> = suspeita registrada.</li>
-          <li><strong>Confirma</strong>: uma foto do mesmo ponto transforma a suspeita em chamado.</li>
+          <li><strong>Patrulha:</strong> mede a luz (lux) e a distância até o chão.</li>
+          <li><strong>Dispara</strong> abaixo de 5 lux (escuro) ou com 15 cm de desnível (buraco).</li>
+          <li><strong>Avisa:</strong> envia <code>POST /v1/alerta-robo</code> com as leituras e o GPS.</li>
+          <li><strong>Reage:</strong> LED <span class="pill vermelho">vermelho</span> para prioridade alta, <span class="pill amarelo">amarelo</span> para suspeita.</li>
+          <li><strong>Confirma:</strong> uma foto do mesmo ponto vira chamado.</li>
         </ol>
       </div>
 
@@ -277,12 +317,12 @@
           <div class="controle">
             <label for="lux">Luz (LDR) <strong id="lux-valor">20 lux</strong></label>
             <input type="range" id="lux" min="0" max="50" step="0.5" value="20">
-            <small>abaixo de 5 lux = trecho escuro</small>
+            <small>abaixo de 5 lux: trecho escuro</small>
           </div>
           <div class="controle">
-            <label for="dist">Distância ao chão (ultrassônico) <strong id="dist-valor">8 cm</strong></label>
+            <label for="dist">Distância ao chão <strong id="dist-valor">8 cm</strong></label>
             <input type="range" id="dist" min="2" max="40" step="1" value="8">
-            <small>15 cm ou mais = desnível (buraco)</small>
+            <small>15 cm ou mais: desnível</small>
           </div>
           <div class="cenarios">
             <button class="botao" data-cenario="normal">Rua normal</button>
@@ -290,17 +330,17 @@
             <button class="botao" data-cenario="buraco">Buraco</button>
             <button class="botao" data-cenario="ambos">Buraco no escuro</button>
           </div>
-          <button class="botao primario largo" id="enviar-alerta">Enviar leitura</button>
-          <button class="botao fantasma largo" id="patrulha">▶ Patrulha de 12 pontos</button>
+          <button class="botao primario largo" id="enviar-alerta"><svg class="ic" aria-hidden="true"><use href="#i-send"/></svg>Enviar leitura</button>
+          <button class="botao fantasma largo" id="patrulha"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg>Simular patrulha de 12 pontos</button>
         </div>
         <div class="cartao painel-robo">
           <h2>Resposta do Vésper</h2>
           <div class="led" id="led" data-acao="nenhuma" aria-hidden="true"></div>
-          <div class="robo-resposta" id="robo-resposta"><strong>Aguardando leitura…</strong><span>Mova os sensores ou escolha um cenário.</span></div>
+          <div class="robo-resposta" id="robo-resposta"><strong>Aguardando leitura</strong><span>Mova os sensores ou escolha um cenário.</span></div>
           <ul class="fatores" id="robo-fatores"></ul>
-          <button class="botao" id="confirmar-foto" hidden>📷 Confirmar com foto</button>
+          <button class="botao" id="confirmar-foto" hidden><svg class="ic" aria-hidden="true"><use href="#i-camera"/></svg>Confirmar com foto</button>
           <div class="trilha" id="trilha" aria-label="Pontos da patrulha"></div>
-          <details class="codigo"><summary>O JSON que o robô envia</summary><pre id="json-robo"></pre></details>
+          <details class="codigo"><summary>JSON enviado pelo robô</summary><pre id="json-robo"></pre></details>
         </div>
       </div>
     </section>
@@ -308,14 +348,14 @@
     <!-- =========================================================== CENTRAL -->
     <section class="tela" id="tela-central" data-tela="central" hidden>
       <header class="cabecalho-tela">
-        <p class="sobretitulo">Central da prefeitura</p>
+        <p class="sobretitulo">Central</p>
         <h1>Chamados <em>confirmados</em>, na ordem certa.</h1>
-        <p class="lead">Cada chamado chega com local, evidência validada e o motivo da prioridade. O atendente confirma e o setor certo é acionado.</p>
+        <p class="lead">Cada chamado chega com local, evidência e o motivo da prioridade. O atendente confirma e encaminha.</p>
       </header>
       <div class="kpis">
         <div class="kpi"><span>Abertos</span><strong id="kpi-abertos">0</strong></div>
         <div class="kpi alta"><span>Prioridade alta</span><strong id="kpi-alta">0</strong></div>
-        <div class="kpi"><span>Suspeitas a confirmar</span><strong id="kpi-suspeitas">0</strong></div>
+        <div class="kpi"><span>Suspeitas</span><strong id="kpi-suspeitas">0</strong></div>
         <div class="kpi ok"><span>Resolvidos</span><strong id="kpi-resolvidos">0</strong></div>
         <div class="kpi apagao"><span>Regiões em alerta</span><strong id="kpi-regioes">0</strong></div>
       </div>
@@ -324,16 +364,16 @@
         <select id="filtro-prioridade" aria-label="Prioridade"><option value="">Todas as prioridades</option><option value="alta">Alta</option><option value="media">Média</option><option value="baixa">Baixa</option></select>
         <select id="filtro-status" aria-label="Status"><option value="">Todos os status</option></select>
         <select id="filtro-origem" aria-label="Origem"><option value="">Todas as origens</option><option value="cidadao">Foto do cidadão</option><option value="relato">Relato sem foto</option><option value="robo">Robô</option><option value="robo+foto">Robô + foto</option></select>
-        <button class="link" id="atualizar-fila" type="button">↻ atualizar</button>
+        <button class="link" id="atualizar-fila" type="button"><svg class="ic" aria-hidden="true"><use href="#i-refresh"/></svg>Atualizar</button>
       </div>
       <div class="grade-central">
         <div class="cartao mapa-cartao"><div id="mapa-central" aria-label="Mapa dos chamados"></div></div>
         <div class="cartao fila">
           <ol id="lista-chamados" class="lista-chamados"></ol>
-          <p class="vazio" id="fila-vazia">Nenhum chamado ainda. Envie uma foto em <a href="#reportar">Reportar</a> ou uma leitura no <a href="#robo">Robô</a>.</p>
+          <p class="vazio" id="fila-vazia">Nenhum chamado ainda. Envie uma imagem em <a href="#reportar">Reportar</a> ou uma leitura no <a href="#robo">Robô</a>.</p>
         </div>
       </div>
-      <p class="nota">A central é compartilhada: um chamado enviado de qualquer celular aparece aqui em segundos. Guardamos só os dados do chamado (tipo, prioridade, local e status), nunca a foto nem o vídeo. Na demonstração, a central não pede login.</p>
+      <p class="nota">A central é compartilhada entre aparelhos e guarda só os dados do chamado, nunca a imagem. Na demonstração, não pede login.</p>
 
       <dialog class="detalhe" id="detalhe">
         <form method="dialog" class="detalhe-corpo" id="detalhe-corpo"></form>
@@ -345,13 +385,13 @@
   <dialog class="camera" id="camera" aria-label="Câmera ao vivo">
     <video id="camera-video" autoplay muted playsinline></video>
     <div class="camera-topo">
-      <span class="chip" id="camera-gps">📡 localizando…</span>
-      <span class="chip gravando" id="camera-tempo" hidden>● 0 s</span>
-      <button type="button" class="camera-fechar" id="camera-fechar" aria-label="Fechar câmera">✕</button>
+      <span class="chip" id="camera-gps">Localizando…</span>
+      <span class="chip gravando" id="camera-tempo" hidden>0 s</span>
+      <button type="button" class="camera-fechar" id="camera-fechar" aria-label="Fechar câmera"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
     </div>
-    <p class="camera-dica" id="camera-dica">Mostre a rua escura e o poste, se houver. Gire devagar: a IA analisa vários quadros.</p>
+    <p class="camera-dica" id="camera-dica">Mostre a rua e o poste, se houver. Gire devagar.</p>
     <div class="camera-acoes">
-      <button type="button" class="camera-botao foto" id="camera-foto" aria-label="Tirar foto"><span>📷</span><small>Foto</small></button>
+      <button type="button" class="camera-botao foto" id="camera-foto" aria-label="Tirar foto"><svg class="ic" aria-hidden="true"><use href="#i-camera"/></svg><small>Foto</small></button>
       <button type="button" class="camera-botao gravar" id="camera-gravar" aria-label="Gravar vídeo de até 10 segundos"><span class="bola"></span><small>Gravar</small></button>
     </div>
     <p class="camera-erro" id="camera-erro" role="alert" hidden></p>
@@ -359,18 +399,17 @@
 
   <dialog class="qr" id="qr" aria-labelledby="qr-titulo">
     <form method="dialog">
-      <h2 id="qr-titulo">Leve o Vésper no bolso</h2>
+      <h2 id="qr-titulo">Abra no celular</h2>
       <img src="/static/qr.svg" width="240" height="240" alt="QR Code que abre o Vésper direto na câmera ao vivo">
-      <p>Aponte a câmera do celular: o site abre direto na <strong>câmera ao vivo</strong>. Sem app, sem cadastro.</p>
-      <p class="dica">Colado num poste, num ponto de ônibus ou na portaria, o QR transforma qualquer pessoa no escuro em um chamado em segundos.</p>
+      <p>Aponte a câmera do celular. O site abre direto na câmera ao vivo.</p>
       <button class="botao primario">Fechar</button>
     </form>
   </dialog>
 
   <footer class="rodape">
-    <div><span class="marca-nome">Vésper</span> · FIAP Global Solution 2026.2 · CitizenTech</div>
-    <div><a href="/docs">API</a> · <a href="/saude">Saúde do sistema</a> · <a href="https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026" rel="noopener">GitHub</a></div>
-    <div class="credito">Mapas © colaboradores do OpenStreetMap · busca de endereço por Nominatim</div>
+    <div><span class="marca-nome">Vésper</span> · FIAP Global Solution 2026.2</div>
+    <div><a href="/docs">API</a> · <a href="/saude">Status</a> · <a href="https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026" rel="noopener">GitHub</a></div>
+    <div class="credito">Mapas © colaboradores do OpenStreetMap · Nominatim</div>
   </footer>
 
   <script src="/static/vendor/leaflet/leaflet.js"></script>

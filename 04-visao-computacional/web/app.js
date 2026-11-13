@@ -23,12 +23,12 @@ const TRECHOS = { iluminada: "Iluminado", parcial: "Parcialmente escuro", escura
 const NIVEIS = { alta: "Alta", media: "Média", baixa: "Baixa", nenhuma: "Nenhuma" };
 const CLASSES = { poste_aceso: ["aceso", "#ffc86b"], poste_apagado: ["apagado", "#ff7a6b"], buraco: ["buraco", "#f2d27a"] };
 const STATUS = {
-  suspeita: "Suspeita registrada", recebido: "Recebido e validado pela IA", confirmado: "Confirmado pelo atendente",
-  encaminhado: "Encaminhado à equipe (RPA)", em_reparo: "Equipe em campo", resolvido: "Luz acesa · resolvido", recusado: "Recusado",
+  suspeita: "Suspeita registrada", recebido: "Recebido e validado pela IA", confirmado: "Confirmado pela central",
+  encaminhado: "Encaminhado ao responsável", em_reparo: "Equipe em campo", resolvido: "Resolvido: luz acesa", recusado: "Recusado",
 };
 const ETIQUETAS = { suspeita: "suspeita", recebido: "recebido", confirmado: "confirmado", encaminhado: "encaminhado", em_reparo: "em reparo", resolvido: "resolvido", recusado: "recusado" };
 const FLUXO = ["recebido", "confirmado", "encaminhado", "em_reparo", "resolvido"];
-const ORIGENS = { cidadao: "📷 Foto", relato: "📍 Relato", robo: "🤖 Robô", "robo+foto": "🤖📷 Robô + foto" };
+const ORIGENS = { cidadao: "Foto", relato: "Relato sem imagem", robo: "Robô", "robo+foto": "Robô + foto" };
 
 const $ = (s, raiz = document) => raiz.querySelector(s);
 const $$ = (s, raiz = document) => [...raiz.querySelectorAll(s)];
@@ -80,12 +80,22 @@ const meus = {
     try { localStorage.setItem(MEUS, JSON.stringify([p, ...meus.todos().filter((x) => x !== p)].slice(0, 20))); } catch { /* sem armazenamento */ }
   },
 };
-const origemDe = (c) => (c.evidencia === "video" ? "🎥 Vídeo ao vivo" : ORIGENS[c.origem] || c.origem);
+const origemDe = (c) => (c.evidencia === "video" ? "Vídeo ao vivo" : ORIGENS[c.origem] || c.origem);
+/* ícone de linha do sprite do index.html (padrão Lucide): sempre o mesmo traço */
+function icone(nome) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("class", "ic"); svg.setAttribute("aria-hidden", "true");
+  const u = document.createElementNS("http://www.w3.org/2000/svg", "use");
+  u.setAttribute("href", `#i-${nome}`); svg.append(u);
+  return svg;
+}
+const rotular = (b, nome, texto) => b.replaceChildren(icone(nome), texto);
+const textoLocal = (lat, lon, endereco) => endereco || (Number.isFinite(lat) ? `${lat.toFixed(5)}, ${lon.toFixed(5)}` : "Sem localização");
 
 /* ================================================================== rotas */
 function irPara(rota) {
   const [nome, param] = (rota || "inicio").split("/");
-  if (nome === "agora") { irPara("reportar"); trocarModo("foto"); abrirCamera(); return; }
+  if (nome === "agora") { irPara("reportar"); novoRelato(); trocarModo("foto"); abrirCamera(); return; }
   const tela = document.getElementById(`tela-${nome}`) ? nome : "inicio";
   $$(".tela").forEach((t) => { t.hidden = t.dataset.tela !== tela; });
   $$(".nav a").forEach((a) => { if (a.dataset.rota === tela) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
@@ -201,7 +211,7 @@ async function definirLocal(lat, lon, { endereco = null, fonte = "mapa", mover =
 }
 function mostrarEndereco() {
   const p = $("#endereco-escolhido"), l = estado.local;
-  if (!l) { p.className = "endereco-escolhido"; p.textContent = "Nenhum local marcado. Toque no mapa, busque o endereço ou use o GPS."; return; }
+  if (!l) { p.className = "endereco-escolhido"; p.textContent = "Nenhum local marcado."; return; }
   p.className = "endereco-escolhido ok";
   p.textContent = `${l.endereco || "buscando o endereço…"}  (${l.lat.toFixed(5)}, ${l.lon.toFixed(5)})`;
 }
@@ -227,14 +237,14 @@ document.addEventListener("click", (e) => { if (!e.target.closest(".busca")) $("
 /* Devolve uma promessa (true/false): a câmera ao vivo espera por ela antes de enviar sozinha. */
 function pedirGps() {
   const b = $("#usar-gps"), chip = $("#camera-gps");
-  if (!("geolocation" in navigator)) { b.textContent = "Navegador sem GPS"; chip.textContent = "📍 sem GPS: marque no mapa"; return Promise.resolve(false); }
-  b.disabled = true; b.textContent = "📡 Localizando…"; chip.textContent = "📡 localizando…";
+  if (!("geolocation" in navigator)) { rotular(b, "nav", "Navegador sem GPS"); chip.textContent = "Sem GPS: marque no mapa depois"; return Promise.resolve(false); }
+  b.disabled = true; rotular(b, "nav", "Localizando…"); chip.textContent = "Localizando…";
   estado.gps = new Promise((ok) => navigator.geolocation.getCurrentPosition(
     (p) => {
-      b.disabled = false; b.textContent = `📡 GPS ±${Math.round(p.coords.accuracy)} m`; chip.textContent = `📍 GPS ±${Math.round(p.coords.accuracy)} m`;
+      b.disabled = false; rotular(b, "nav", `Localização obtida (±${Math.round(p.coords.accuracy)} m)`); chip.textContent = `GPS ±${Math.round(p.coords.accuracy)} m`;
       definirLocal(p.coords.latitude, p.coords.longitude, { fonte: "GPS" }); ok(true);
     },
-    () => { b.disabled = false; b.textContent = "📡 Sem permissão de GPS"; chip.textContent = "📍 sem GPS: você marca o local depois"; ok(false); },
+    () => { b.disabled = false; rotular(b, "nav", "Sem permissão de localização"); chip.textContent = "Sem GPS: marque o local depois"; ok(false); },
     { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 },
   )).finally(() => { estado.gps = null; });
   return estado.gps;
@@ -258,7 +268,7 @@ function trocarModo(modo) {
   $$(".modo").forEach((b) => { const ativo = b.dataset.modo === modo; b.classList.toggle("ativo", ativo); b.setAttribute("aria-checked", String(ativo)); });
   $("#area-foto").hidden = modo !== "foto";
   $("#area-relato").hidden = modo !== "relato";
-  $("#enviar").textContent = modo === "foto" ? "Analisar e abrir chamado" : "Registrar relato";
+  $("#enviar span").textContent = modo === "foto" ? "Analisar e abrir chamado" : "Registrar relato";
   atualizarBotaoEnviar();
 }
 $$(".modo").forEach((b) => b.addEventListener("click", () => trocarModo(b.dataset.modo)));
@@ -270,7 +280,7 @@ $$('input[name="problema"]').forEach((c) => c.addEventListener("change", atualiz
 
 function escolherArquivo(f) {
   if (!f) return;
-  if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { mostrarErro("Use uma foto JPEG, PNG ou WebP."); return; }
+  if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { mostrarErro("Use uma foto JPEG, PNG ou WebP. No iPhone, ajuste a câmera para \"Mais compatível\"."); return; }
   estado.arquivo = f; estado.video = null; $("#previa-video").hidden = true;
   const previa = $("#previa"); previa.src = URL.createObjectURL(f); previa.hidden = false;
   $("#soltar-texto").hidden = true; mostrarErro(""); atualizarBotaoEnviar();
@@ -291,7 +301,7 @@ async function abrirCamera() {
   erro.hidden = true; $("#camera-dica").hidden = false;
   if (!dlg.open) dlg.showModal();
   if (!estado.local && !estado.gps) pedirGps();
-  else if (estado.local) $("#camera-gps").textContent = "📍 local marcado";
+  else if (estado.local) $("#camera-gps").textContent = "Local marcado";
   if (!navigator.mediaDevices?.getUserMedia) {
     erro.textContent = "Este navegador não abre a câmera por aqui. Feche e escolha uma foto da galeria."; erro.hidden = false; return;
   }
@@ -353,7 +363,7 @@ $("#camera-gravar").addEventListener("click", () => {
   const tempo = $("#camera-tempo"); tempo.hidden = false;
   cam.relogio = setInterval(() => {
     const s = (Date.now() - cam.inicio) / 1000;
-    tempo.textContent = `● ${Math.floor(s)} s / ${MAX_VIDEO_S} s`;
+    tempo.textContent = `Gravando ${Math.floor(s)} s de ${MAX_VIDEO_S}`;
     if (s >= MAX_VIDEO_S && cam.gravador.state === "recording") cam.gravador.stop();
   }, 250);
 });
@@ -368,6 +378,7 @@ async function aposCaptura() {
 /* QR Code: abre o site direto na câmera ao vivo */
 $("#abrir-qr").addEventListener("click", () => $("#qr").showModal());
 $("#arquivo").addEventListener("change", (e) => escolherArquivo(e.target.files[0]));
+$("#arquivo-camera").addEventListener("change", (e) => escolherArquivo(e.target.files[0]));
 const soltar = $("#soltar");
 ["dragenter", "dragover"].forEach((ev) => soltar.addEventListener(ev, (e) => { e.preventDefault(); soltar.classList.add("arrastando"); }));
 ["dragleave", "drop"].forEach((ev) => soltar.addEventListener(ev, (e) => { e.preventDefault(); soltar.classList.remove("arrastando"); }));
@@ -397,8 +408,8 @@ function animarEtapas() {
 
 $("#form-relato").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const botao = $("#enviar"), rotulo = botao.textContent;
-  botao.disabled = true; botao.textContent = estado.modo === "foto" ? "Analisando…" : "Registrando…"; mostrarErro("");
+  const botao = $("#enviar"), texto = $("#enviar span"), rotulo = texto.textContent;
+  botao.disabled = true; texto.textContent = estado.modo === "foto" ? "Analisando…" : "Registrando…"; mostrarErro("");
   $("#etapa-detectar").textContent = estado.video ? "Analisando os quadros do vídeo" : "Procurando postes acesos e apagados";
   const fim = estado.modo === "foto" ? animarEtapas() : () => {};
   try {
@@ -434,7 +445,7 @@ $("#form-relato").addEventListener("submit", async (e) => {
       mostrarSuspeita(await api("/v1/relatos", JSON_POST(corpo)));
     }
   } catch (err) { fim(false); mostrarErro(`Não deu certo: ${err.message}`); }
-  finally { botao.textContent = rotulo; atualizarBotaoEnviar(); }
+  finally { texto.textContent = rotulo; atualizarBotaoEnviar(); }
 });
 
 /* Mapa de luz: a grade 6x8 da análise de cena pintada sobre a foto (breu = verde-noite, luz = âmbar). */
@@ -479,9 +490,29 @@ function desenhar(a) {
   if (a.imagem_anonimizada_base64) img.src = `data:image/jpeg;base64,${a.imagem_anonimizada_base64}`;
   else if (estado.arquivo) img.src = URL.createObjectURL(estado.arquivo);
 }
-function veredito(classe, icone, titulo, sub) {
+function veredito(classe, nomeIcone, titulo, sub) {
   const v = $("#veredito"); v.className = `veredito ${classe}`;
-  v.replaceChildren(el("span", { class: "icone" }, icone), el("div", {}, el("strong", {}, titulo), el("small", {}, sub)));
+  v.replaceChildren(el("span", { class: "icone" }, icone(nomeIcone)), el("div", {}, el("strong", {}, titulo), el("small", {}, sub)));
+}
+function selos(itens) {
+  $("#selos").replaceChildren(...itens.filter(Boolean).map(([nome, texto]) => el("li", {}, icone(nome), texto)));
+}
+/* depois da análise: o formulário sai e o resultado ocupa a tela (imagem | resultado) */
+function mostrarResultado(comImagem) {
+  $("#form-relato").hidden = true;
+  $("#resultado").hidden = false;
+  $("#grade-reportar").classList.add("com-resultado");
+  $("#grade-reportar").classList.toggle("sem-imagem", !comImagem);
+  $("#resultado-imagem").hidden = !comImagem;
+}
+function novoRelato() {
+  $("#form-relato").hidden = false; $("#resultado").hidden = true;
+  $("#grade-reportar").classList.remove("com-resultado", "sem-imagem");
+  estado.arquivo = null; estado.video = null; estado.analise = null;
+  $("#previa").hidden = true; $("#previa-video").hidden = true; $("#soltar-texto").hidden = false;
+  ["#arquivo", "#arquivo-camera"].forEach((s) => { $(s).value = ""; });
+  $("#etapas").hidden = true; mostrarErro(""); atualizarBotaoEnviar();
+  setTimeout(() => estado.mapas.local?.invalidateSize(), 60);
 }
 function prioridade(p) {
   $("#bloco-prioridade").hidden = p.nivel === "nenhuma";
@@ -501,33 +532,33 @@ function mostrarEncaminhamento(lista) {
   const box = $("#encaminhamento");
   box.hidden = !lista?.length;
   if (!lista?.length) return;
-  box.replaceChildren(el("strong", {}, "📨 Para onde o chamado vai"),
+  box.replaceChildren(el("strong", {}, icone("send"), "Para onde o chamado vai"),
     el("ul", {}, lista.map((e) => el("li", {}, el("b", {}, e.orgao), el("span", {}, e.canal), el("small", {}, e.motivo)))));
 }
 
 function mostrarAnalise(a) {
-  $("#resultado").hidden = false; $("#resultado-imagem").hidden = false; desenhar(a);
+  mostrarResultado(true); desenhar(a);
   const tipos = a.fusao?.tipos_chamado || [], r = a.resumo, abre = a.validacao.abrir_chamado;
-  if (abre) veredito("abre", "🚨", "Chamado aberto", tipos.length ? `Setor: ${nomeTipos(tipos)}` : "Encaminhado à prefeitura");
-  else if (!a.validacao.foto_valida) veredito("invalida", "📷", "A foto não serviu de prova", a.validacao.motivos[0] || "tente outra foto");
-  else veredito("ok", "✨", "Rua iluminada", "Nenhuma falha encontrada: nenhum chamado necessário");
+  if (abre) veredito("abre", "alert", "Chamado aberto", nomeTipos(tipos));
+  else if (!a.validacao.foto_valida) veredito("invalida", "camera", "A imagem não serviu de prova", a.validacao.motivos[0] || "Tente outra imagem.");
+  else veredito("ok", "sun", "Rua iluminada", "Nenhuma falha encontrada. Nenhum chamado necessário.");
   prioridade(a.prioridade);
   mostrarCena(a.cena);
   $("#info-trecho").textContent = TRECHOS[r.status_trecho] || r.status_trecho;
   $("#info-postes").textContent = `${r.postes_acesos} aceso${r.postes_acesos === 1 ? "" : "s"} · ${r.postes_apagados} apagado${r.postes_apagados === 1 ? "" : "s"}`;
   $("#info-setor").textContent = tipos.length ? nomeTipos(tipos) : "—";
   const loc = a.localizacao;
-  $("#endereco-resultado").textContent = loc ? `📍 ${loc.endereco || `${loc.latitude.toFixed(5)}, ${loc.longitude.toFixed(5)}`}${loc.fonte === "exif" ? " (GPS da foto)" : ""}` : "📍 Sem localização: marque o local para a prefeitura achar o poste.";
+  $("#endereco-resultado").replaceChildren(icone("pin"), loc ? `${textoLocal(loc.latitude, loc.longitude, loc.endereco)}${loc.fonte === "exif" ? " (GPS da foto)" : ""}` : "Sem localização. Marque o local para a equipe achar o poste.");
   lista($("#lista-motivos"), [...a.validacao.motivos, ...(a.fusao?.motivos || [])]);
   orientar(a, abre);
   mostrarEncaminhamento(a.encaminhar_para);
   const v = a.video;
-  lista($("#selos"), [v ? `🎥 ${v.quadros_analisados} quadros analisados · evidência em ${v.quadro_escolhido_s.toFixed(1)} s` : null,
-    v ? "🔒 Vídeo não armazenado" : "🔒 Foto não armazenada", a.privacidade.rostos_borrados ? `🙂 ${a.privacidade.rostos_borrados} rosto(s) borrado(s)` : "🙂 Nenhum rosto na foto", v ? null : "🧭 EXIF descartado", `🧠 modelo ${a.modelo.versao}`].filter(Boolean));
+  selos([v && ["video", `${v.quadros_analisados} quadros analisados`], ["lock", v ? "Vídeo não guardado" : "Imagem não guardada"],
+    ["face", a.privacidade.rostos_borrados ? `${a.privacidade.rostos_borrados} rosto(s) borrado(s)` : "Nenhum rosto"], ["cpu", `Modelo ${a.modelo.versao}`]]);
   mostrarProtocolo(a.protocolo);
   if (abre && !a.protocolo) mostrarErro("A IA confirmou a falha, mas a central não respondeu agora. Tente enviar de novo em instantes.");
   if (estado.sensores) desvincular();
-  $("#resultado").scrollIntoView({ behavior: "smooth", block: "start" });
+  $("#tela-reportar").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function mostrarCena(c) {
@@ -539,29 +570,30 @@ function mostrarCena(c) {
     el("div", { class: "cena-topo" }, el("span", {}, "Leitura da região"), el("strong", {}, `${NIVEIS_LUZ[c.nivel] || c.nivel} · escuridão ${c.indice_escuridao}/100`)),
     el("div", { class: "medidor", title: "luz que sobra na cena" }, el("span", { style: `width:${Math.max(2, 100 - c.indice_escuridao)}%` })),
     el("div", { class: "cena-dados" },
-      el("span", {}, `💡 ${c.fontes_de_luz} fonte${c.fontes_de_luz === 1 ? "" : "s"} de luz`),
-      el("span", {}, `🚶 luz no chão ${Math.round(c.luz_no_chao)}/255`),
-      el("span", {}, `🗺️ ${Math.round(c.area_iluminada * 100)}% da cena iluminada`)),
-    c.possivel_apagao && el("p", { class: "apagao" }, el("strong", {}, "⚡ Possível apagão na região. "),
-      "Nenhuma fonte de luz na cena, nem janelas nem letreiros: além da prefeitura, acione a concessionária de energia (em São Paulo, a Enel)."),
+      el("span", {}, `${c.fontes_de_luz} fonte${c.fontes_de_luz === 1 ? "" : "s"} de luz`),
+      el("span", {}, `luz no chão ${Math.round(c.luz_no_chao)}/255`),
+      el("span", {}, `${Math.round(c.area_iluminada * 100)}% iluminada`)),
+    c.possivel_apagao && el("p", { class: "apagao" }, icone("zap"), el("span", {}, el("strong", {}, "Possível apagão na região. "),
+      "Nenhuma luz elétrica na cena. O chamado também vai para a distribuidora de energia.")),
   ].filter(Boolean)); // sem apagão, o "false" do && não pode virar texto na tela
 }
 
 function mostrarSuspeita(r) {
-  $("#resultado").hidden = false; $("#resultado-imagem").hidden = true; $("#cena").hidden = true;
-  veredito("suspeita", "📍", "Relato registrado", r.proximo_passo);
+  mostrarResultado(false); $("#cena").hidden = true;
+  veredito("suspeita", "pin", "Relato registrado", r.proximo_passo);
   prioridade(r.prioridade_previa);
   $("#info-trecho").textContent = "A confirmar";
-  $("#info-postes").textContent = "sem foto";
+  $("#info-postes").textContent = "sem imagem";
   $("#info-setor").textContent = nomeTipos(r.alertas.map((x) => `suspeita_${x}`));
-  $("#endereco-resultado").textContent = `📍 ${r.localizacao.endereco || `${r.localizacao.latitude}, ${r.localizacao.longitude}`}`;
+  $("#endereco-resultado").replaceChildren(icone("pin"), textoLocal(r.localizacao.latitude, r.localizacao.longitude, r.localizacao.endereco));
   lista($("#lista-motivos"), r.prioridade_previa.fatores);
   $("#orientacao").hidden = true;
-  lista($("#selos"), ["🔒 Nenhuma foto enviada", "📍 Só o local é registrado"]);
+  selos([["lock", "Nenhuma imagem enviada"], ["pin", "Só o local é registrado"]]);
   mostrarEncaminhamento(r.encaminhar_para);
   mostrarProtocolo(r.protocolo);
-  $("#resultado").scrollIntoView({ behavior: "smooth", block: "start" });
+  $("#tela-reportar").scrollIntoView({ behavior: "smooth", block: "start" });
 }
+$("#novo-relato").addEventListener("click", () => { novoRelato(); window.scrollTo(0, 0); });
 
 function orientar(a, abre) {
   const box = $("#orientacao");
@@ -569,41 +601,71 @@ function orientar(a, abre) {
   const ok = (a.orientacao || []).find((o) => o.status === "ok");
   box.hidden = false;
   box.replaceChildren(...(ok
-    ? [el("strong", {}, "⏱️ Prazo oficial: "), ok.resposta, ok.trecho_citado && el("blockquote", {}, `Fonte (${ok.citacao}): ${ok.trecho_citado}`), el("small", {}, ok.aviso || "")]
-    : [el("strong", {}, "📞 Canal oficial: "), "em São Paulo, iluminação pública pelo telefone 156 ou pelo portal SP156. Prazo usual: até 24 horas.",
-       el("small", {}, "Orientação fixa nesta demonstração; com o assistente de IA generativa ligado, o prazo vem citado da fonte oficial.")]));
+    ? [el("strong", {}, icone("clock"), "Prazo oficial: "), ok.resposta, ok.trecho_citado && el("blockquote", {}, `Fonte (${ok.citacao}): ${ok.trecho_citado}`), el("small", {}, ok.aviso || "")]
+    : [el("strong", {}, icone("phone-call"), "Canal oficial: "), "em São Paulo, telefone 156 ou portal SP156. Prazo usual: até 24 horas.",
+       el("small", {}, "Com o assistente de IA generativa ligado, o prazo vem citado da fonte oficial.")]));
 }
 
 /* ================================================================== acompanhar */
 function abrirAcompanhar(protocolo) {
   const recentes = meus.todos().slice(0, 8);
-  $("#meus-protocolos").replaceChildren(...(recentes.length ? [el("small", { style: "color:var(--texto-3)" }, "Seus protocolos: "),
+  $("#meus-protocolos").replaceChildren(...(recentes.length ? [el("small", {}, "Seus protocolos:"),
     ...recentes.map((p) => el("button", { type: "button", onclick: () => { location.hash = `#acompanhar/${p}`; } }, p))] : []));
   if (protocolo) { $("#campo-protocolo").value = protocolo; mostrarLinhaTempo(protocolo); } else $("#linha-tempo").hidden = true;
 }
 $("#form-protocolo").addEventListener("submit", (e) => { e.preventDefault(); location.hash = `#acompanhar/${$("#campo-protocolo").value.trim().toUpperCase()}`; });
 
 async function mostrarLinhaTempo(protocolo) {
-  const box = $("#linha-tempo"); box.hidden = false; box.replaceChildren(el("p", {}, "Buscando na central…"));
-  let c;
-  try { c = norm(await central.obter(protocolo)); } catch (e) {
-    box.replaceChildren(el("p", {}, /não encontrado/.test(e.message) ? "Protocolo não encontrado. Confira as letras e os números." : `Não consegui consultar a central: ${e.message}`));
+  const box = $("#linha-tempo"); box.hidden = false; box.replaceChildren(el("p", { class: "carregando" }, "Buscando na central…"));
+  let c, todos = [], regs = [];
+  try {
+    c = norm(await central.obter(protocolo));
+    [todos, regs] = await Promise.all([central.listar().catch(() => []), central.regioes().catch(() => [])]);
+  } catch (e) {
+    box.replaceChildren(el("p", { class: "aviso-busca" }, /não encontrado/.test(e.message) ? "Protocolo não encontrado. Confira as letras e os números." : `Não consegui consultar a central: ${e.message}`));
     return;
   }
   const fluxo = c.status === "recusado" ? [...c.historico.map((h) => h.status)] : c.historico[0].status === "suspeita" ? ["suspeita", ...FLUXO.slice(1)] : FLUXO;
   const feitos = new Map(c.historico.map((h) => [h.status, h])), atual = fluxo.indexOf(c.status);
+  // vizinhos: outros chamados abertos a até 500 m; e se ele faz parte de um alerta de região
+  const regiao = regs.find((r) => r.protocolos.includes(c.protocolo));
+  const vizinhos = Number.isFinite(c.lat) ? todos.filter((o) => o.protocolo !== c.protocolo && !fechado(o)
+    && Number.isFinite(o.latitude) && distanciaM(c.lat, c.lon, o.latitude, o.longitude) <= 500).length : 0;
+
+  const mapa = el("div", { class: "mapa-acompanhar", "aria-label": "Local do chamado no mapa" });
   box.replaceChildren(
-    el("div", { class: "cabeca" },
+    el("header", { class: "cabeca" },
       el("div", {}, el("p", { class: "sobretitulo" }, c.protocolo), el("h2", {}, nomeTipos(c.tipos)),
-        el("p", { class: "endereco-resultado" }, `📍 ${c.endereco || (Number.isFinite(c.lat) ? `${c.lat.toFixed(5)}, ${c.lon.toFixed(5)}` : "sem localização")}`)),
-      el("div", {}, el("span", { class: `pts ${c.nivel}`, style: "display:inline-grid;place-items:center;width:52px;height:52px;border-radius:14px;font-weight:800;color:#0a1e13" }, c.pontos),
-        " ", el("small", {}, `prioridade ${(NIVEIS[c.nivel] || "").toLowerCase()}`))),
-    el("ol", { class: "passos-status" }, fluxo.map((s, i) => {
-      const h = feitos.get(s);
-      return el("li", { class: i < atual || (i === atual && ["resolvido", "recusado"].includes(s)) ? "feito" : i === atual ? "feito atual" : "" },
-        STATUS[s], el("small", {}, h ? `${dataHora(h.ts)}${h.nota ? ` · ${h.nota}` : ""}` : "aguardando"));
-    })),
-    c.encaminhar_para?.length && el("p", { class: "dica" }, `📨 Responsável: ${c.encaminhar_para.map((e) => e.orgao).join(" + ")}`));
+        el("p", { class: "endereco-resultado" }, icone("pin"), textoLocal(c.lat, c.lon, c.endereco))),
+      el("div", { class: "selo-prioridade" }, el("span", { class: `pts ${c.nivel}` }, c.pontos), el("small", {}, `prioridade ${(NIVEIS[c.nivel] || "").toLowerCase()}`))),
+    el("div", { class: "acompanhar-grade" },
+      el("section", { class: "cartao" }, el("h3", {}, "Andamento"),
+        el("ol", { class: "passos-status" }, fluxo.map((s, i) => {
+          const h = feitos.get(s);
+          return el("li", { class: i < atual || (i === atual && ["resolvido", "recusado"].includes(s)) ? "feito" : i === atual ? "feito atual" : "" },
+            STATUS[s], el("small", {}, h ? `${dataHora(h.ts)}${h.nota ? ` · ${h.nota}` : ""}` : "aguardando"));
+        }))),
+      el("div", { class: "acompanhar-lado" },
+        el("section", { class: "cartao info" }, el("h3", {}, icone("send"), "Encaminhado para"),
+          ...(c.encaminhar_para?.length ? c.encaminhar_para.map((e) => el("p", {}, el("strong", {}, e.orgao), el("span", {}, e.canal)))
+            : [el("p", {}, "Definido quando a central confirmar.")])),
+        el("section", { class: "cartao info" }, el("h3", {}, icone("users"), "Na sua região"),
+          el("p", { class: "numero" }, el("strong", {}, String(vizinhos)), el("span", {}, vizinhos === 1 ? "outro relato a até 500 m" : "outros relatos a até 500 m")),
+          regiao && el("p", { class: `alerta-regiao ${regiao.tipo}` }, icone(regiao.tipo === "apagao_regiao" ? "zap" : "moon"), regiao.titulo)),
+        el("section", { class: "cartao info mapa-info" }, mapa))));
+  if (estado.mapas.acompanhar) { estado.mapas.acompanhar.remove(); estado.mapas.acompanhar = null; }
+  if (window.L && Number.isFinite(c.lat)) {
+    const m = L.map(mapa, { zoomControl: false, attributionControl: true }).setView([c.lat, c.lon], 16);
+    camadaOSM().addTo(m);
+    L.marker([c.lat, c.lon], { icon: iconeLocal() }).addTo(m);
+    estado.mapas.acompanhar = m;
+    setTimeout(() => m.invalidateSize(), 60);
+  } else mapa.replaceChildren(el("p", { class: "dica" }, "Sem localização registrada."));
+}
+function distanciaM(lat1, lon1, lat2, lon2) {
+  const r = 6371000, rad = Math.PI / 180, a = Math.sin((lat2 - lat1) * rad / 2) ** 2
+    + Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin((lon2 - lon1) * rad / 2) ** 2;
+  return 2 * r * Math.asin(Math.sqrt(a));
 }
 
 /* ================================================================== robô */
@@ -687,7 +749,7 @@ function desenharRegioes(regs) {
   box.replaceChildren(...regs.map((r) => {
     const apagao = r.tipo === "apagao_regiao";
     return el("article", { class: `regiao ${r.tipo}` },
-      el("strong", {}, `${apagao ? "⚡" : "🌑"} ${r.titulo}`),
+      el("strong", {}, icone(apagao ? "zap" : "moon"), r.titulo),
       el("span", {}, `${r.relatos} chamados num raio de ${r.raio_m} m · ${r.sinais_apagao} sem nenhuma luz · desde ${dataHora(r.primeiro)}`),
       el("small", {}, `Encaminhar para: ${r.encaminhar_para.map((e) => `${e.orgao} (${e.canal})`).join(" · ")}`));
   }));
@@ -705,7 +767,7 @@ function desenharCentral() {
   $("#fila-vazia").hidden = fila.length > 0;
   $("#lista-chamados").replaceChildren(...fila.map((c) => el("li", {}, el("button", { class: "chamado", type: "button", onclick: () => abrirDetalhe(c.protocolo) },
     el("span", { class: `pts ${c.nivel}` }, c.pontos),
-    el("div", {}, nomeTipos(c.tipos), el("small", {}, `${c.protocolo} · ${dataHora(c.ts)} · ${origemDe(c)}`), c.endereco && el("small", {}, `📍 ${c.endereco}`)),
+    el("div", {}, nomeTipos(c.tipos), el("small", {}, `${c.protocolo} · ${dataHora(c.ts)} · ${origemDe(c)}`), c.endereco && el("small", {}, c.endereco)),
     el("span", { class: `etiqueta ${c.status}` }, ETIQUETAS[c.status] || c.status)))));
 
   if (!window.L) return;
@@ -748,13 +810,13 @@ function abrirDetalhe(protocolo) {
   $("#detalhe-corpo").replaceChildren(
     el("p", { class: "sobretitulo" }, `${c.protocolo} · ${origemDe(c)}`),
     el("h2", {}, nomeTipos(c.tipos)),
-    el("p", { class: "endereco-resultado" }, `📍 ${c.endereco || (Number.isFinite(c.lat) ? `${c.lat.toFixed(5)}, ${c.lon.toFixed(5)}` : "sem localização")}`),
+    el("p", { class: "endereco-resultado" }, icone("pin"), textoLocal(c.lat, c.lon, c.endereco)),
     el("div", { class: "linha-info" },
       el("div", {}, el("span", {}, "Prioridade"), el("strong", {}, `${NIVEIS[c.nivel] || c.nivel} · ${c.pontos}`)),
       el("div", {}, el("span", {}, "Trecho"), el("strong", {}, TRECHOS[c.trecho] || c.trecho)),
       el("div", {}, el("span", {}, "Status"), el("strong", {}, ETIQUETAS[c.status] || c.status))),
     c.fatores?.length && el("div", {}, el("strong", {}, "Por que essa prioridade"), el("ul", { class: "fatores" }, c.fatores.map((f) => el("li", {}, f)))),
-    c.encaminhar_para?.length && el("div", { class: "encaminhamento" }, el("strong", {}, "📨 Encaminhar para"),
+    c.encaminhar_para?.length && el("div", { class: "encaminhamento" }, el("strong", {}, icone("send"), "Encaminhar para"),
       el("ul", {}, c.encaminhar_para.map((e) => el("li", {}, el("b", {}, e.orgao), el("span", {}, e.canal), el("small", {}, e.motivo))))),
     c.motivos?.length && el("details", { class: "motivos" }, el("summary", {}, "Evidência analisada pela IA"), el("ul", {}, c.motivos.map((m) => el("li", {}, m)))),
     el("div", { class: "detalhe-acoes" },
