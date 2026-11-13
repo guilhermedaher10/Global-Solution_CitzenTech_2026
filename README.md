@@ -2,7 +2,7 @@
 
 **Professores:** Bruno Diniz e Cibele Ribeiro
 
-**Responsável:** Vinicius Yamashita · RM 550908
+**Responsável:** Vinicius Santos Yamashita de Farias· RM 550908
 
 **Vídeo (até 3 min):** _(link do YouTube)_
 
