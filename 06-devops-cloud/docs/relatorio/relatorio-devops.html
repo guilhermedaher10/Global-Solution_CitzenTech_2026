@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Vésper · Relatório de DevOps e Cloud</title>
+<style>
+@font-face { font-family: "Cormorant"; font-weight: 700; src: url(../../../04-visao-computacional/web/fontes/cormorant-garamond-latin-700-normal.woff2) format("woff2"); }
+@font-face { font-family: "Cormorant"; font-weight: 600; font-style: italic; src: url(../../../04-visao-computacional/web/fontes/cormorant-garamond-latin-600-italic.woff2) format("woff2"); }
+@font-face { font-family: "Inter"; font-weight: 400; src: url(../../../04-visao-computacional/web/fontes/inter-latin-400-normal.woff2) format("woff2"); }
+@font-face { font-family: "Inter"; font-weight: 700; src: url(../../../04-visao-computacional/web/fontes/inter-latin-700-normal.woff2) format("woff2"); }
+@page { size: A4; margin: 16mm 16mm 18mm 16mm; }
+:root { --verde: #26482f; --verde2: #457752; --menta: #e6f2ea; --ambar: #b7791f; --vermelho: #b42318; --texto: #1d2a22; --cinza: #5b6b61; }
+* { box-sizing: border-box; }
+body { font-family: Inter, "Segoe UI", Arial, sans-serif; color: var(--texto); font-size: 9.8pt; line-height: 1.48; margin: 0; }
+h1, h2, h3 { font-family: Cormorant, Georgia, serif; color: var(--verde); line-height: 1.15; }
+h1 { font-size: 26pt; margin: 0 0 4px; }
+h2 { font-size: 17pt; margin: 16px 0 6px; border-bottom: 1.5px solid var(--menta); padding-bottom: 3px; break-after: avoid; }
+h3 { font-size: 12.5pt; margin: 11px 0 4px; break-after: avoid; }
+p { margin: 5px 0; text-align: justify; }
+.sub { font-family: Cormorant, Georgia, serif; font-style: italic; font-size: 14pt; color: var(--verde2); margin: 0 0 10px; }
+.capa { border-left: 5px solid var(--verde2); padding: 4px 0 4px 14px; margin-bottom: 10px; }
+.meta { font-size: 8.8pt; color: var(--cinza); text-align: left; }
+table { width: 100%; border-collapse: collapse; margin: 6px 0 8px; font-size: 8.8pt; break-inside: avoid; }
+th, td { border: 1px solid #cfe0d5; padding: 4px 6px; text-align: left; vertical-align: top; }
+th { background: var(--menta); color: var(--verde); }
+td.n, th.n { text-align: right; white-space: nowrap; }
+.destaque { background: #f6faf7; border: 1px solid #cfe0d5; border-radius: 6px; padding: 8px 10px; margin: 8px 0; break-inside: avoid; }
+.alerta { background: #fdf6ea; border-color: #f1d9ad; }
+figure { margin: 8px 0; text-align: center; break-inside: avoid; }
+figure img { max-width: 100%; border: 1px solid #d8e4dc; border-radius: 4px; }
+figcaption { font-size: 8.3pt; color: var(--cinza); margin-top: 3px; }
+.duas { display: flex; gap: 10px; align-items: flex-start; break-inside: avoid; }
+.duas > * { flex: 1; min-width: 0; }
+ol li, ul li { margin: 2px 0; }
+code { font-family: Consolas, monospace; font-size: 8.5pt; background: #eef4f0; padding: 0 3px; border-radius: 3px; }
+pre.term { font-family: Consolas, monospace; font-size: 7.6pt; line-height: 1.35; background: #0f1a14; color: #d7e6dc; border-radius: 6px;
+  padding: 8px 10px; margin: 6px 0; white-space: pre-wrap; word-break: break-all; break-inside: avoid; text-align: left; }
+pre.term .cmd { color: #8fd19e; }
+pre.term .ruim { color: #ff8a80; }
+pre.term .bom { color: #8fd19e; font-weight: 700; }
+pre.term .com { color: #8aa396; }
+.selo { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 8pt; font-weight: 700; }
+.selo.ok { background: #e3f4e8; color: var(--verde); }
+.selo.no { background: #fde8e6; color: var(--vermelho); }
+.quebra { break-before: page; }
+a { color: var(--verde2); }
+svg text { font-family: Inter, Arial, sans-serif; }
+</style>
+</head>
+<body>
+
+<div class="capa">
+  <h1>Vésper: Deploy Blindado</h1>
+  <p class="sub">O MVP no ar por um pipeline DevSecOps, em nuvem criada por código e com observabilidade</p>
+  <p class="meta">FIAP · Engenharia de Software, 4º ano · Global Solution 2026.2 (CitizenTech) · Secure DevOps Tools &amp; Cloud Computing ·
+  Professores Gabriel Henrique Boyczuk Arcanjo e Cleórbete Santos</p>
+  <p class="meta">
+    <b>MVP no ar:</b> <a href="https://ca-ruasescuras-visao.bravehill-24590cb4.eastus.azurecontainerapps.io">ca-ruasescuras-visao.bravehill-24590cb4.eastus.azurecontainerapps.io</a> ·
+    <a href="https://ca-ruasescuras-visao.bravehill-24590cb4.eastus.azurecontainerapps.io/docs">API (/docs)</a> ·
+    <a href="https://ca-ruasescuras-visao.bravehill-24590cb4.eastus.azurecontainerapps.io/saude">/saude</a><br>
+    <b>Repositório:</b> <a href="https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026">github.com/guilhermedaher10/Global-Solution_CitzenTech_2026</a> ·
+    <a href="https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026/tree/main/06-devops-cloud">pasta 06-devops-cloud</a> ·
+    <a href="https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026/blob/main/.github/workflows/06-devops-cloud.yml">workflow</a> ·
+    <a href="https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026/actions/workflows/06-devops-cloud.yml">execuções no Actions</a> ·
+    <a href="https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026#readme">Ficha Técnica (README)</a>
+  </p>
+</div>
+
+<table>
+  <tr><th>Nome</th><th>RM</th><th>Papel no projeto</th></tr>
+  <tr><td>Guilherme Daher</td><td>98611</td><td>DevOps e Cloud · Visão Computacional</td></tr>
+  <tr><td>Gabriel Freitas</td><td>550187</td><td>Generative AI</td></tr>
+  <tr><td>Heitor Nobre</td><td>551539</td><td>Maker Lab</td></tr>
+  <tr><td>Vinicius Yamashita</td><td>550908</td><td>RPA</td></tr>
+  <tr><td>Lucca Alexandre</td><td>99700</td><td>Big Data · Negócio e Pitch</td></tr>
+</table>
+
+<h2>O que é o Vésper e o que esta disciplina entrega</h2>
+<p>O <b>Vésper</b> liga quem está numa rua escura, ou sem luz no bairro, a quem pode resolver. O cidadão abre o site
+pelo celular, filma alguns segundos e o chamado chega à central já confirmado por visão computacional, com protocolo,
+prioridade e o órgão responsável (iluminação pública da prefeitura ou distribuidora de energia). Nesta disciplina, o
+papel é a <b>Produção</b>: colocar esse MVP no ar <b>sem ninguém clicar em botão</b>. Cada push na <code>main</code>
+passa por um pipeline que barra segredo vazado, código inseguro e dependência vulnerável; só então a nova versão é
+publicada na Azure, numa infraestrutura descrita em Terraform, e o Grafana mostra a saúde do sistema.</p>
+
+<table>
+  <tr><th style="width:24%">Critério (14 pts)</th><th>O que foi feito</th><th style="width:15%">Evidência</th></tr>
+  <tr><td><b>Container e IaC</b> (5)</td><td>Dockerfile <code>python:3.11-slim</code>, usuário sem privilégios (uid 10001), sem segredo; <code>docker compose</code> sobe Visão, GenAI, Ollama, Prometheus e Grafana. Toda a nuvem em Terraform, state remoto num Storage sem chave, <code>.tfvars</code> fora do Git e <b>nenhuma porta de administração</b> (serverless, só HTTPS 443)</td><td>Seção 2</td></tr>
+  <tr><td><b>Pipeline DevSecOps</b> (4)</td><td>GitHub Actions a cada push/PR: Gitleaks, Semgrep, build + Trivy, Terraform e deploy com OIDC (sem senha). Segredos em GitHub Secrets. <b>Duas execuções barradas e corrigidas</b> (Trivy: 61 vulnerabilidades → 0; Semgrep: hash inseguro → 0)</td><td>Seção 3</td></tr>
+  <tr><td><b>Observabilidade</b> (3)</td><td>Prometheus + Grafana local lendo o MVP publicado na Azure: painel com as 4 métricas de ouro e métricas do produto; 5 regras de alerta e um alerta disparado de propósito</td><td>Seção 4</td></tr>
+  <tr><td><b>Documentação</b> (2)</td><td>Diagrama da arquitetura, responsabilidade compartilhada, onde ficam os dados pessoais (LGPD), custo estimado e real, README reproduzível</td><td>Seções 1 e 5</td></tr>
+</table>
+
+<h2>1. Arquitetura</h2>
+<figure>
+<svg viewBox="0 0 900 440" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Arquitetura do Vésper na Azure">
+  <defs>
+    <marker id="s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#457752"/></marker>
+    <marker id="sc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a9a90"/></marker>
+  </defs>
+  <style>
+    .cx { fill: #fff; stroke: #9cc3a8; stroke-width: 1.4; rx: 7; }
+    .gr { fill: #f3f8f4; stroke: #c7dccd; stroke-width: 1.2; stroke-dasharray: 5 4; }
+    .t { font-size: 12px; fill: #1d2a22; font-weight: 700; }
+    .s { font-size: 10.5px; fill: #5b6b61; }
+    .g { font-size: 11.5px; fill: #26482f; font-weight: 700; letter-spacing: .4px; }
+    .l { stroke: #457752; stroke-width: 1.6; fill: none; marker-end: url(#s); }
+    .lc { stroke: #8a9a90; stroke-width: 1.3; fill: none; stroke-dasharray: 4 3; marker-end: url(#sc); }
+    .r { font-size: 10px; fill: #457752; font-weight: 700; }
+  </style>
+  <!-- GitHub -->
+  <rect class="gr" x="10" y="10" width="250" height="300" rx="10"/>
+  <text class="g" x="24" y="32">GITHUB ACTIONS (a cada push/PR)</text>
+  <rect class="cx" x="24" y="44" width="222" height="34"/><text class="t" x="36" y="66">Gitleaks</text><text class="s" x="110" y="66">segredo vazado</text>
+  <rect class="cx" x="24" y="86" width="222" height="34"/><text class="t" x="36" y="108">Semgrep</text><text class="s" x="110" y="108">código inseguro</text>
+  <rect class="cx" x="24" y="128" width="222" height="34"/><text class="t" x="36" y="150">Build + Trivy</text><text class="s" x="134" y="150">CVE na imagem/IaC</text>
+  <rect class="cx" x="24" y="170" width="222" height="34"/><text class="t" x="36" y="192">Terraform</text><text class="s" x="110" y="192">plan (PR) · apply (main)</text>
+  <rect class="cx" x="24" y="230" width="222" height="60" style="stroke:#457752;stroke-width:2"/><text class="t" x="36" y="252">Deploy + smoke test</text><text class="s" x="36" y="268">só se os 4 acima passarem</text><text class="r" x="36" y="281">imagem → ACR · login OIDC, sem senha</text>
+  <path class="l" d="M135 204 L135 228"/>
+  <!-- push -->
+  <rect class="cx" x="24" y="340" width="222" height="40"/><text class="t" x="36" y="358">Equipe: push na main</text><text class="s" x="36" y="373">branch por disciplina + PR</text>
+  <path class="l" d="M135 340 L135 312"/>
+  <!-- Azure -->
+  <rect class="gr" x="300" y="10" width="420" height="300" rx="10"/>
+  <text class="g" x="314" y="32">AZURE · rg-ruasescuras · East US</text>
+  <rect class="cx" x="314" y="44" width="186" height="50"/><text class="t" x="326" y="66">Container Registry</text><text class="s" x="326" y="82">privado, sem usuário admin</text>
+  <rect class="cx" x="314" y="112" width="392" height="72" style="stroke:#457752;stroke-width:2"/>
+  <text class="t" x="326" y="134">Container Apps (serverless) · Visão API + site</text>
+  <text class="s" x="326" y="152">só HTTPS 443, certificado gerenciado · escala 0 a 2 réplicas</text>
+  <text class="s" x="326" y="168">sem VM, logo sem porta SSH/RDP · /metrics com token</text>
+  <rect class="cx" x="520" y="44" width="186" height="50"/><text class="t" x="532" y="66">Identidade gerenciada</text><text class="s" x="532" y="82">AcrPull + Table Data Contrib.</text>
+  <rect class="cx" x="314" y="202" width="186" height="50"/><text class="t" x="326" y="224">Storage · tabela</text><text class="s" x="326" y="240">central de chamados, sem chave</text>
+  <rect class="cx" x="520" y="202" width="186" height="50"/><text class="t" x="532" y="224">Log Analytics</text><text class="s" x="532" y="240">30 dias · teto 0,5 GB/dia</text>
+  <rect class="cx" x="314" y="262" width="392" height="36"/><text class="t" x="326" y="285">Orçamento US$ 100/mês</text><text class="s" x="498" y="285">alertas em 50%, 80% e 100%</text>
+  <path class="l" d="M407 112 L407 96"/><text class="r" x="414" y="108">puxa a imagem</text>
+  <path class="l" d="M407 184 L407 200"/>
+  <path class="l" d="M613 184 L613 200"/>
+  <path class="lc" d="M613 112 L613 96"/>
+  <!-- pipeline to azure -->
+  <path class="l" d="M246 258 C280 258 280 70 312 70"/>
+  <path class="l" d="M246 270 C290 270 290 150 312 150"/>
+  <!-- state -->
+  <rect class="gr" x="300" y="330" width="420" height="100" rx="10"/>
+  <text class="g" x="314" y="352">AZURE · rg-ruasescuras-tfstate</text>
+  <rect class="cx" x="314" y="362" width="392" height="54"/><text class="t" x="326" y="384">Storage do state do Terraform</text><text class="s" x="326" y="402">só login Entra ID (chave desligada) · TLS 1.2 · versionado</text>
+  <path class="lc" d="M246 187 C275 187 275 389 312 389"/>
+  <!-- users -->
+  <rect class="gr" x="755" y="10" width="135" height="300" rx="10"/>
+  <text class="g" x="768" y="32">QUEM USA</text>
+  <rect class="cx" x="768" y="50" width="110" height="48"/><text class="t" x="778" y="70">Cidadão</text><text class="s" x="778" y="86">celular, sem app</text>
+  <rect class="cx" x="768" y="110" width="110" height="48"/><text class="t" x="778" y="130">Prefeitura</text><text class="s" x="778" y="146">central</text>
+  <rect class="cx" x="768" y="170" width="110" height="48"/><text class="t" x="778" y="190">Robô, RPA</text><text class="s" x="778" y="206">e GenAI (API)</text>
+  <path class="l" d="M768 134 L708 148"/><text class="r" x="720" y="128">HTTPS</text>
+  <!-- monitoring -->
+  <rect class="gr" x="755" y="330" width="135" height="100" rx="10"/>
+  <text class="g" x="768" y="352">PC DA EQUIPE</text>
+  <text class="t" x="768" y="376">Prometheus</text><text class="t" x="768" y="396">→ Grafana</text><text class="s" x="768" y="414">docker compose</text>
+  <path class="l" d="M790 330 C790 260 740 190 708 176"/><text class="r" x="770" y="292">/metrics</text>
+</svg>
+<figcaption>Arquitetura em produção. Setas contínuas: fluxo de deploy e de uso; tracejadas: acesso a configuração e state</figcaption>
+</figure>
+
+<p><b>Por que Container Apps.</b> É serverless: não existe máquina virtual, logo não existe porta de administração
+(SSH ou RDP) para ficar exposta. A única entrada é HTTPS 443 com certificado gerenciado pela Microsoft. Escala a zero
+quando ninguém usa (custo perto de zero) e sobe sozinho com o tráfego, até 2 réplicas.</p>
+<p><b>Terraform × pipeline.</b> O Terraform cria e mantém a infraestrutura; a <b>versão</b> em produção é trocada pelo
+pipeline (<code>az containerapp update</code> com a imagem marcada pelo commit). O Terraform ignora a imagem depois de
+criada, então um <code>terraform apply</code> nunca volta a produção para uma versão antiga.</p>
+<p><b>Um problema real resolvido.</b> Em nov/2026 a Azure passou a criar ambientes novos de Container Apps no modo
+<i>Express</i> (preview) quando o pedido não diz o modo. Nesse modo o registro privado é ignorado e o container não
+consegue puxar a imagem com identidade gerenciada (erro <code>BuildFailed ... registryCredentials</code>). Como o
+provedor <code>azurerm</code> 4.x ainda não tem o campo, o ambiente é declarado pelo provedor oficial <code>azapi</code>
+com <code>environmentMode = "WorkloadProfiles"</code> e o perfil <i>Consumption</i>, que continua serverless.</p>
+
+<h2 class="quebra">2. Container e Infraestrutura como Código</h2>
+<h3>2.1 Dockerfile enxuto e seguro</h3>
+<table>
+  <tr><th style="width:30%">Boa prática</th><th>Como está no <a href="https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026/blob/main/04-visao-computacional/Dockerfile">Dockerfile</a></th></tr>
+  <tr><td>Imagem base mínima</td><td><code>python:3.11-slim</code>; PyTorch na versão <b>só CPU</b> (cerca de 1 GB menor que a com CUDA); <code>.dockerignore</code> deixa de fora dados, testes, notebooks, resultados e <code>.env</code></td></tr>
+  <tr><td>Usuário não root</td><td><code>useradd --uid 10001 app</code> e <code>USER app</code>: mesmo que alguém explore a aplicação, não é root no container</td></tr>
+  <tr><td>Sem segredo na imagem</td><td>Nenhuma chave no Dockerfile nem nos arquivos copiados; tokens chegam por variável de ambiente (Container Apps <i>secrets</i>) em tempo de execução. O Gitleaks e o Semgrep conferem a cada push</td></tr>
+  <tr><td>Correções de segurança</td><td><code>apt-get upgrade</code> no build e versões fixas sem CVE (Pillow 13, torch 2.10, setuptools ≥ 80), exigidas pelo Trivy (ver 3.3)</td></tr>
+  <tr><td>Saúde</td><td><code>HEALTHCHECK</code> chamando <code>/saude</code></td></tr>
+</table>
+<p>O tamanho final (cerca de 2,6 GB) vem quase todo do PyTorch e das bibliotecas de visão computacional, necessárias para
+rodar o YOLO26 em CPU; o código e os dois modelos ocupam menos de 30 MB.</p>
+
+<h3>2.2 A stack inteira sobe com <code>docker compose</code></h3>
+<p>Um comando sobe o produto integrado e monitorado no PC: Visão (API + site), assistente de IA generativa (GenAI) com
+Ollama, Prometheus e Grafana. Os serviços da equipe rodam endurecidos: <code>read_only</code>, <code>cap_drop: ALL</code>
+e <code>no-new-privileges</code>.</p>
+<pre class="term">$ docker compose up -d --build
+$ docker compose ps
+SERVICE      IMAGE                      STATUS                   PORTS
+genai        ruas-escuras/genai:local   Up 4 minutes <span class="bom">(healthy)</span>   0.0.0.0:8001-&gt;8001/tcp
+grafana      grafana/grafana:11.3.1     Up About a minute        0.0.0.0:3000-&gt;3000/tcp
+ollama       ollama/ollama:0.40.16      Up 5 minutes             11434/tcp
+prometheus   prom/prometheus:v2.55.1    Up 5 minutes             0.0.0.0:9090-&gt;9090/tcp
+visao        ruas-escuras/visao:local   Up 4 minutes <span class="bom">(healthy)</span>   0.0.0.0:8000-&gt;8000/tcp
+
+$ docker compose exec visao id
+<span class="bom">uid=10001(app)</span> gid=10001(app) groups=10001(app)
+$ docker compose exec visao touch /app/teste
+touch: cannot touch &#x27;/app/teste&#x27;: <span class="bom">Read-only file system</span>
+$ curl -s localhost:8000/saude
+{&quot;status&quot;:&quot;ok&quot;,&quot;modelo_carregado&quot;:true,&quot;modelo&quot;:{&quot;nome&quot;:&quot;best&quot;,&quot;versao&quot;:&quot;dev&quot;},&quot;erro&quot;:null,&quot;genai&quot;:{&quot;configurado&quot;:true,<span class="bom">&quot;no_ar&quot;:true</span>,&quot;url&quot;:&quot;http://genai:8001&quot;},&quot;versao_contrato&quot;:&quot;1.5&quot;}
+<span class="com"># usuário sem privilégios, sistema de arquivos imutável e a Visão já conversando com o GenAI dentro da rede do compose</span></pre>
+
+<h3>2.3 Nuvem criada por Terraform</h3>
+<p>Todos os recursos de produção estão em <a href="https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026/tree/main/06-devops-cloud/terraform"><code>06-devops-cloud/terraform/</code></a>
+(provedores <code>azurerm</code> 4.x e <code>azapi</code> 2.x). O state fica <b>fora do repositório</b>, num Storage
+Account que só aceita login Entra ID, e os <code>.tfvars</code> são ignorados pelo Git:</p>
+<pre class="term"><span class="cmd">$ az resource list -g rg-ruasescuras -o table</span>
+Nome                    Tipo
+----------------------  ------------------------------------------------
+log-ruasescuras-foxo70  Microsoft.OperationalInsights/workspaces
+id-ruasescuras-visao    Microsoft.ManagedIdentity/userAssignedIdentities
+acrruasescurasfoxo70    Microsoft.ContainerRegistry/registries
+cae-ruasescuras-wp      Microsoft.App/managedEnvironments
+ca-ruasescuras-visao    Microsoft.App/containerApps
+stcentralfoxo70         Microsoft.Storage/storageAccounts
+
+<span class="cmd">$ az storage account list -g rg-ruasescuras-tfstate</span>
+Nome                   ChaveCompartilhada    TLS
+---------------------  --------------------  ------
+struasescurastfe0cab8  <span class="bom">False</span>                 TLS1_2</pre>
+<pre class="term"><span class="cmd">$ git check-ignore -v  (arquivos sensíveis fora do Git)</span>
+.gitignore:20:*.tfvars   terraform/terraform.tfvars
+terraform/.gitignore:2:*.tfplan   terraform/central.tfplan
+.gitignore:11:.env   06-devops-cloud/.env
+.gitignore:11:.env   04-visao-computacional/.env
+.gitignore:17:.terraform/   terraform/.terraform
+
+<span class="cmd">$ git ls-files | grep -E "tfvars$|tfstate|\.env$"</span>
+<span class="bom">(nenhum arquivo sensível versionado)</span>
+
+<span class="com"># versions.tf: backend "azurerm" com use_azuread_auth = true;
+# nomes do state passados por -backend-config, nada da
+# assinatura fica no código</span></pre>
+
+<h3>2.4 Porta de administração nunca aberta</h3>
+<p>Não há VM nem regra de rede com SSH (22) ou RDP (3389): o único ponto de entrada é o <i>ingress</i> HTTPS do Container
+Apps. A consulta abaixo, feita direto na Azure, mostra entrada só por HTTPS, sem portas extras e com escala a zero:</p>
+<pre class="term"><span class="cmd">$ az containerapp show -n ca-ruasescuras-visao -g rg-ruasescuras</span>
+entrada_externa: true
+so_https: <span class="bom">true</span>          <span class="com"># allowInsecure = false</span>
+porta_alvo: 8000        <span class="com"># interna; fora só 443</span>
+portas_extras: <span class="bom">null</span>     <span class="com"># nenhuma porta além do HTTPS</span>
+replicas_min: null      <span class="com"># = 0: escala a zero sem uso</span>
+replicas_max: 2
+identidade: UserAssigned
+imagem: acrruasescurasfoxo70.azurecr.io/visao:07657d517ced
+revisao: ca-ruasescuras-visao--0000009</pre>
+<pre class="term"><span class="cmd">$ az role assignment list --assignee &lt;identidade da Visão&gt; --all</span>
+Papel                           Recurso
+------------------------------  ----------------------------
+AcrPull                         …/registries/acrruasescurasfoxo70
+Storage Table Data Contributor  …/storageAccounts/stcentralfoxo70
+
+<span class="cmd">$ az role assignment list -g rg-ruasescuras  (pipeline, OIDC)</span>
+Papel        Principal         Escopo
+-----------  ----------------  ---------------------------
+Contributor  ServicePrincipal  …/resourceGroups/rg-ruasescuras
+
+<span class="cmd">$ az storage account show -n stcentralfoxo70</span>
+chave_compartilhada: <span class="bom">false</span>   tls_minimo: TLS1_2
+acesso_publico_blob: false   so_https: true</pre>
+<p>Menor privilégio: a identidade do container só pode <b>puxar imagens</b> do registro e <b>escrever na tabela</b> da
+central; a identidade do pipeline é <i>Contributor</i> apenas no grupo da aplicação e não pode conceder permissões.</p>
+
+<h2 class="quebra">3. Pipeline DevSecOps</h2>
+<p>O workflow <a href="https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026/blob/main/.github/workflows/06-devops-cloud.yml"><code>.github/workflows/06-devops-cloud.yml</code></a>
+roda a cada push e pull request. Quatro portões correm em paralelo; o deploy depende de todos
+(<code>needs: [gitleaks, semgrep, build, terraform]</code>): <b>qualquer um vermelho, nada é publicado</b>.</p>
+<table>
+  <tr><th style="width:22%">Etapa</th><th>O que barra</th><th style="width:22%">Na PR / na main</th></tr>
+  <tr><td><b>Gitleaks</b> 8.24</td><td>Segredo vazado nos commits do push/PR (binário com checksum conferido)</td><td>roda / roda</td></tr>
+  <tr><td><b>Semgrep</b></td><td>Código inseguro: 263 regras de Python, Dockerfile, Terraform e segredos (<code>--error</code>)</td><td>roda / roda</td></tr>
+  <tr><td><b>Build + Trivy</b> 0.57</td><td>Vulnerabilidade HIGH/CRITICAL com correção na imagem; configuração insegura no Terraform</td><td>roda / roda</td></tr>
+  <tr><td><b>Terraform</b> 1.17</td><td>Mudança de infraestrutura inesperada (plan na PR, apply na main), login por OIDC</td><td>plan / apply</td></tr>
+  <tr><td><b>Deploy</b></td><td>Publica no ACR, troca a versão no Container Apps e faz <i>smoke test</i> em <code>/saude</code> e <code>/v1/chamados</code></td><td>— / roda</td></tr>
+</table>
+
+<h3>3.1 Execução verde completa, com deploy automático</h3>
+<figure><img src="../img/gh_verde_main.png" style="max-height:250px">
+<figcaption><a href="https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026/actions/runs/43520572844">Execução #27</a> (push na main, 13/11): os 4 portões verdes e o deploy publicado em 5 min 34 s</figcaption></figure>
+<pre class="term"><span class="com"># trechos do log desta execução (gh run view 43520572844 --log)</span>
+Gitleaks   1 commits scanned.  <span class="bom">no leaks found</span>
+Terraform  Plan: 0 to add, 1 to change, 0 to destroy.
+           Apply complete! Resources: 0 added, 1 changed, 0 destroyed.
+Deploy     ARM_CLIENT_ID: ***   ARM_USE_OIDC: true      <span class="com"># segredo mascarado; login sem senha</span>
+Deploy     {"status":"ok","modelo_carregado":true,...,"versao_contrato":"1.5"}
+Deploy     central respondendo
+Deploy     <span class="bom">no ar: https://ca-ruasescuras-visao.bravehill-24590cb4.eastus.azurecontainerapps.io</span></pre>
+
+<h3>3.2 Segredos no GitHub Secrets, nunca no código</h3>
+<div class="duas">
+<pre class="term"><span class="cmd">$ gh secret list   (só os nomes: o valor nunca aparece)</span>
+ALERTA_EMAIL            2026-11-12
+AZURE_CLIENT_ID         2026-11-12
+AZURE_SUBSCRIPTION_ID   2026-11-12
+AZURE_TENANT_ID         2026-11-12
+METRICS_TOKEN           2026-11-12
+TFSTATE_RG              2026-11-12
+TFSTATE_STORAGE         2026-11-12</pre>
+<div><p style="margin-top:0">Não existe senha da Azure guardada: com <b>OIDC</b>, o GitHub prova quem é a cada execução e
+recebe um token de curta duração, válido só para este repositório (branch <code>main</code> e pull requests). Os secrets guardam
+identificadores (não senhas), o e-mail do orçamento e o token que protege <code>/metrics</code>. No log, todos
+aparecem como <code>***</code>.</p></div>
+</div>
+
+<h3>3.3 Execução barrada e a corrigida (1): Trivy encontrou 61 vulnerabilidades</h3>
+<div class="duas">
+<figure><img src="../img/gh_barrada_trivy.png"><figcaption><span class="selo no">barrada</span> <a href="https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026/actions/runs/43156255620">execução de 12/11, 04h39</a>: Semgrep e Trivy vermelhos, deploy pulado</figcaption></figure>
+<figure><img src="../img/gh_corrigida_trivy.png"><figcaption><span class="selo ok">corrigida</span> <a href="https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026/actions/runs/43156845661">execução de 12/11, 04h45</a>: tudo verde</figcaption></figure>
+</div>
+<pre class="term"><span class="com"># antes (gh run view 43156255620 --log-failed)</span>
+Trivy   debian: Total: 2 (HIGH: 2, CRITICAL: 0)      ex.: zlib1g CVE-2026-85091, heap buffer overflow
+Trivy   python: <span class="ruim">Total: 59 (HIGH: 49, CRITICAL: 10)</span>  ex.: pillow 12.3.0 CVE-2026-112393 CRITICAL
+Semgrep <span class="ruim">3 Code Findings (3 blocking)</span>             md5/sha1 em scripts de coleta de dados
+<span class="com"># correção: apt-get upgrade no build; Pillow 13.0.0, torch 2.10,</span>
+<span class="com">#           setuptools &gt;= 80, wheel &gt;= 0.46.2; sha256 no lugar de md5/sha1</span>
+<span class="com"># depois (gh run view 43156845661 --log)</span>
+Trivy   <span class="bom">Total: 0 (HIGH: 0, CRITICAL: 0)</span>
+Semgrep <span class="bom">Findings: 0 (0 blocking)</span></pre>
+
+<h3>3.4 Execução barrada e a corrigida (2): Semgrep barrou hash inseguro em código novo</h3>
+<div class="duas">
+<figure><img src="../img/gh_barrada_semgrep.png"><figcaption><span class="selo no">barrada</span> <a href="https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026/actions/runs/43377489191">PR #22, 13/11, 06h15</a>: só o Semgrep vermelho, o deploy não roda</figcaption></figure>
+<figure><img src="../img/gh_corrigida_semgrep.png"><figcaption><span class="selo ok">corrigida</span> <a href="https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026/actions/runs/43378735906">PR #22, 13/11, 06h26</a>: verde, mergeado e publicado</figcaption></figure>
+</div>
+<pre class="term"><span class="com"># antes (gh run view 43377489191 --log-failed): central de chamados e regiões</span>
+❯❱ insecure-hash-algorithm-md5   <span class="ruim">❰❰ Blocking ❱❱</span>
+    80┆ r = int(hashlib.md5(str(h).encode()).hexdigest(), 16) % 100
+❯❱ insecure-hash-algorithm-sha1  <span class="ruim">❰❰ Blocking ❱❱</span>
+   102┆ id="REG-" + hashlib.sha1(",".join(protocolos).encode()).hexdigest()[:6]
+<span class="ruim">Ran 263 rules on 90 files: 2 findings.</span>
+<span class="com"># correção: sha256 nos identificadores; onde o hash só sorteia a divisão</span>
+<span class="com">#           treino/teste, usedforsecurity=False com justificativa</span>
+<span class="com"># depois (gh run view 43378735906 --log)</span>
+<span class="bom">Ran 263 rules on 90 files: 0 findings.</span></pre>
+
+<h2 class="quebra">4. Observabilidade</h2>
+<p>O Prometheus e o Grafana rodam no PC (via <code>docker compose</code>) e leem o <code>/metrics</code> <b>do MVP
+publicado na Azure</b>, protegido por token (<code>scripts/alvo-azure.ps1</code> aponta o alvo a partir do
+<code>terraform output</code>). A API expõe as métricas pelo cliente oficial do Prometheus, só com contagens
+agregadas: nenhum dado pessoal.</p>
+<table>
+  <tr><th style="width:18%">Métrica de ouro</th><th>Consulta no painel</th><th style="width:30%">Alerta</th></tr>
+  <tr><td><b>Tráfego</b></td><td><code>sum(rate(http_requisicoes_total[5m]))</code> por rota</td><td>—</td></tr>
+  <tr><td><b>Erros</b></td><td>% de respostas 5xx sobre o total</td><td><code>TaxaDeErrosAlta</code>: &gt; 5% por 2 min</td></tr>
+  <tr><td><b>Latência</b></td><td>p50/p95 de <code>http_duracao_segundos</code> (histograma)</td><td><code>LatenciaAlta</code>: p95 da análise &gt; 3 s por 5 min</td></tr>
+  <tr><td><b>Saturação</b></td><td><code>http_requisicoes_em_andamento</code> (escala com 10 por réplica)</td><td><code>SaturacaoAlta</code>: &gt; 8 por 2 min</td></tr>
+  <tr><td><b>Disponibilidade e produto</b></td><td><code>up</code>, modelo carregado, chamados por tipo e prioridade, vídeos, central</td><td><code>VisaoForaDoAr</code> (1 min) e <code>ModeloNaoCarregado</code></td></tr>
+</table>
+<figure><img src="../img/prom_alvos.png" style="max-height:200px">
+<figcaption>Prometheus lendo os dois alvos: o MVP <b>publicado na Azure</b> (HTTPS, com token) e a Visão do <code>docker compose</code>. Ambos UP</figcaption></figure>
+<figure><img src="../img/grafana_local.png" style="max-height:520px">
+<figcaption>Painel “Vésper · 4 métricas de ouro” com o ambiente <code>local</code> sob carga de teste (4 clientes simultâneos enviando fotos, consultas e alertas do robô, sem abrir chamados reais): tráfego por rota, 4xx de pedidos inválidos de propósito, latência p50/p95/p99 da análise e saturação (análises simultâneas, CPU e memória)</figcaption></figure>
+<figure><img src="../img/grafana_azure.png" style="max-height:520px">
+<figcaption>O mesmo painel com o ambiente <code>azure</code>: o MVP publicado está <b>NO AR</b>, com o modelo carregado, lido pela internet a cada 15 s. Não foi gerada carga artificial na produção; o tráfego mostrado é o real do momento</figcaption></figure>
+<h3>Alerta disparado</h3>
+<p>Para provar que o alerta funciona, a Visão local foi parada de propósito (<code>docker compose stop visao</code>). Em
+cerca de 1 minuto, a regra <code>VisaoForaDoAr</code> passou de <i>pending</i> para <b>firing</b>, e o painel mostrou a
+API fora do ar. Com <code>docker compose start visao</code>, o alerta foi resolvido sozinho.</p>
+<div class="duas">
+<figure><img src="../img/prom_alertas.png"><figcaption><code>VisaoForaDoAr</code> em <b>FIRING</b> (severidade crítica), ativo desde 22:59:31 UTC, 1 minuto depois da queda; os outros 4 alertas seguem inativos</figcaption></figure>
+<figure><img src="../img/grafana_queda.png"><figcaption>O mesmo instante no Grafana: “API no ar” = FORA e o tráfego cai a zero</figcaption></figure>
+</div>
+<p><b>Uma observação real:</b> com escala a zero, a primeira requisição depois de um tempo parado leva cerca de 20 s
+(<i>cold start</i>: a réplica sobe e carrega os dois modelos). O primeiro scrape do Prometheus chegou a falhar por
+<i>timeout</i> antes de a réplica acordar. É uma troca consciente: no dia a dia, o custo perto de zero
+compensa; para uma demonstração sem espera, basta subir <code>visao_min_replicas</code> para 1 no Terraform
+(cenário B da seção 5.3).</p>
+
+<h2 class="quebra">5. Documentação</h2>
+<h3>5.1 Responsabilidade compartilhada</h3>
+<table>
+  <tr><th style="width:22%">Quem</th><th>Cuida de</th></tr>
+  <tr><td><b>Microsoft (Azure)</b></td><td>Datacenter, hardware, rede física, hypervisor, sistema operacional dos nós do Container Apps, patch da plataforma, certificado TLS do domínio <code>azurecontainerapps.io</code>, disponibilidade e criptografia em repouso do Storage</td></tr>
+  <tr><td><b>Equipe</b></td><td>Código e dependências, imagem do container (base, pacotes, usuário), configuração (Terraform), quem acessa (RBAC, OIDC, identidade gerenciada), segredos, dados que trafegam e logs que geramos, monitoramento e resposta a alertas, custo</td></tr>
+</table>
+<p>Em Container Apps (PaaS/serverless) a fronteira sobe em relação a uma VM: o sistema operacional e os patches dos nós
+passam para a Microsoft; a imagem e tudo o que está dentro dela continuam sendo da equipe, por isso o Trivy no pipeline.</p>
+
+<h3>5.2 LGPD: onde ficam os dados pessoais</h3>
+<table>
+  <tr><th style="width:20%">Dado</th><th style="width:28%">Onde fica</th><th>Tratamento</th></tr>
+  <tr><td>Foto e vídeo do cidadão</td><td>memória do container, só durante a análise</td><td><b>Nunca armazenados</b>; rostos borrados antes de qualquer retorno; EXIF descartado (só a exposição é lida); o vídeo temporário é apagado logo após a análise</td></tr>
+  <tr><td>Chamado (tipo, prioridade, local, status)</td><td>Azure Table <code>chamados</code> (East US)</td><td>Sem nome, CPF, telefone ou imagem; protocolo aleatório; acesso só pela identidade gerenciada; Storage sem chave compartilhada</td></tr>
+  <tr><td>Localização (GPS)</td><td>no chamado</td><td>Necessária para o conserto (finalidade); não vai para métricas nem para logs</td></tr>
+  <tr><td>“Meus protocolos”</td><td>navegador do cidadão (<code>localStorage</code>)</td><td>Fica só no aparelho dele; não há cadastro</td></tr>
+  <tr><td>Métricas</td><td>Prometheus (PC, 7 dias)</td><td>Só contagens agregadas por rota, tipo e prioridade</td></tr>
+  <tr><td>Logs</td><td>Log Analytics (30 dias)</td><td>Logs de acesso do container, sem corpo da requisição</td></tr>
+  <tr><td>E-mail do alerta de custo</td><td>secret <code>ALERTA_EMAIL</code> e state do Terraform</td><td>Fora do Git; state acessível só por Entra ID</td></tr>
+</table>
+
+<h3>5.3 Custo</h3>
+<p>Preços públicos de tabela (pay-as-you-go, East US, nov/2026; US$ 1 = R$ 5,50). Assinatura <b>Azure for Students</b>,
+com limite de gasto: quando o crédito acaba os recursos param, sem cobrança. Detalhes em
+<a href="https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026/blob/main/06-devops-cloud/docs/custo.md"><code>docs/custo.md</code></a>.</p>
+<div class="duas">
+<table>
+  <tr><th>Recurso</th><th>Como cobra</th></tr>
+  <tr><td>Container Apps</td><td>por segundo de vCPU/GiB; cota grátis de 180 mil vCPU·s e 2 milhões de requisições por mês</td></tr>
+  <tr><td>Container Registry Basic</td><td>~US$ 5/mês</td></tr>
+  <tr><td>Log Analytics</td><td>5 GB/mês grátis; teto de 0,5 GB/dia</td></tr>
+  <tr><td>Storage (state e central)</td><td>centavos (KB de dados)</td></tr>
+  <tr><td>Orçamento, identidade, OIDC</td><td>grátis</td></tr>
+</table>
+<table>
+  <tr><th>Cenário</th><th class="n">US$/mês</th><th class="n">R$/mês</th></tr>
+  <tr><td><b>A.</b> Escala a zero, ~1.000 análises/mês</td><td class="n">~5</td><td class="n">~28</td></tr>
+  <tr><td><b>B.</b> Sempre acordada (1 vCPU, 2 GiB)</td><td class="n">~27</td><td class="n">~150</td></tr>
+  <tr><td><b>B'.</b> Sempre acordada (0,5 vCPU, 1 GiB)</td><td class="n">~16</td><td class="n">~90</td></tr>
+  <tr><td><b>Real até 13/11</b> (orçamento da Azure)</td><td class="n"><b>1,40</b></td><td class="n"><b>~7,70</b></td></tr>
+</table>
+</div>
+<pre class="term"><span class="cmd">$ az consumption budget list -g rg-ruasescuras -o table</span>
+Nome                   Valor    Periodo    Gasto_atual
+---------------------  -------  ---------  ------------------
+orcamento-ruasescuras  100.0    Monthly    <span class="bom">1.3952804490491806</span></pre>
+<p><b>Proteções contra gasto inesperado:</b> escala a zero por padrão e teto de 2 réplicas; orçamento com e-mail em 50%,
+80% e 100% do real e em 100% do previsto; cota diária no Log Analytics; e, depois da avaliação,
+<code>terraform destroy</code> e remoção do grupo do state.</p>
+
+<h3>5.4 README reproduzível</h3>
+<p>O <a href="https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026/tree/main/06-devops-cloud#readme">README da pasta 06</a>
+explica, passo a passo: (1) subir tudo no PC com <code>docker compose up -d --build</code>; (2) preparar a nuvem uma vez
+com <code>scripts/bootstrap-azure.ps1</code> (state + identidade OIDC) e <code>terraform apply</code>, e cadastrar os
+secrets; (3) monitorar a nuvem pelo Grafana local com <code>scripts/alvo-azure.ps1</code>; (4) disparar um alerta de
+propósito; (5) desligar tudo. A <b>Ficha Técnica</b> do Vésper está no
+<a href="https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026#readme">README da raiz</a>.</p>
+
+<h2>Conclusão</h2>
+<p>O Vésper está no ar desde 12/11 e já recebeu 9 publicações automáticas pela main, sem nenhum clique manual no portal.
+O pipeline mostrou valor de verdade: barrou 61 vulnerabilidades da imagem (10 críticas) e cinco usos de hash inseguro (MD5 e SHA1), em duas ocasiões,
+antes que chegassem ao cidadão. A infraestrutura é toda código, sem senha guardada, sem porta de administração e com
+menor privilégio; a observabilidade cobre as 4 métricas de ouro e alerta quando o serviço cai. Como próximos passos,
+ficam: mover o Prometheus e o Grafana para a nuvem (Azure Monitor gerenciado), assinar a imagem (cosign) e adicionar um
+ambiente de homologação com aprovação manual antes da produção.</p>
+
+</body>
+</html>

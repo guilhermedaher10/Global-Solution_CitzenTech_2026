@@ -1,6 +1,6 @@
 {
   "uid": "ruas-escuras",
-  "title": "Ruas Escuras · 4 métricas de ouro",
+  "title": "Vésper · 4 métricas de ouro",
   "description": "Tráfego, erros, latência e saturação da API da Visão + indicadores do produto (chamados e robô).",
   "tags": ["ruas-escuras", "golden-signals"],
   "timezone": "America/Sao_Paulo",
@@ -48,14 +48,14 @@
     {
       "type": "stat", "title": "Chamados abertos (período)", "gridPos": { "h": 4, "w": 5, "x": 8, "y": 1 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [{ "refId": "A", "expr": "sum(increase(visao_chamados_total{ambiente=~\"$ambiente\"}[$__range]))" }],
+      "targets": [{ "refId": "A", "expr": "round(sum(increase(visao_chamados_total{ambiente=~\"$ambiente\"}[$__range])))" }],
       "fieldConfig": { "defaults": { "decimals": 0, "color": { "mode": "fixed", "fixedColor": "orange" } } },
       "options": { "colorMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } }
     },
     {
       "type": "stat", "title": "Alertas do robô (período)", "gridPos": { "h": 4, "w": 5, "x": 13, "y": 1 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [{ "refId": "A", "expr": "sum(increase(visao_alertas_robo_total{ambiente=~\"$ambiente\"}[$__range]))" }],
+      "targets": [{ "refId": "A", "expr": "round(sum(increase(visao_alertas_robo_total{ambiente=~\"$ambiente\"}[$__range])))" }],
       "fieldConfig": { "defaults": { "decimals": 0, "color": { "mode": "fixed", "fixedColor": "purple" } } },
       "options": { "colorMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } }
     },
@@ -114,14 +114,14 @@
     {
       "type": "barchart", "title": "Chamados por tipo (para qual setor da prefeitura)", "gridPos": { "h": 8, "w": 12, "x": 0, "y": 23 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [{ "refId": "A", "expr": "sum by (tipo) (increase(visao_chamados_total{ambiente=~\"$ambiente\"}[$__range]))", "legendFormat": "{{tipo}}", "instant": true, "format": "table" }],
-      "transformations": [{ "id": "reduce", "options": { "reducers": ["lastNotNull"] } }],
-      "options": { "orientation": "horizontal", "showValue": "always" }
+      "targets": [{ "refId": "A", "expr": "round(sum by (tipo) (increase(visao_chamados_total{ambiente=~\"$ambiente\"}[$__range])))", "legendFormat": "{{tipo}}", "instant": true, "format": "table" }],
+      "transformations": [{ "id": "organize", "options": { "excludeByName": { "Time": true }, "renameByName": { "Value": "chamados" } } }],
+      "options": { "orientation": "horizontal", "showValue": "always", "xField": "tipo" }
     },
     {
       "type": "piechart", "title": "Chamados por prioridade", "gridPos": { "h": 8, "w": 12, "x": 12, "y": 23 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [{ "refId": "A", "expr": "sum by (prioridade) (increase(visao_chamados_total{ambiente=~\"$ambiente\"}[$__range]))", "legendFormat": "{{prioridade}}", "instant": true }],
+      "targets": [{ "refId": "A", "expr": "round(sum by (prioridade) (increase(visao_chamados_total{ambiente=~\"$ambiente\"}[$__range])))", "legendFormat": "{{prioridade}}", "instant": true }],
       "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "pieType": "donut", "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] } }
     }
   ]
