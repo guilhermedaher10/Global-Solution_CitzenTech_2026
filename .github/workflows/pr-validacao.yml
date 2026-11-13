@@ -70,8 +70,12 @@ jobs:
               erros=$((erros+1))
             fi
             tamanho=$(stat -c %s "$f")
-            if [ "$tamanho" -gt 10485760 ]; then
-              echo "::error file=$f::Arquivo com $((tamanho/1048576)) MB (limite 10 MB). Dataset e modelo pesado vão por link."
+            limite=10485760   # 10 MB
+            # exceção: o modelo da Visão em produção (pesos .pt em models/) pode ter até 25 MB, porque a
+            # imagem Docker publicada pelo pipeline precisa dele; vídeo e dataset continuam barrados
+            if [[ "$f" =~ ^04-visao-computacional/models/[^/]+\.pt$ ]]; then limite=26214400; fi
+            if [ "$tamanho" -gt "$limite" ]; then
+              echo "::error file=$f::Arquivo com $((tamanho/1048576)) MB (limite $((limite/1048576)) MB). Dataset e modelo pesado vão por link."
               erros=$((erros+1))
             fi
           done < arquivos.txt
