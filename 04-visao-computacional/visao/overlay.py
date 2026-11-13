@@ -41,19 +41,22 @@ def desenhar_deteccoes(img: np.ndarray, deteccoes: list[Deteccao]) -> np.ndarray
 
 def desenhar_painel(img: np.ndarray, status: StatusTrecho, acesos: int, apagados: int,
                     luminosidade: float, fps: float | None = None,
-                    total_unicos: tuple[int, int] | None = None, chamado: str | None = None) -> np.ndarray:
+                    total_unicos: tuple[int, int] | None = None, chamado: str | None = None,
+                    regiao: str | None = None) -> np.ndarray:
     """Painel no canto superior esquerdo. total_unicos = (acesos, apagados) contados no trajeto."""
     linhas = [f"Trecho: {status.value.upper()}",
               f"No quadro: {acesos} aceso(s) | {apagados} apagado(s)",
               f"Luminosidade: {luminosidade:.0f}/255"]
     if total_unicos is not None:
         linhas.append(f"No trajeto: {total_unicos[0]} aceso(s) | {total_unicos[1]} apagado(s)")
+    if regiao:
+        linhas.append(regiao)
     if chamado:
         linhas.append(chamado)
     if fps is not None:
         linhas.append(f"{fps:.0f} FPS")
 
-    largura, altura = 360, 24 * len(linhas) + 14
+    largura, altura = 430, 24 * len(linhas) + 14
     sub = img[0:altura, 0:largura]
     img[0:altura, 0:largura] = cv2.addWeighted(sub, 0.35, np.zeros_like(sub), 0.65, 0)
     cv2.rectangle(img, (0, 0), (6, altura), COR_STATUS[status], -1)

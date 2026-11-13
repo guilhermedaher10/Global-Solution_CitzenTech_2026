@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Vésper · Relatório de Visão Computacional</title>
+<style>
+@font-face { font-family: "Cormorant"; font-weight: 700; src: url(../../web/fontes/cormorant-garamond-latin-700-normal.woff2) format("woff2"); }
+@font-face { font-family: "Cormorant"; font-weight: 600; font-style: italic; src: url(../../web/fontes/cormorant-garamond-latin-600-italic.woff2) format("woff2"); }
+@font-face { font-family: "Inter"; font-weight: 400; src: url(../../web/fontes/inter-latin-400-normal.woff2) format("woff2"); }
+@font-face { font-family: "Inter"; font-weight: 700; src: url(../../web/fontes/inter-latin-700-normal.woff2) format("woff2"); }
+@page { size: A4; margin: 18mm 17mm 18mm 17mm; }
+:root { --verde: #26482f; --verde2: #457752; --menta: #e6f2ea; --ambar: #b7791f; --texto: #1d2a22; --cinza: #5b6b61; }
+* { box-sizing: border-box; }
+body { font-family: Inter, "Segoe UI", Arial, sans-serif; color: var(--texto); font-size: 10.2pt; line-height: 1.5; margin: 0; }
+h1, h2, h3 { font-family: Cormorant, Georgia, serif; color: var(--verde); line-height: 1.15; }
+h1 { font-size: 26pt; margin: 0 0 4px; }
+h2 { font-size: 17pt; margin: 18px 0 6px; border-bottom: 1.5px solid var(--menta); padding-bottom: 3px; break-after: avoid; }
+h3 { font-size: 13pt; margin: 12px 0 4px; break-after: avoid; }
+p { margin: 5px 0; text-align: justify; }
+.sub { font-family: Cormorant, Georgia, serif; font-style: italic; font-size: 14pt; color: var(--verde2); margin: 0 0 10px; }
+.capa { border-left: 5px solid var(--verde2); padding: 4px 0 4px 14px; margin-bottom: 10px; }
+.meta { font-size: 9pt; color: var(--cinza); text-align: left; }
+table { width: 100%; border-collapse: collapse; margin: 6px 0 8px; font-size: 9pt; break-inside: avoid; }
+th, td { border: 1px solid #cfe0d5; padding: 4px 6px; text-align: left; vertical-align: top; }
+th { background: var(--menta); color: var(--verde); }
+td.n, th.n { text-align: right; white-space: nowrap; }
+.destaque { background: #f6faf7; border: 1px solid #cfe0d5; border-radius: 6px; padding: 8px 10px; margin: 8px 0; }
+.alerta { background: #fdf6ea; border-color: #f1d9ad; }
+figure { margin: 8px 0; text-align: center; break-inside: avoid; }
+figure img { max-width: 100%; border: 1px solid #d8e4dc; border-radius: 4px; }
+figcaption { font-size: 8.5pt; color: var(--cinza); margin-top: 3px; }
+.duas { display: flex; gap: 10px; align-items: flex-start; }
+.duas figure { flex: 1; }
+ol li, ul li { margin: 2px 0; }
+code { font-family: Consolas, monospace; font-size: 8.8pt; background: #eef4f0; padding: 0 3px; border-radius: 3px; }
+.contador { font-size: 8pt; color: var(--cinza); text-align: right; }
+.quebra { break-before: page; }
+a { color: var(--verde2); }
+@media print { .contador { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="capa">
+  <h1>Vésper: da escuridão à luz</h1>
+  <p class="sub">Visão computacional em tempo real para levar a rua escura e o apagão até quem pode resolvê-los</p>
+  <p class="meta">FIAP · Engenharia de Software, 4º ano · Global Solution 2026.2 (CitizenTech) · Disciplina de Visão Computacional</p>
+  <p class="meta">MVP: <a href="https://ca-ruasescuras-visao.bravehill-24590cb4.eastus.azurecontainerapps.io">ca-ruasescuras-visao.bravehill-24590cb4.eastus.azurecontainerapps.io</a> ·
+     Repositório: <a href="https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026/tree/main/04-visao-computacional">github.com/guilhermedaher10/Global-Solution_CitzenTech_2026</a> ·
+     Vídeo: <span id="video">[link do YouTube]</span></p>
+</div>
+
+<h2>Integrantes</h2>
+<table>
+  <tr><th>Nome</th><th class="n">RM</th><th>Papel no projeto</th></tr>
+  <tr><td>Guilherme Daher</td><td class="n">98611</td><td>Visão Computacional · DevOps e Cloud</td></tr>
+  <tr><td>Gabriel Freitas</td><td class="n">550187</td><td>Generative AI</td></tr>
+  <tr><td>Heitor Nobre</td><td class="n">551539</td><td>Maker Lab</td></tr>
+  <tr><td>Vinicius Yamashita</td><td class="n">550908</td><td>RPA</td></tr>
+  <tr><td>Lucca Alexandre</td><td class="n">99700</td><td>Big Data · Negócio e Pitch</td></tr>
+</table>
+
+<h2>Resumo</h2>
+<div id="resumo">
+<p>Ruas com iluminação pública falha aumentam o medo, favorecem assaltos e causam quedas e acidentes à noite. Ainda
+assim, a falha demora a chegar a quem conserta: depende de alguém reclamar, saber para quem reclamar e descrever o
+local. Este trabalho apresenta a visão computacional do Vésper, plataforma que liga o cidadão no escuro à prefeitura e
+à distribuidora de energia. Treinamos de forma customizada um detector YOLO26s para encontrar luminárias acesas e
+apagadas, com 1.137 imagens de datasets públicos, imagens com licença aberta, fotos noturnas revisadas pela equipe e
+exemplos sintéticos de poste apagado. Como uma rua escura nem sempre mostra um poste, criamos também a leitura da cena
+inteira: medidas explicáveis de luz fundidas a um classificador YOLO26-cls que separa rua iluminada, trecho escuro e
+apagão, com vetos físicos (poste aceso significa rede com energia) e sinais de exposição da câmera. A solução roda em
+tempo real, com rastreamento ByteTrack e painel de realidade aumentada, e o cidadão filma ao vivo pelo navegador, sem
+instalar nada. Relatos próximos viram um alerta de região, e cada chamado vai ao órgão certo. Rostos são borrados e
+nenhuma imagem é guardada. No teste com fotos nunca vistas, o detector alcançou mAP50 de 0,49 (0,84 para postes
+acesos), com 4,6 ms por imagem em GPU, e a leitura de cena acertou 81% das cenas, contra 72% das regras isoladas. Os
+resultados mostram que a visão computacional transforma uma reclamação em evidência localizada, priorizada e
+encaminhada.</p>
+</div>
+<p class="contador" id="contador-resumo"></p>
+
+<h2>Introdução</h2>
+<p>A iluminação pública é uma das infraestruturas que mais pesam na sensação de segurança de quem anda à noite.
+Uma rua escura afasta pedestres, favorece assaltos e esconde buracos e desníveis, o que causa quedas de pedestres,
+ciclistas e motociclistas. Em São Paulo, a manutenção é pedida pelo canal SP156; quando falta energia no bairro, quem
+resolve é a distribuidora (Enel). Na prática, o cidadão precisa saber <b>para quem</b> reclamar, descrever o local e
+torcer para o pedido não se perder entre chamados repetidos e sem evidência.</p>
+<p>A visão computacional entra exatamente nesse ponto: transformar uma imagem do celular (ou da câmera de um robô) em
+evidência objetiva. Quantos postes há, quais estão apagados, quão escura está a região, se há sinal de apagão. E tudo
+isso de forma automática, explicável e em escala. O Vésper é a ponte: o cidadão aponta o celular, filma alguns
+segundos e o chamado chega à central já confirmado, priorizado e encaminhado ao órgão certo. Na disciplina de
+Visão Computacional, este componente responde a dois requisitos: <b>treinamento customizado</b> de uma arquitetura de
+detecção e <b>detecção em tempo real</b> com técnicas avançadas e realidade aumentada.</p>
+<p>O projeto se conecta aos ODS 11 (cidades seguras e inclusivas), 3 (menos acidentes no trânsito), 10 (basta um
+navegador, sem cadastro, e o indicador centro × periferia mostra onde o conserto demora mais), 9 (infraestrutura
+resiliente) e 16 (instituições transparentes, com protocolo e acompanhamento).</p>
+
+<h2>Objetivo</h2>
+<div id="objetivo"><p>Treinar e integrar modelos de visão computacional que, em tempo real, detectem postes acesos e
+apagados e reconheçam ruas escuras e apagões em fotos e vídeos do cidadão, transformando cada relato em um chamado
+explicado, priorizado, encaminhado ao órgão responsável e respeitoso à privacidade.</p></div>
+<p class="contador" id="contador-objetivo"></p>
+
+<h2>Explicação técnica das ferramentas</h2>
+<table>
+  <tr><th>Ferramenta</th><th>Para que usamos</th></tr>
+  <tr><td><b>YOLO26 (Ultralytics 8.4)</b></td><td>Detector de uma etapa, sem NMS, otimizado para CPU e borda. Variantes <code>n</code> e <code>s</code> pré-treinadas no COCO (transfer learning) para detecção; <code>YOLO26n-cls</code> pré-treinado no ImageNet para classificar a cena</td></tr>
+  <tr><td><b>PyTorch + CUDA</b></td><td>Treino na GPU (NVIDIA RTX 4060 Ti, 8 GB); a produção roda em CPU</td></tr>
+  <tr><td><b>YOLO-World</b></td><td>Pré-anotação por vocabulário aberto ("street lamp"): sugere caixas que a equipe revisa, em vez de desenhar do zero</td></tr>
+  <tr><td><b>Roboflow</b></td><td>Revisão das anotações pela equipe, versionamento do dataset e export YOLO; datasets públicos do Universe (CC BY 4.0)</td></tr>
+  <tr><td><b>Openverse e Wikimedia Commons</b></td><td>APIs oficiais de imagens com licença aberta: autor e licença de cada imagem ficam num manifesto</td></tr>
+  <tr><td><b>OpenCV</b></td><td>Leitura de vídeo, canal V (HSV) para brilho, componentes conexos para contar fontes de luz, inpainting (postes apagados sintéticos), painel de RA, borramento de rostos com <b>YuNet</b></td></tr>
+  <tr><td><b>ByteTrack</b></td><td>Rastreamento multiobjeto: o mesmo poste mantém um id entre quadros e é contado uma única vez no trajeto</td></tr>
+  <tr><td><b>Hash perceptual (dHash)</b></td><td>Remove imagens repetidas e impede vazamento entre treino e teste</td></tr>
+  <tr><td><b>MediaRecorder + getUserMedia</b></td><td>Câmera ao vivo no navegador: foto ou vídeo de até 10 s, sem instalar aplicativo</td></tr>
+  <tr><td><b>FastAPI + Pydantic</b></td><td>API REST com contrato tipado (versão 1.5) e documentação automática em <code>/docs</code></td></tr>
+  <tr><td><b>Docker, Azure Container Apps, Azure Table</b></td><td>Empacotamento e deploy; central de chamados persistida sem chave, com identidade gerenciada</td></tr>
+  <tr><td><b>pytest e Playwright</b></td><td>85 testes automatizados e teste ponta a ponta no Chrome com câmera simulada</td></tr>
+</table>
+
+<h3>Arquitetura do componente</h3>
+<p>Foto ou vídeo (cidadão, ao vivo) → <b>detector YOLO26s</b> (postes) + <b>leitura de cena</b> (medidas de luz +
+classificador YOLO26-cls + EXIF) → regras explicáveis (trecho, validação da evidência, prioridade, tipo de chamado) →
+borramento de rostos → JSON → <b>central de chamados</b> (protocolo, status, encaminhamento, agrupamento em regiões) →
+prefeitura ou distribuidora. O robô do Maker Lab (sensores de luz e distância) e o assistente de IA generativa
+(prazos oficiais com citação) se integram pela mesma API.</p>
+
+<h2>Metodologia (passo a passo)</h2>
+<h3>A. Detector de postes (treinamento customizado)</h3>
+<ol>
+  <li><b>Classes:</b> <code>poste_aceso</code> e <code>poste_apagado</code>, com a caixa na cabeça da luminária (guia em <code>docs/dataset.md</code>).</li>
+  <li><b>Coleta:</b> 4 datasets públicos do Roboflow Universe, imagens com licença aberta (Openverse/Wikimedia) e 135 fotos noturnas revisadas pela equipe.</li>
+  <li><b>Pré-anotação e revisão:</b> o YOLO-World sugere caixas, convertidas para a cabeça da luminária; a equipe revisou tudo no Roboflow.</li>
+  <li><b>Poste apagado sintético:</b> a classe difícil. Em 75 fotos de postes acesos, a lâmpada foi "apagada" por inpainting, com o halo e a luz no chão escurecidos (só no treino, nunca no teste).</li>
+  <li><b>Unificação e deduplicação:</b> nomes de classe padronizados, dHash para remover repetidas, divisão por hash estável.</li>
+  <li><b>Teste honesto:</b> 152 imagens reais nunca vistas (228 postes acesos e 27 apagados), sem nenhuma sintética.</li>
+  <li><b>Treino:</b> YOLO26n e YOLO26s, 640 px, parada antecipada; teste também a 960 px. Escolha pelo teste real.</li>
+  <li><b>Filtro de sanidade:</b> caixa cobrindo mais de 50% da foto não é luminária: é descartada.</li>
+</ol>
+<h3>B. Leitura da cena: a região está no escuro? É apagão?</h3>
+<ol>
+  <li><b>Medidas explicáveis</b> (<code>visao/cena.py</code>): luz no chão (terço inferior), área iluminada, número de fontes de luz (regiões quase saturadas) e mapa de luz 6×8. Daí sai um índice de escuridão de 0 a 100 e o nível (iluminada, pouca iluminação, muito escura, breu).</li>
+  <li><b>Rotulagem humana:</b> 313 imagens rotuladas uma a uma em pranchas numeradas (iluminada, trecho escuro, apagão). Mapas de satélite, interiores e fotos de dia que vieram na busca foram descartados. Duplicatas (33) foram juntadas por hash, sem nenhum rótulo conflitante.</li>
+  <li><b>Separação anti-vazamento:</b> 280 imagens únicas: 154 de treino, 45 de validação e 43 de teste. As <b>38 fotos da equipe</b> (ruas de São Paulo, celular) ficaram <b>só no teste</b>, como o "mundo real".</li>
+  <li><b>Classificador:</b> YOLO26n-cls, 320 px, 2 minutos de treino em GPU. Também testamos o YOLO26s-cls.</li>
+  <li><b>Fusão com vetos físicos:</b> o classificador decide quando está confiante (≥ 50%). Cena medida como iluminada nunca vira apagão. Cena medida como breu nunca vira "iluminada". <b>Poste aceso detectado na foto = a rede tem energia</b>, logo não é apagão.</li>
+  <li><b>Exposição da câmera (EXIF):</b> o EV100 calculado de tempo, abertura e ISO separa "câmera subexposta" (EV alto e foto escura: o apagão é descartado) de "escuro de verdade" (EV ≤ 3).</li>
+</ol>
+<h3>C. Tempo real, realidade aumentada e o cidadão ao vivo</h3>
+<ol>
+  <li><code>tempo_real.py</code>: webcam, vídeo ou YouTube → detecção + ByteTrack → painel de RA com trecho, contagem no trajeto, leitura da região e chamado gerado; cada poste apagado vira um evento (JSON ou webhook).</li>
+  <li><b>Câmera ao vivo no site</b> (botão "Estou no escuro agora" e QR Code que abre direto a câmera): foto ou vídeo de até 10 s, com o GPS pedido junto e <b>envio automático</b>. No vídeo, um quadro a cada 0,5 s passa pelo detector; o mais evidente vira a prova, e o vídeo é apagado logo depois.</li>
+  <li><b>Central e regiões:</b> cada chamado recebe um protocolo e o órgão responsável (poste vai para a iluminação pública; apagão vai para a Enel e a Defesa Civil). Três ou mais chamados a até 500 m, em 6 h, viram um alerta de região; com dois ou mais sinais de falta de energia, "possível apagão no bairro X".</li>
+</ol>
+<h3>D. Avaliação</h3>
+<p>Detector: precisão, recall e mAP50 por classe no teste real, além do tempo por imagem. Cena: acurácia,
+precisão e recall por classe e matriz de confusão em <b>dois cenários</b> (teste com licença aberta e fotos da
+equipe), comparando regras, classificador e fusões (<code>scripts/avaliar_cena.py</code>). Sistema: teste ponta a
+ponta no Chrome com câmera simulada transmitindo uma foto noturna real (Playwright).</p>
+
+<h2>Exemplos de resultados</h2>
+<h3>Detector de postes (teste real, 152 imagens nunca vistas)</h3>
+<table>
+  <tr><th>Modelo</th><th class="n">mAP50</th><th class="n">AP50 aceso</th><th class="n">AP50 apagado</th><th class="n">Precisão</th><th class="n">Recall</th><th class="n">Tempo/imagem</th></tr>
+  <tr><td>Modelo-base (antes da revisão da equipe)</td><td class="n">0,42</td><td class="n">0,80</td><td class="n">0,04</td><td class="n">0,64</td><td class="n">0,40</td><td class="n">36 ms CPU</td></tr>
+  <tr><td>YOLO26n</td><td class="n">0,46</td><td class="n">0,84</td><td class="n">0,09</td><td class="n">0,78</td><td class="n">0,43</td><td class="n">31 ms CPU</td></tr>
+  <tr><td><b>YOLO26s (produção)</b></td><td class="n"><b>0,49</b></td><td class="n"><b>0,84</b></td><td class="n"><b>0,15</b></td><td class="n"><b>0,79</b></td><td class="n"><b>0,47</b></td><td class="n">61 ms CPU · 4,6 ms GPU</td></tr>
+  <tr><td>YOLO26s a 960 px</td><td class="n">0,50</td><td class="n">0,87</td><td class="n">0,14</td><td class="n">0,59</td><td class="n">0,50</td><td class="n">107 ms CPU</td></tr>
+</table>
+<p>O YOLO26s a 640 px foi escolhido: mesma qualidade do 960 px, com muito mais precisão e metade do tempo. Em 25
+fotos noturnas inéditas da equipe, os postes apagados encontrados passaram de 1 (modelo-base) para 12.</p>
+<div class="duas">
+  <figure><img src="../img/deteccao/val_batch0_pred.jpg" style="max-height:230px"><figcaption>Detecções no teste real (aceso e apagado)</figcaption></figure>
+  <figure><img src="../img/deteccao/confusion_matrix_normalized.png" style="max-height:230px"><figcaption>Matriz de confusão normalizada do detector</figcaption></figure>
+</div>
+
+<h3>Tempo real com realidade aumentada</h3>
+<figure><img src="../img/tempo_real/painel_ra.jpg" style="max-height:270px"><figcaption>Painel de RA ao vivo: ids do ByteTrack (#1 a #7), 6 postes apagados contados uma vez no trajeto, leitura da região (breu, índice 83: trecho escuro, não apagão, porque há poste aceso), chamado de prioridade ALTA e 11 FPS no pipeline completo (detecção, rastreamento, borramento de rostos e painel)</figcaption></figure>
+
+<h3>Leitura de cena por cenário</h3>
+<table>
+  <tr><th>Abordagem</th><th class="n">Acurácia (teste aberto, 43)</th><th class="n">Apagão P / R</th><th class="n">Acurácia (fotos da equipe, 38)</th><th class="n">Apagão P / R</th></tr>
+  <tr><td>Só regras (medidas de luz)</td><td class="n">72%</td><td class="n">0,67 / 0,18</td><td class="n">42%</td><td class="n">0,29 / 0,75</td></tr>
+  <tr><td>Só classificador YOLO26n-cls</td><td class="n">77%</td><td class="n">0,62 / 0,73</td><td class="n">45%</td><td class="n">0,26 / 0,75</td></tr>
+  <tr><td>Fusão com vetos físicos</td><td class="n">81%</td><td class="n">0,70 / 0,64</td><td class="n">45%</td><td class="n">0,27 / 0,75</td></tr>
+  <tr><td><b>Fusão + veto do poste aceso (produção)</b></td><td class="n"><b>81%</b></td><td class="n"><b>0,78 / 0,64</b></td><td class="n"><b>47%</b></td><td class="n"><b>0,29 / 0,75</b></td></tr>
+</table>
+<div class="duas">
+  <figure><img src="../img/cena/matriz_test_fusao_detector.png" style="max-height:215px"><figcaption>Teste aberto: fusão completa</figcaption></figure>
+  <figure><img src="../img/cena/matriz_teste_equipe_fusao_detector.png" style="max-height:215px"><figcaption>Fotos da equipe: fusão completa</figcaption></figure>
+</div>
+
+<h3>O MVP funcionando</h3>
+<div class="duas">
+  <figure><img src="../img/mvp/celular_camera.png" style="max-height:300px"><figcaption>Câmera ao vivo no celular, com GPS</figcaption></figure>
+  <figure><img src="../img/mvp/celular_resultado.png" style="max-height:300px"><figcaption>Vídeo de 3 s → 7 quadros analisados, 5 postes apagados, chamado ALTA, protocolo e órgão responsável</figcaption></figure>
+  <figure><img src="../img/mvp/qr.png" style="max-height:200px"><figcaption>QR Code que abre direto a câmera</figcaption></figure>
+</div>
+<figure><img src="../img/mvp/central.png" style="max-height:330px"><figcaption>Central: 9 relatos próximos viram "Possível apagão em Capão Redondo" (encaminhado à Enel e à Defesa Civil), enquanto 3 relatos com postes acesos ao fundo viram "Trecho escuro recorrente" (iluminação pública)</figcaption></figure>
+
+<h3>Erros comentados (o que o modelo errou e por quê)</h3>
+<ul>
+  <li><b>Poste apagado é a classe difícil (AP50 de 0,15).</b> À noite, uma luminária apagada é uma silhueta escura contra o céu escuro. Por isso a cena inteira também é lida: sem poste visível, a escuridão medida vira evidência (<code>trecho_sem_luz</code>).</li>
+  <li><b>"Trecho escuro" confundido com "apagão" nas fotos da equipe</b> (15 de 24). Nessas ruas, a única luz é pequena e distante (uma janela, um poste no fim da rua), menor que o limiar de fonte de luz, e as fotos com licença aberta de apagão são de fotógrafos, não de celular. O remédio é mais fotos reais de celular rotuladas; enquanto isso, um apagão só é declarado para a região com 3+ relatos e 2+ sinais, e a central confirma antes de acionar a distribuidora.</li>
+  <li><b>Erro achado no teste ponta a ponta e corrigido:</b> uma foto com 5 postes acesos ao fundo virou "apagão", porque o classificador viu escuridão. Criamos o veto "poste aceso = rede com energia", que subiu a precisão do apagão de 0,70 para 0,78.</li>
+</ul>
+
+<h2>Conclusão</h2>
+<p>O objetivo foi atingido: treinamos um detector YOLO26s customizado e um classificador de cena YOLO26-cls, e os
+integramos a um MVP público em que o cidadão filma a rua ao vivo e o chamado chega à central confirmado, explicado,
+priorizado e encaminhado ao órgão certo. Tudo roda em tempo real, com rastreamento e realidade aumentada. O detector
+reconhece postes acesos com AP50 de 0,84, e a leitura de cena acerta 81% no teste aberto, com precisão de 0,78 no
+apagão. As decisões são sempre explicadas e passam por uma pessoa na central.</p>
+<p>As limitações estão medidas: o poste apagado à noite ainda é difícil, e nas fotos de celular de São Paulo a
+distinção entre falha local e apagão cai para 47%. Por isso o sistema não depende de uma foto só: agrupa relatos,
+cruza com os sensores do robô e exige confirmação humana. Os próximos passos são incorporar as fotos noturnas que a
+equipe e os amigos estão coletando, exportar os modelos para ONNX no robô e cruzar os alertas de região com os dados
+abertos de chamados e de queda de energia no Big Data.</p>
+<p class="meta">Dados: Roboflow Universe (CC BY 4.0), Openverse e Wikimedia Commons (licença por imagem, no manifesto
+<code>data/bruto/web/manifesto.csv</code>) e fotos da equipe. Imagens com marca d'água de veículos de imprensa foram
+excluídas. Nenhuma foto de cidadão é armazenada.</p>
+
+<script>
+  const conta = (id) => document.getElementById(id).innerText.trim().split(/\s+/).length;
+  document.getElementById("contador-resumo").textContent = `${conta("resumo")} palavras (limite 250)`;
+  document.getElementById("contador-objetivo").textContent = `${conta("objetivo")} palavras (limite 50)`;
+</script>
+</body>
+</html>

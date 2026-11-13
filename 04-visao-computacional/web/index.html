@@ -28,6 +28,7 @@
       <a href="#robo" data-rota="robo">Robô</a>
       <a href="#central" data-rota="central">Central</a>
     </nav>
+    <button type="button" class="botao-qr" id="abrir-qr" aria-haspopup="dialog" title="Abrir no celular pelo QR Code">📱<span> No celular</span></button>
     <div class="status-api" id="status-api" role="status" aria-live="polite"><span class="ponto"></span><span class="texto">conectando…</span></div>
   </header>
 
@@ -54,11 +55,12 @@
         <div class="abertura-texto">
           <p class="sobretitulo">FIAP · Global Solution · CitizenTech</p>
           <h1><span class="wordmark">Vésper</span><em>da escuridão à luz.</em></h1>
-          <p class="lead">A ponte entre a rua escura e quem pode acendê-la. Uma foto basta: a inteligência artificial
-            confirma a falha, explica a prioridade e entrega o chamado à prefeitura com evidência.</p>
+          <p class="lead">A ponte entre a rua escura e quem pode acendê-la. Aponte o celular, filme ou fotografe ao vivo:
+            a inteligência artificial confirma a falha, explica a prioridade e entrega o chamado a quem resolve.</p>
           <div class="ctas">
-            <a class="botao primario" href="#reportar">Reportar uma rua escura</a>
-            <a class="botao fantasma" href="#central">Ver a central da prefeitura</a>
+            <a class="botao primario agora" href="#agora">🚨 Estou no escuro agora</a>
+            <a class="botao" href="#reportar">Reportar com calma</a>
+            <a class="botao fantasma" href="#central">Ver a central</a>
           </div>
         </div>
       </div>
@@ -67,7 +69,7 @@
         <div><strong>3 s</strong><span>da foto ao chamado priorizado</span></div>
         <div><strong>0</strong><span>fotos armazenadas (LGPD)</span></div>
         <div><strong>100%</strong><span>das decisões com motivo explicado</span></div>
-        <div><strong>3</strong><span>portas: foto, relato e robô</span></div>
+        <div><strong>4</strong><span>portas: vídeo ao vivo, foto, relato e robô</span></div>
       </div>
 
       <section class="bloco">
@@ -84,8 +86,9 @@
       </section>
 
       <section class="bloco portas">
-        <h2 class="titulo-secao">Três portas de entrada</h2>
-        <div class="grade-3">
+        <h2 class="titulo-secao">Quatro portas de entrada</h2>
+        <div class="grade-3 grade-4">
+          <a class="porta destaque" href="#agora"><span class="icone">🎥</span><h3>Ao vivo, agora</h3><p>Abra o site (até pelo QR Code), filme alguns segundos e envie. A localização vai junto, sem cadastro.</p></a>
           <a class="porta" href="#reportar"><span class="icone">📷</span><h3>Foto do cidadão</h3><p>Câmera ou galeria, com GPS ou endereço. A IA marca os postes e decide.</p></a>
           <a class="porta" href="#reportar" data-modo="relato"><span class="icone">📍</span><h3>Relato sem foto</h3><p>Breu total ou sem câmera? Informe o endereço; vira suspeita até alguém confirmar.</p></a>
           <a class="porta" href="#robo"><span class="icone">🤖</span><h3>Robô patrulheiro</h3><p>Sensores de luz e distância disparam alertas com GPS; a foto confirma.</p></a>
@@ -132,12 +135,17 @@
           <fieldset class="passo" id="passo-evidencia">
             <legend><span class="num">1</span> Evidência</legend>
             <div id="area-foto">
+              <div class="ao-vivo">
+                <button type="button" class="botao primario largo" id="abrir-camera">🎥 Câmera ao vivo · filmar ou fotografar</button>
+                <p class="dica">Abre a câmera aqui mesmo, sem instalar nada. A localização é pedida junto.</p>
+              </div>
               <label class="soltar" id="soltar" for="arquivo">
                 <input type="file" id="arquivo" accept="image/jpeg,image/png,image/webp" capture="environment" hidden>
                 <img id="previa" alt="" hidden>
+                <video id="previa-video" muted playsinline loop hidden></video>
                 <span class="soltar-texto" id="soltar-texto">
                   <span class="soltar-icone" aria-hidden="true">📷</span>
-                  <strong>Tirar ou escolher uma foto</strong>
+                  <strong>Ou escolha uma foto da galeria</strong>
                   <small>À noite, com o poste ou a rua escura aparecendo.</small>
                 </span>
               </label>
@@ -173,7 +181,7 @@
             <button class="botao primario largo" id="enviar" type="submit" disabled>Analisar e abrir chamado</button>
             <ol class="etapas" id="etapas" hidden>
               <li>Enviando com segurança</li>
-              <li>Procurando postes acesos e apagados</li>
+              <li id="etapa-detectar">Procurando postes acesos e apagados</li>
               <li>Validando a evidência e borrando rostos</li>
               <li>Calculando prioridade e setor</li>
             </ol>
@@ -202,6 +210,7 @@
             </div>
             <p class="endereco-resultado" id="endereco-resultado"></p>
             <details class="motivos"><summary>Por que a IA decidiu assim?</summary><ul id="lista-motivos"></ul></details>
+            <div class="encaminhamento" id="encaminhamento" hidden></div>
             <div class="orientacao" id="orientacao" hidden></div>
             <ul class="selos" id="selos"></ul>
             <div class="protocolo-caixa" id="protocolo-caixa" hidden>
@@ -308,12 +317,14 @@
         <div class="kpi alta"><span>Prioridade alta</span><strong id="kpi-alta">0</strong></div>
         <div class="kpi"><span>Suspeitas a confirmar</span><strong id="kpi-suspeitas">0</strong></div>
         <div class="kpi ok"><span>Resolvidos</span><strong id="kpi-resolvidos">0</strong></div>
+        <div class="kpi apagao"><span>Regiões em alerta</span><strong id="kpi-regioes">0</strong></div>
       </div>
+      <div class="regioes" id="regioes" hidden aria-live="polite"></div>
       <div class="filtros" role="group" aria-label="Filtros">
         <select id="filtro-prioridade" aria-label="Prioridade"><option value="">Todas as prioridades</option><option value="alta">Alta</option><option value="media">Média</option><option value="baixa">Baixa</option></select>
         <select id="filtro-status" aria-label="Status"><option value="">Todos os status</option></select>
         <select id="filtro-origem" aria-label="Origem"><option value="">Todas as origens</option><option value="cidadao">Foto do cidadão</option><option value="relato">Relato sem foto</option><option value="robo">Robô</option><option value="robo+foto">Robô + foto</option></select>
-        <button class="link" id="limpar-fila">limpar demonstração</button>
+        <button class="link" id="atualizar-fila" type="button">↻ atualizar</button>
       </div>
       <div class="grade-central">
         <div class="cartao mapa-cartao"><div id="mapa-central" aria-label="Mapa dos chamados"></div></div>
@@ -322,13 +333,39 @@
           <p class="vazio" id="fila-vazia">Nenhum chamado ainda. Envie uma foto em <a href="#reportar">Reportar</a> ou uma leitura no <a href="#robo">Robô</a>.</p>
         </div>
       </div>
-      <p class="nota">Demonstração: a central mostra os chamados feitos neste navegador. Guardamos só dados do chamado (tipo, prioridade, local e status), nunca a foto.</p>
+      <p class="nota">A central é compartilhada: um chamado enviado de qualquer celular aparece aqui em segundos. Guardamos só os dados do chamado (tipo, prioridade, local e status), nunca a foto nem o vídeo. Na demonstração, a central não pede login.</p>
 
       <dialog class="detalhe" id="detalhe">
         <form method="dialog" class="detalhe-corpo" id="detalhe-corpo"></form>
       </dialog>
     </section>
   </main>
+
+  <!-- câmera ao vivo (getUserMedia): nada é enviado antes de o cidadão tocar em foto ou gravar -->
+  <dialog class="camera" id="camera" aria-label="Câmera ao vivo">
+    <video id="camera-video" autoplay muted playsinline></video>
+    <div class="camera-topo">
+      <span class="chip" id="camera-gps">📡 localizando…</span>
+      <span class="chip gravando" id="camera-tempo" hidden>● 0 s</span>
+      <button type="button" class="camera-fechar" id="camera-fechar" aria-label="Fechar câmera">✕</button>
+    </div>
+    <p class="camera-dica" id="camera-dica">Mostre a rua escura e o poste, se houver. Gire devagar: a IA analisa vários quadros.</p>
+    <div class="camera-acoes">
+      <button type="button" class="camera-botao foto" id="camera-foto" aria-label="Tirar foto"><span>📷</span><small>Foto</small></button>
+      <button type="button" class="camera-botao gravar" id="camera-gravar" aria-label="Gravar vídeo de até 10 segundos"><span class="bola"></span><small>Gravar</small></button>
+    </div>
+    <p class="camera-erro" id="camera-erro" role="alert" hidden></p>
+  </dialog>
+
+  <dialog class="qr" id="qr" aria-labelledby="qr-titulo">
+    <form method="dialog">
+      <h2 id="qr-titulo">Leve o Vésper no bolso</h2>
+      <img src="/static/qr.svg" width="240" height="240" alt="QR Code que abre o Vésper direto na câmera ao vivo">
+      <p>Aponte a câmera do celular: o site abre direto na <strong>câmera ao vivo</strong>. Sem app, sem cadastro.</p>
+      <p class="dica">Colado num poste, num ponto de ônibus ou na portaria, o QR transforma qualquer pessoa no escuro em um chamado em segundos.</p>
+      <button class="botao primario">Fechar</button>
+    </form>
+  </dialog>
 
   <footer class="rodape">
     <div><span class="marca-nome">Vésper</span> · FIAP Global Solution 2026.2 · CitizenTech</div>

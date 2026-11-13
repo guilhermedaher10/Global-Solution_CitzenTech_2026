@@ -1,6 +1,6 @@
 # Integração: como os outros componentes usam a Visão
 
-A Visão expõe **uma API HTTP** e **um formato de JSON** (o contrato, versão `1.4`).
+A Visão expõe **uma API HTTP** e **um formato de JSON** (o contrato, versão `1.5`).
 Quem precisa saber se uma foto é evidência de rua escura chama a API. Ninguém precisa entender o YOLO.
 
 ```
@@ -23,6 +23,11 @@ diz para qual setor ele vai.
 |---|---|---|
 | `GET` | `/saude` | Status da API e do modelo (DevOps: health check e monitoramento) |
 | `POST` | `/v1/analisar` | Analisa uma foto (e cruza com os sensores, se vierem) e devolve o JSON abaixo |
+| `POST` | `/v1/analisar-video` | Vídeo curto **gravado ao vivo** (WebM/MP4): um quadro a cada 0,5 s, o mais evidente vira a prova. Mesma resposta de `/v1/analisar` + campo `video` |
+| `GET` | `/v1/chamados` | **Central**: fila de chamados (mais recentes primeiro), compartilhada entre aparelhos |
+| `GET` | `/v1/chamados/{protocolo}` | Acompanhar um chamado (status + histórico) |
+| `POST` | `/v1/chamados/{protocolo}/status` | Atendente muda o status (`{"status": "confirmado", "nota": "..."}`); só transições válidas, senão 409 |
+| `GET` | `/v1/regioes` | Relatos agrupados: "possível apagão na região X" ou "trecho escuro recorrente" |
 | `POST` | `/v1/relatos` | Relato do cidadão **sem foto** (só o local + endereço): vira suspeita até uma foto confirmar |
 | `POST` | `/v1/alerta-robo` | Alerta do robô **sem foto**: registra a suspeita e diz qual LED acender |
 | `GET` | `/docs` | Documentação interativa (Swagger): dá para testar pelo navegador |
@@ -61,7 +66,7 @@ if analise["validacao"]["abrir_chamado"]:
 
 ```json
 {
-  "versao_contrato": "1.4",
+  "versao_contrato": "1.5",
   "id_captura": "b58cccb5-ab16-43cb-8f35-180c00b2939d",
   "timestamp": "2026-11-09T22:12:45-03:00",
   "hora_captura": null,
@@ -133,6 +138,31 @@ if analise["validacao"]["abrir_chamado"]:
 
 > A classe `buraco` entra no modelo no próximo treino (dataset público de buracos). Até lá, buraco só do
 > ultrassônico fica como suspeita, que é o comportamento correto: não abrimos chamado sem prova.
+
+### Novidades da 1.5: central de chamados, vídeo ao vivo, encaminhamento e regiões
+Campos **novos** (nada mudou de nome nem saiu):
+
+| Onde | Campo | O que é |
+|---|---|---|
+| `/v1/analisar`, `/v1/analisar-video` | `protocolo` | `VSP-XXXXXX` quando o chamado foi aberto na central (`null` se não abriu ou se a central falhou: a análise nunca cai por causa dela) |
+| idem e `/v1/relatos`, `/v1/alerta-robo` | `encaminhar_para` | Lista de `{orgao, canal, motivo}`: poste/trecho sem luz → iluminação pública (SP156); buraco/poda → subprefeitura; **apagão → Enel (emergência 0800 72 72 196) + Defesa Civil (199, se houver risco)**. Regra em `configs/regras.yaml` (`encaminhamento`) |
+| `/v1/analisar-video` | `video` | `{quadros_analisados, duracao_s, quadro_escolhido_s, apagados_max, quadros_com_apagado, quadros_com_apagao}` |
+| entrada `/v1/analisar` | `registrar` | `true` (padrão) abre o chamado na central; `false` só analisa (ex.: testes, RPA reprocessando) |
+
+**Central** (`visao/central.py`): guarda só os dados do chamado (nunca foto/vídeo). Na nuvem, Azure Table Storage
+com a identidade gerenciada do container (`CENTRAL_TABELA_URL`, sem chave); no PC, SQLite (`CENTRAL_DB`).
+Status: `suspeita`/`recebido` → `confirmado` → `encaminhado` → `em_reparo` → `resolvido` (ou `recusado`).
+
+**Regiões** (`visao/regioes.py`): chamados de luz abertos, das últimas 6 h, a até 500 m uns dos outros, formam um
+grupo; com 3+ chamados vira alerta. É `apagao_regiao` se 2+ deles têm sinal de falta de energia (cena **sem
+nenhuma fonte de luz**, nem janelas); breu com postes acesos ao fundo **não** conta. Senão, `trecho_escuro_recorrente`.
+
+```json
+{"id": "REG-F00932", "tipo": "apagao_regiao", "titulo": "Possível apagão em Capão Redondo", "bairro": "Capão Redondo",
+ "latitude": -23.6605, "longitude": -46.7698, "raio_m": 180, "relatos": 3, "sinais_apagao": 2,
+ "protocolos": ["VSP-000001", "VSP-000002", "VSP-000003"], "encaminhar_para": [{"orgao": "Distribuidora de energia · Enel São Paulo", "...": "..."}],
+ "motivos": ["3 chamados a até 500 m uns dos outros nas últimas 6 h", "2 com sinal de falta de energia (...)", "..."]}
+```
 
 ### Novidades da 1.4: análise de CENA (a região está no escuro?)
 Além dos postes, a foto inteira é lida (`visao/cena.py`), de forma explicável:
@@ -212,7 +242,7 @@ carregado**. Se `alerta` vier vazio, a API deduz pelas leituras (`sensor_lux < 5
 Resposta (curta, para a placa ler):
 ```json
 {
-  "versao_contrato": "1.4", "recebido": true,
+  "versao_contrato": "1.5", "recebido": true,
   "id_alerta": "1f0c…", "timestamp": "2026-11-10T21:40:12-03:00",
   "status": "suspeita",
   "alertas": ["escuro", "buraco"],

@@ -6,6 +6,10 @@ import numpy as np
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+# os testes das regras usam imagens sintéticas: o classificador de cena real fica desligado por padrão
+# (test_classificador_cena.py liga de propósito)
+import os  # noqa: E402
+os.environ.setdefault("CENA_MODELO_PATH", str(Path(__file__).resolve().parent / "sem_classificador.pt"))
 
 from visao.schemas import Deteccao  # noqa: E402
 
@@ -47,3 +51,17 @@ def jpeg(img) -> bytes:
 @pytest.fixture
 def detector_falso():
     return DetectorFalso
+
+
+@pytest.fixture(autouse=True)
+def central_isolada(tmp_path, monkeypatch):
+    """Cada teste com a sua central (SQLite temporário): nunca toca a central de verdade."""
+    monkeypatch.delenv("CENTRAL_TABELA_URL", raising=False)
+    monkeypatch.setenv("CENTRAL_DB", str(tmp_path / "central.db"))
+    mod = sys.modules.get("api.main")
+    if mod is not None:
+        mod._estado["central"] = None
+    yield
+    mod = sys.modules.get("api.main")
+    if mod is not None:
+        mod._estado["central"] = None
