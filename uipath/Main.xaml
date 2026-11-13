@@ -1,0 +1,307 @@
+<Activity mc:Ignorable="sap sap2010" x:Class="Main" VisualBasic.Settings="{x:Null}" sap2010:WorkflowViewState.IdRef="ActivityBuilder_1" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:s="clr-namespace:System;assembly=System.Private.CoreLib" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:sco="clr-namespace:System.Collections.ObjectModel;assembly=System.Private.CoreLib" xmlns:sd="clr-namespace:System.Drawing;assembly=System.Drawing.Common" xmlns:sd1="clr-namespace:System.Drawing;assembly=System.Drawing.Primitives" xmlns:sd2="clr-namespace:System.Data;assembly=System.Data.Common" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:uix="http://schemas.uipath.com/workflow/activities/uix" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <TextExpression.NamespacesForImplementation>
+    <sco:Collection x:TypeArguments="x:String">
+      <x:String>GlobalConstantsNamespace</x:String>
+      <x:String>GlobalVariablesNamespace</x:String>
+      <x:String>System</x:String>
+      <x:String>System.Activities</x:String>
+      <x:String>System.Collections</x:String>
+      <x:String>System.Collections.Generic</x:String>
+      <x:String>System.Collections.ObjectModel</x:String>
+      <x:String>System.ComponentModel</x:String>
+      <x:String>System.Data</x:String>
+      <x:String>System.Drawing</x:String>
+      <x:String>System.Linq</x:String>
+      <x:String>System.Runtime.Serialization</x:String>
+      <x:String>System.Xml.Serialization</x:String>
+      <x:String>UiPath.Core</x:String>
+      <x:String>UiPath.Core.Activities</x:String>
+      <x:String>UiPath.Platform.ObjectLibrary</x:String>
+      <x:String>UiPath.Platform.ResourceHandling</x:String>
+      <x:String>UiPath.Platform.SyncObjects</x:String>
+      <x:String>UiPath.Shared.Activities</x:String>
+      <x:String>UiPath.UIAutomationCore.Contracts</x:String>
+      <x:String>UiPath.UIAutomationNext.Activities</x:String>
+      <x:String>UiPath.UIAutomationNext.Activities.Models</x:String>
+      <x:String>UiPath.UIAutomationNext.Contracts</x:String>
+      <x:String>UiPath.UIAutomationNext.Enums</x:String>
+      <x:String>UiPath.UIAutomationNext.Models.CV</x:String>
+    </sco:Collection>
+  </TextExpression.NamespacesForImplementation>
+  <TextExpression.ReferencesForImplementation>
+    <sco:Collection x:TypeArguments="AssemblyReference">
+      <AssemblyReference>System</AssemblyReference>
+      <AssemblyReference>System.Activities</AssemblyReference>
+      <AssemblyReference>System.Private.CoreLib</AssemblyReference>
+      <AssemblyReference>mscorlib</AssemblyReference>
+      <AssemblyReference>System.Data</AssemblyReference>
+      <AssemblyReference>System.Data.Common</AssemblyReference>
+      <AssemblyReference>System.Linq</AssemblyReference>
+      <AssemblyReference>System.Core</AssemblyReference>
+      <AssemblyReference>System.ObjectModel</AssemblyReference>
+      <AssemblyReference>UiPath.System.Activities</AssemblyReference>
+      <AssemblyReference>UiPath.UIAutomationNext.Activities</AssemblyReference>
+      <AssemblyReference>UiPath.Excel.Activities</AssemblyReference>
+      <AssemblyReference>UiPath.UiAutomation.Activities</AssemblyReference>
+      <AssemblyReference>System.ComponentModel.TypeConverter</AssemblyReference>
+      <AssemblyReference>UiPath.Studio.Constants</AssemblyReference>
+      <AssemblyReference>UiPath.Workflow</AssemblyReference>
+      <AssemblyReference>UiPath.UIAutomationNext</AssemblyReference>
+      <AssemblyReference>UiPath.Excel.Activities.Design</AssemblyReference>
+      <AssemblyReference>System.Console</AssemblyReference>
+      <AssemblyReference>System.Security.Permissions</AssemblyReference>
+      <AssemblyReference>System.Configuration.ConfigurationManager</AssemblyReference>
+      <AssemblyReference>System.ComponentModel</AssemblyReference>
+      <AssemblyReference>System.Memory</AssemblyReference>
+      <AssemblyReference>System.Private.Uri</AssemblyReference>
+      <AssemblyReference>NPOI.Core</AssemblyReference>
+      <AssemblyReference>System.Private.ServiceModel</AssemblyReference>
+      <AssemblyReference>System.Collections</AssemblyReference>
+      <AssemblyReference>System.Collections.NonGeneric</AssemblyReference>
+      <AssemblyReference>System.Runtime.Serialization.Formatters</AssemblyReference>
+      <AssemblyReference>System.Private.DataContractSerialization</AssemblyReference>
+      <AssemblyReference>System.Runtime.Serialization.Primitives</AssemblyReference>
+      <AssemblyReference>System.Drawing.Primitives</AssemblyReference>
+      <AssemblyReference>System.Private.Windows.GdiPlus</AssemblyReference>
+      <AssemblyReference>System.Drawing.Common</AssemblyReference>
+      <AssemblyReference>UiPath.System.Activities.Design</AssemblyReference>
+      <AssemblyReference>UiPath.UIAutomationCore</AssemblyReference>
+      <AssemblyReference>UiPath.OCR.Activities</AssemblyReference>
+      <AssemblyReference>UiPath.Platform</AssemblyReference>
+      <AssemblyReference>System.ComponentModel.EventBasedAsync</AssemblyReference>
+      <AssemblyReference>PresentationFramework</AssemblyReference>
+      <AssemblyReference>WindowsBase</AssemblyReference>
+      <AssemblyReference>System.ComponentModel.Primitives</AssemblyReference>
+      <AssemblyReference>System.Data.SqlClient</AssemblyReference>
+      <AssemblyReference>System.Private.Xml</AssemblyReference>
+    </sco:Collection>
+  </TextExpression.ReferencesForImplementation>
+  <Sequence DisplayName="Main Sequence" sap:VirtualizedContainerService.HintSize="1244,6150" sap2010:WorkflowViewState.IdRef="Sequence_1">
+    <Sequence.Variables>
+      <Variable x:TypeArguments="sd2:DataTable" Name="dtFila" />
+      <Variable x:TypeArguments="sd2:DataRow" Name="row" />
+      <Variable x:TypeArguments="sd2:DataTable" Name="dtProtocolos" />
+      <Variable x:TypeArguments="x:String" Name="protocolo" />
+      <Variable x:TypeArguments="x:Int32" Default="0" Name="tentativas" />
+    </Sequence.Variables>
+    <sap:WorkflowViewStateService.ViewState>
+      <scg:Dictionary x:TypeArguments="x:String, x:Object">
+        <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+      </scg:Dictionary>
+    </sap:WorkflowViewStateService.ViewState>
+    <ui:LogMessage DisplayName="Log início" sap:VirtualizedContainerService.HintSize="760,175" sap2010:WorkflowViewState.IdRef="LogMessage_1" Level="Info" Message="[&quot;Início do processo&quot;]" />
+    <ui:ReadCsvFile PathResource="{x:Null}" DataTable="[dtFila]" Delimitator="Comma" DelimitatorForViewModel="Comma" DisplayName="Read CSV - Fila" Encoding="utf-8" FilePath="C:/Users/Vincius Yamashita/Downloads/05-rpa/outbox/fila_portal.csv" sap:VirtualizedContainerService.HintSize="760,170" sap2010:WorkflowViewState.IdRef="ReadCsvFile_1" />
+    <ui:BuildDataTable DataTable="[dtProtocolos]" DisplayName="Build Data Table - Protocolos" sap:VirtualizedContainerService.HintSize="760,92" sap2010:WorkflowViewState.IdRef="BuildDataTable_1" TableInfo="&lt;NewDataSet&gt;&#xA;  &lt;xs:schema id=&quot;NewDataSet&quot; xmlns=&quot;&quot; xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot; xmlns:msdata=&quot;urn:schemas-microsoft-com:xml-msdata&quot;&gt;&#xA;    &lt;xs:element name=&quot;NewDataSet&quot; msdata:IsDataSet=&quot;true&quot; msdata:MainDataTable=&quot;TableName&quot; msdata:UseCurrentLocale=&quot;true&quot;&gt;&#xA;      &lt;xs:complexType&gt;&lt;xs:choice minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot;&gt;&#xA;        &lt;xs:element name=&quot;TableName&quot;&gt;&lt;xs:complexType&gt;&lt;xs:sequence&gt;&#xA;          &lt;xs:element name=&quot;id&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xA;          &lt;xs:element name=&quot;protocolo&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xA;        &lt;/xs:sequence&gt;&lt;/xs:complexType&gt;&lt;/xs:element&gt;&#xA;      &lt;/xs:choice&gt;&lt;/xs:complexType&gt;&#xA;    &lt;/xs:element&gt;&#xA;  &lt;/xs:schema&gt;&#xA;&lt;/NewDataSet&gt;" />
+    <ui:CreateDirectory ContinueOnError="{x:Null}" Output="{x:Null}" DisplayName="Criar pasta assets" sap:VirtualizedContainerService.HintSize="760,123" sap2010:WorkflowViewState.IdRef="CreateDirectory_1" Path="assets" />
+    <uix:NApplicationCard AttachMode="ByInstance" CloseMode="Always" DisplayName="Use Browser - Portal de Zeladoria" HealingAgentBehavior="Job" sap:VirtualizedContainerService.HintSize="760,5401" sap2010:WorkflowViewState.IdRef="NApplicationCard_1" InteractionMode="DebuggerApi" ScopeGuid="044c9d02-d7ae-4ecf-b4a9-91458560abdb" Version="V2">
+      <uix:NApplicationCard.Body>
+        <ActivityAction x:TypeArguments="x:Object">
+          <ActivityAction.Argument>
+            <DelegateInArgument x:TypeArguments="x:Object" Name="WSSessionData" />
+          </ActivityAction.Argument>
+          <Sequence DisplayName="Automação do portal" sap:VirtualizedContainerService.HintSize="758,5197" sap2010:WorkflowViewState.IdRef="Sequence_2">
+            <sap:WorkflowViewStateService.ViewState>
+              <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+              </scg:Dictionary>
+            </sap:WorkflowViewStateService.ViewState>
+            <ui:ForEachRow ColumnNames="{x:Null}" CurrentIndex="{x:Null}" DataTable="[dtFila]" DisplayName="For Each Row in DataTable" sap:VirtualizedContainerService.HintSize="724,4873" sap2010:WorkflowViewState.IdRef="ForEachRow_1">
+              <ui:ForEachRow.Body>
+                <ActivityAction x:TypeArguments="sd2:DataRow">
+                  <ActivityAction.Argument>
+                    <DelegateInArgument x:TypeArguments="sd2:DataRow" Name="CurrentRow" />
+                  </ActivityAction.Argument>
+                  <Sequence DisplayName="Processar ocorrência" sap:VirtualizedContainerService.HintSize="722,4691" sap2010:WorkflowViewState.IdRef="Sequence_3">
+                    <sap:WorkflowViewStateService.ViewState>
+                      <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                        <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+                      </scg:Dictionary>
+                    </sap:WorkflowViewStateService.ViewState>
+                    <Assign DisplayName="Atribuir linha atual" sap:VirtualizedContainerService.HintSize="688,175" sap2010:WorkflowViewState.IdRef="Assign_1">
+                      <Assign.To>
+                        <OutArgument x:TypeArguments="sd2:DataRow">[row]</OutArgument>
+                      </Assign.To>
+                      <Assign.Value>
+                        <InArgument x:TypeArguments="sd2:DataRow">[CurrentRow]</InArgument>
+                      </Assign.Value>
+                    </Assign>
+                    <TryCatch DisplayName="Try Catch - Ocorrência" sap:VirtualizedContainerService.HintSize="688,4456" sap2010:WorkflowViewState.IdRef="TryCatch_1">
+                      <TryCatch.Try>
+                        <Sequence DisplayName="Try" sap:VirtualizedContainerService.HintSize="686,3731" sap2010:WorkflowViewState.IdRef="Sequence_4">
+                          <sap:WorkflowViewStateService.ViewState>
+                            <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                              <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+                            </scg:Dictionary>
+                          </sap:WorkflowViewStateService.ViewState>
+                          <uix:NTypeInto ActivateBefore="True" DisplayName="Type Into - id_ocorrencia" HealingAgentBehavior="SameAsCard" sap:VirtualizedContainerService.HintSize="652,246" sap2010:WorkflowViewState.IdRef="NTypeInto_1" ScopeIdentifier="044c9d02-d7ae-4ecf-b4a9-91458560abdb" Text="[row(&quot;id_captura&quot;).ToString]" Version="V5">
+                            <uix:NTypeInto.Target>
+                              <uix:TargetAnchorable ContentHash="prhQV_fvBUu0NSThUUYuSQ" DesignTimeRectangle="680, 193, 560, 35" ElementType="InputBox" ElementVisibilityArgument="Interactive" FuzzySelectorArgument="&lt;webctrl id='form-chamado' tag='FORM' matching:id='fuzzy' fuzzylevel:id='0.0' /&gt;&lt;webctrl id='id_captura' tag='INPUT' type='' class='' aaname='Chamado (id_captura)' matching:id='fuzzy' fuzzylevel:id='0.0' matching:class='fuzzy' fuzzylevel:class='0.0' matching:aaname='fuzzy' fuzzylevel:aaname='0.0' /&gt;" Guid="adeab95b-da40-4ce3-9a89-51c0f117969c" InformativeScreenshot="0db6085f10cb74749a942682f53498bd.jpg" Reference="_cWfONPWakSrNxtJNHc2gg/JgNypHFmKEa8PBAsvb3KIQ" ScopeSelectorArgument="&lt;html app='chrome.exe' title='Portal de Zeladoria (MOCK)' url='http://localhost:8080/*' /&gt;" SearchSteps="FuzzySelector" Version="V6" WaitForReadyArgument="Interactive">
+                                <uix:TargetAnchorable.Anchors>
+                                  <scg:List x:TypeArguments="uix:ITarget" Capacity="1">
+                                    <uix:Target DesignTimeRectangle="680, 172, 560, 21" ElementType="Text" FuzzySelectorArgument="&lt;webctrl tag='LABEL' type='' class='' aaname='Chamado (id_captura)' matching:class='fuzzy' fuzzylevel:class='0.0' matching:aaname='fuzzy' fuzzylevel:aaname='0.0' check:text='Chamado (id_captura)' /&gt;" Guid="e4778195-cfe7-495e-bd47-ae3a0c9ad911" SearchSteps="FuzzySelector" />
+                                  </scg:List>
+                                </uix:TargetAnchorable.Anchors>
+                              </uix:TargetAnchorable>
+                            </uix:NTypeInto.Target>
+                          </uix:NTypeInto>
+                          <uix:NTypeInto ActivateBefore="True" DisplayName="Type Into - poste_id" HealingAgentBehavior="SameAsCard" sap:VirtualizedContainerService.HintSize="652,246" sap2010:WorkflowViewState.IdRef="NTypeInto_2" ScopeIdentifier="044c9d02-d7ae-4ecf-b4a9-91458560abdb" Text="[row(&quot;tipos_chamado&quot;).ToString]" Version="V5">
+                            <uix:NTypeInto.Target>
+                              <uix:TargetAnchorable ContentHash="SBkGtgMQR0iMz_Fm34RIzw" DesignTimeRectangle="688, 413, 560, 35" ElementType="InputBox" ElementVisibilityArgument="Interactive" FuzzySelectorArgument="&lt;webctrl id='form-chamado' tag='FORM' matching:id='fuzzy' fuzzylevel:id='0.0' /&gt;&lt;webctrl id='tipos_chamado' tag='INPUT' type='' class='' placeholder='conserto_poste, buraco, ...' aaname='Tipo do chamado' matching:id='fuzzy' fuzzylevel:id='0.0' matching:class='fuzzy' fuzzylevel:class='0.0' matching:aaname='fuzzy' fuzzylevel:aaname='0.0' /&gt;" Guid="39e2dc9c-311b-4674-affa-a0f5356c9b54" InformativeScreenshot="5ccd9720d2ed316e5850a469c6ed96e7.jpg" Reference="_cWfONPWakSrNxtJNHc2gg/OmQXOTFSaki3DdHip3Uqgw" ScopeSelectorArgument="&lt;html app='chrome.exe' title='Portal de Zeladoria (MOCK)' url='http://localhost:8080/*' /&gt;" SearchSteps="FuzzySelector" Version="V6" WaitForReadyArgument="Interactive">
+                                <uix:TargetAnchorable.Anchors>
+                                  <scg:List x:TypeArguments="uix:ITarget" Capacity="1">
+                                    <uix:Target DesignTimeRectangle="688, 392, 560, 21" ElementType="Text" FuzzySelectorArgument="&lt;webctrl aaname='Tipo do chamado' tag='LABEL' type='' class='' matching:aaname='fuzzy' fuzzylevel:aaname='0.0' matching:class='fuzzy' fuzzylevel:class='0.0' check:text='Tipo do chamado' /&gt;" Guid="a86e5434-34d2-4cd0-90f1-11a14ddcc6af" SearchSteps="FuzzySelector" />
+                                  </scg:List>
+                                </uix:TargetAnchorable.Anchors>
+                              </uix:TargetAnchorable>
+                            </uix:NTypeInto.Target>
+                          </uix:NTypeInto>
+                          <uix:NTypeInto ActivateBefore="True" DisplayName="Type Into - latitude" HealingAgentBehavior="SameAsCard" sap:VirtualizedContainerService.HintSize="652,246" sap2010:WorkflowViewState.IdRef="NTypeInto_3" ScopeIdentifier="044c9d02-d7ae-4ecf-b4a9-91458560abdb" Text="[row(&quot;latitude&quot;).ToString]" Version="V5">
+                            <uix:NTypeInto.Target>
+                              <uix:TargetAnchorable ContentHash="glztYb_2LEG79n1PfDJuwg" DesignTimeRectangle="688, 482, 560, 35" ElementType="InputBox" ElementVisibilityArgument="Interactive" FuzzySelectorArgument="&lt;webctrl id='form-chamado' tag='FORM' matching:id='fuzzy' fuzzylevel:id='0.0' /&gt;&lt;webctrl id='latitude' tag='INPUT' type='' class='' aaname='Latitude' matching:id='fuzzy' fuzzylevel:id='0.0' matching:class='fuzzy' fuzzylevel:class='0.0' matching:aaname='fuzzy' fuzzylevel:aaname='0.0' /&gt;" Guid="6dbfd83e-5964-42e5-ab78-7b0faae38953" InformativeScreenshot="906a2ada80148e7f9df80e04277bbdf7.jpg" Reference="_cWfONPWakSrNxtJNHc2gg/vn8sf8VkiE-3rIltXJbtzg" ScopeSelectorArgument="&lt;html app='chrome.exe' title='Portal de Zeladoria (MOCK)' url='http://localhost:8080/*' /&gt;" SearchSteps="FuzzySelector" Version="V6" WaitForReadyArgument="Interactive">
+                                <uix:TargetAnchorable.Anchors>
+                                  <scg:List x:TypeArguments="uix:ITarget" Capacity="1">
+                                    <uix:Target DesignTimeRectangle="688, 461, 560, 21" ElementType="Text" FuzzySelectorArgument="&lt;webctrl aaname='Latitude' tag='LABEL' type='' class='' matching:aaname='fuzzy' fuzzylevel:aaname='0.0' matching:class='fuzzy' fuzzylevel:class='0.0' check:text='Latitude' /&gt;" Guid="7600923a-6066-4fe2-8245-f0cdc336760f" SearchSteps="FuzzySelector" />
+                                  </scg:List>
+                                </uix:TargetAnchorable.Anchors>
+                              </uix:TargetAnchorable>
+                            </uix:NTypeInto.Target>
+                          </uix:NTypeInto>
+                          <uix:NTypeInto ActivateBefore="True" DisplayName="Type Into - longitude" HealingAgentBehavior="SameAsCard" sap:VirtualizedContainerService.HintSize="652,246" sap2010:WorkflowViewState.IdRef="NTypeInto_4" ScopeIdentifier="044c9d02-d7ae-4ecf-b4a9-91458560abdb" Text="[row(&quot;longitude&quot;).ToString]" Version="V5">
+                            <uix:NTypeInto.Target>
+                              <uix:TargetAnchorable ContentHash="w0ihulH5pkGE3niHHHI5WQ" DesignTimeRectangle="688, 550, 560, 35" ElementType="InputBox" ElementVisibilityArgument="Interactive" FuzzySelectorArgument="&lt;webctrl id='form-chamado' tag='FORM' matching:id='fuzzy' fuzzylevel:id='0.0' /&gt;&lt;webctrl id='longitude' tag='INPUT' type='' class='' aaname='Longitude' matching:id='fuzzy' fuzzylevel:id='0.0' matching:class='fuzzy' fuzzylevel:class='0.0' matching:aaname='fuzzy' fuzzylevel:aaname='0.0' /&gt;" Guid="ed8446f5-898b-4e70-b8e5-11fe82a11e07" InformativeScreenshot="c9607c477fd827fd154aa713eef22d79.jpg" Reference="_cWfONPWakSrNxtJNHc2gg/FRX_bfclZk2JwIJ13TDHpg" ScopeSelectorArgument="&lt;html app='chrome.exe' title='Portal de Zeladoria (MOCK)' url='http://localhost:8080/*' /&gt;" SearchSteps="FuzzySelector" Version="V6" WaitForReadyArgument="Interactive">
+                                <uix:TargetAnchorable.Anchors>
+                                  <scg:List x:TypeArguments="uix:ITarget" Capacity="1">
+                                    <uix:Target DesignTimeRectangle="688, 529, 560, 21" ElementType="Text" FuzzySelectorArgument="&lt;webctrl aaname='Longitude' tag='LABEL' type='' class='' matching:aaname='fuzzy' fuzzylevel:aaname='0.0' matching:class='fuzzy' fuzzylevel:class='0.0' check:text='Longitude' /&gt;" Guid="862fc098-6cfa-4dd5-96fd-c6e97a24492a" SearchSteps="FuzzySelector" />
+                                  </scg:List>
+                                </uix:TargetAnchorable.Anchors>
+                              </uix:TargetAnchorable>
+                            </uix:NTypeInto.Target>
+                          </uix:NTypeInto>
+                          <uix:NTypeInto ActivateBefore="True" DisplayName="Type Into - descricao" HealingAgentBehavior="SameAsCard" sap:VirtualizedContainerService.HintSize="652,246" sap2010:WorkflowViewState.IdRef="NTypeInto_5" ScopeIdentifier="044c9d02-d7ae-4ecf-b4a9-91458560abdb" Text="[row(&quot;descricao&quot;).ToString]" Version="V5">
+                            <uix:NTypeInto.Target>
+                              <uix:TargetAnchorable ContentHash="6cWU5KYPr0CtSXaLSjwv8Q" DesignTimeRectangle="688, 688, 560, 63" ElementType="InputBox" ElementVisibilityArgument="Interactive" FuzzySelectorArgument="&lt;webctrl id='form-chamado' tag='FORM' matching:id='fuzzy' fuzzylevel:id='0.0' /&gt;&lt;webctrl id='descricao' tag='TEXTAREA' type='' class='' aaname='Descrição' matching:id='fuzzy' fuzzylevel:id='0.0' matching:class='fuzzy' fuzzylevel:class='0.0' matching:aaname='fuzzy' fuzzylevel:aaname='0.0' /&gt;" Guid="c39c35d2-6c24-479d-8ee1-eb9fed46740a" InformativeScreenshot="59164743fbff6f6b1f7691f6792f0eaa.jpg" Reference="_cWfONPWakSrNxtJNHc2gg/pcVeN5N060KSxU_Dnez2BA" ScopeSelectorArgument="&lt;html app='chrome.exe' title='Portal de Zeladoria (MOCK)' url='http://localhost:8080/*' /&gt;" SearchSteps="FuzzySelector" Version="V6" WaitForReadyArgument="Interactive">
+                                <uix:TargetAnchorable.Anchors>
+                                  <scg:List x:TypeArguments="uix:ITarget" Capacity="1">
+                                    <uix:Target DesignTimeRectangle="688, 667, 560, 21" ElementType="Text" FuzzySelectorArgument="&lt;webctrl aaname='Descrição' tag='LABEL' type='' class='' matching:aaname='fuzzy' fuzzylevel:aaname='0.0' matching:class='fuzzy' fuzzylevel:class='0.0' check:text='Descrição' /&gt;" Guid="d8041542-1934-4b4a-abb8-c255a391bd39" SearchSteps="FuzzySelector" />
+                                  </scg:List>
+                                </uix:TargetAnchorable.Anchors>
+                              </uix:TargetAnchorable>
+                            </uix:NTypeInto.Target>
+                          </uix:NTypeInto>
+                          <uix:NSelectItem DisplayName="Select Item - prioridade" HealingAgentBehavior="SameAsCard" sap:VirtualizedContainerService.HintSize="652,195" sap2010:WorkflowViewState.IdRef="NSelectItem_1" Item="[If(row(&quot;prioridade&quot;).ToString.Trim.ToLower = &quot;alta&quot;, &quot;Alta&quot;, If(row(&quot;prioridade&quot;).ToString.Trim.ToLower = &quot;media&quot; OrElse row(&quot;prioridade&quot;).ToString.Trim.ToLower = &quot;média&quot;, &quot;Média&quot;, &quot;Baixa&quot;))]" ScopeIdentifier="044c9d02-d7ae-4ecf-b4a9-91458560abdb" Version="V5">
+                            <uix:NSelectItem.Target>
+                              <uix:TargetAnchorable ContentHash="AAWWkqcm_ECGGzw2FNZalA" DesignTimeRectangle="688, 619, 560, 35" ElementType="DropDown" ElementVisibilityArgument="Interactive" FuzzySelectorArgument="&lt;webctrl id='form-chamado' tag='FORM' matching:id='fuzzy' fuzzylevel:id='0.0' /&gt;&lt;webctrl id='prioridade' tag='SELECT' type='' class='' aaname='Prioridade' matching:id='fuzzy' fuzzylevel:id='0.0' matching:class='fuzzy' fuzzylevel:class='0.0' matching:aaname='fuzzy' fuzzylevel:aaname='0.0' /&gt;" Guid="341e467b-9457-499b-a0f7-65e9a4d6e324" InformativeScreenshot="325ce0142ff0a3c9af851ee68557ebe3.jpg" Reference="_cWfONPWakSrNxtJNHc2gg/tnKWdBgdPkOYL0WqSFeDxA" ScopeSelectorArgument="&lt;html app='chrome.exe' title='Portal de Zeladoria (MOCK)' url='http://localhost:8080/*' /&gt;" SearchSteps="FuzzySelector" Version="V6" WaitForReadyArgument="Interactive">
+                                <uix:TargetAnchorable.Anchors>
+                                  <scg:List x:TypeArguments="uix:ITarget" Capacity="1">
+                                    <uix:Target DesignTimeRectangle="688, 598, 560, 21" ElementType="Text" FuzzySelectorArgument="&lt;webctrl aaname='Prioridade' tag='LABEL' type='' class='' matching:aaname='fuzzy' fuzzylevel:aaname='0.0' matching:class='fuzzy' fuzzylevel:class='0.0' check:text='Prioridade' /&gt;" Guid="87f1b2c2-b2e8-4b41-b0ee-04998eb84e7c" SearchSteps="FuzzySelector" />
+                                  </scg:List>
+                                </uix:TargetAnchorable.Anchors>
+                              </uix:TargetAnchorable>
+                            </uix:NSelectItem.Target>
+                          </uix:NSelectItem>
+                          <If Condition="[row(&quot;prioridade&quot;).ToString.Trim.ToLower = &quot;alta&quot;]" DisplayName="Decisão de prioridade" sap:VirtualizedContainerService.HintSize="652,623" sap2010:WorkflowViewState.IdRef="If_1">
+                            <If.Then>
+                              <Sequence DisplayName="Then - urgente" sap:VirtualizedContainerService.HintSize="450,226" sap2010:WorkflowViewState.IdRef="Sequence_5">
+                                <sap:WorkflowViewStateService.ViewState>
+                                  <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                                    <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+                                  </scg:Dictionary>
+                                </sap:WorkflowViewStateService.ViewState>
+                                <ui:LogMessage DisplayName="Log chamado urgente" sap:VirtualizedContainerService.HintSize="416,166" sap2010:WorkflowViewState.IdRef="LogMessage_2" Level="Info" Message="[&quot;Chamado urgente&quot;]" />
+                              </Sequence>
+                            </If.Then>
+                            <If.Else>
+                              <Sequence DisplayName="Else - normal" sap:VirtualizedContainerService.HintSize="450,226" sap2010:WorkflowViewState.IdRef="Sequence_6">
+                                <sap:WorkflowViewStateService.ViewState>
+                                  <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                                    <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+                                  </scg:Dictionary>
+                                </sap:WorkflowViewStateService.ViewState>
+                                <ui:LogMessage DisplayName="Log chamado normal" sap:VirtualizedContainerService.HintSize="416,166" sap2010:WorkflowViewState.IdRef="LogMessage_3" Level="Info" Message="[&quot;Chamado normal&quot;]" />
+                              </Sequence>
+                            </If.Else>
+                          </If>
+                          <uix:NClick ActivateBefore="True" ClickType="Single" DisplayName="Click - btn_enviar" HealingAgentBehavior="SameAsCard" sap:VirtualizedContainerService.HintSize="652,194" sap2010:WorkflowViewState.IdRef="NClick_1" KeyModifiers="None" MouseButton="Left" ScopeIdentifier="044c9d02-d7ae-4ecf-b4a9-91458560abdb" Version="V5">
+                            <uix:NClick.Target>
+                              <uix:TargetAnchorable ContentHash="NXVlfhoJqEGVW69jCtuqjA" DesignTimeRectangle="688, 771, 139, 38" ElementType="Button" ElementVisibilityArgument="Interactive" FullSelectorArgument="&lt;webctrl id='form-chamado' tag='FORM' /&gt;&lt;webctrl id='btn_enviar' tag='BUTTON' /&gt;" Guid="355a5efd-a161-4c83-a37b-8656ed3d46da" InformativeScreenshot="6b875c594a83a0c5825d7678acaf374c.jpg" Reference="_cWfONPWakSrNxtJNHc2gg/YyXRjcKwNEOepSsu4Mh_pg" ScopeSelectorArgument="&lt;html app='chrome.exe' title='Portal de Zeladoria (MOCK)' url='http://localhost:8080/*' /&gt;" SearchSteps="Selector" Version="V6" WaitForReadyArgument="Interactive" />
+                            </uix:NClick.Target>
+                          </uix:NClick>
+                          <uix:NCheckState CheckVisibility="True" DisplayName="Check App State - protocolo_gerado" HealingAgentBehavior="Disabled" sap:VirtualizedContainerService.HintSize="652,1429" sap2010:WorkflowViewState.IdRef="NCheckState_1" ScopeIdentifier="044c9d02-d7ae-4ecf-b4a9-91458560abdb" Timeout="[30]" Version="V5">
+                            <uix:NCheckState.IfExists>
+                              <Sequence DisplayName="Protocolo aparece" sap:VirtualizedContainerService.HintSize="650,590" sap2010:WorkflowViewState.IdRef="Sequence_7">
+                                <sap:WorkflowViewStateService.ViewState>
+                                  <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                                    <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+                                  </scg:Dictionary>
+                                </sap:WorkflowViewStateService.ViewState>
+                                <uix:NGetText DisplayName="Get Text - protocolo_gerado" HealingAgentBehavior="SameAsCard" sap:VirtualizedContainerService.HintSize="616,143" sap2010:WorkflowViewState.IdRef="NGetText_2" ScopeIdentifier="044c9d02-d7ae-4ecf-b4a9-91458560abdb" TextString="[protocolo]" Version="V5">
+                                  <uix:NGetText.Target>
+                                    <uix:TargetAnchorable ContentHash="0_1SKVdLok23KK_CppOz5g" DesignTimeRectangle="8, 151, 0, 0" ElementVisibilityArgument="Interactive" FullSelectorArgument="&lt;webctrl id='protocolo_gerado' tag='STRONG' /&gt;" Guid="0770af1b-06a4-40bf-a266-e54d5e572a87" Reference="_cWfONPWakSrNxtJNHc2gg/9Lxm-hpFrE2Pa04-8nvqdw" ScopeSelectorArgument="&lt;html app='chrome.exe' title='Portal de Zeladoria (MOCK)' url='http://localhost:8080/*' /&gt;" SearchSteps="Selector" Version="V6" WaitForReadyArgument="Interactive" />
+                                  </uix:NGetText.Target>
+                                </uix:NGetText>
+                                <ui:AddDataRow DataRow="{x:Null}" ArrayRow="[New Object() {row(&quot;id_captura&quot;).ToString, protocolo}]" DataTable="[dtProtocolos]" DisplayName="Add Data Row - protocolo" sap:VirtualizedContainerService.HintSize="616,221" sap2010:WorkflowViewState.IdRef="AddDataRow_2" />
+                                <ui:LogMessage DisplayName="Log ocorrência OK" sap:VirtualizedContainerService.HintSize="616,166" sap2010:WorkflowViewState.IdRef="LogMessage_8" Level="Info" Message="[&quot;OK &quot; &amp; row(&quot;id_captura&quot;).ToString &amp; &quot; -&gt; &quot; &amp; protocolo]" />
+                              </Sequence>
+                            </uix:NCheckState.IfExists>
+                            <uix:NCheckState.IfNotExists>
+                              <Sequence DisplayName="Protocolo não aparece" sap:VirtualizedContainerService.HintSize="650,503" sap2010:WorkflowViewState.IdRef="Sequence_8">
+                                <sap:WorkflowViewStateService.ViewState>
+                                  <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                                    <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+                                  </scg:Dictionary>
+                                </sap:WorkflowViewStateService.ViewState>
+                                <ui:LogMessage DisplayName="Log protocolo não localizado" sap:VirtualizedContainerService.HintSize="616,175" sap2010:WorkflowViewState.IdRef="LogMessage_7" Level="Error" Message="[&quot;Protocolo não apareceu para a ocorrência &quot; &amp; row(&quot;id_captura&quot;).ToString]" />
+                                <uix:NTakeScreenshot ContinueOnError="True" DisplayName="Take Screenshot - protocolo não localizado" FileName="[System.IO.Path.Combine(Environment.CurrentDirectory, &quot;assets&quot;, &quot;erro_protocolo_&quot; &amp; row(&quot;id_captura&quot;).ToString &amp; &quot;_&quot; &amp; DateTime.Now.ToString(&quot;yyyyMMdd_HHmmss_fff&quot;) &amp; &quot;.png&quot;)]" FileNameMode="None" HealingAgentBehavior="SameAsCard" sap:VirtualizedContainerService.HintSize="616,268" sap2010:WorkflowViewState.IdRef="NTakeScreenshot_2" ScopeIdentifier="044c9d02-d7ae-4ecf-b4a9-91458560abdb" Version="V5" />
+                              </Sequence>
+                            </uix:NCheckState.IfNotExists>
+                            <uix:NCheckState.Target>
+                              <uix:TargetAnchorable ContentHash="0_1SKVdLok23KK_CppOz5g" DesignTimeRectangle="8, 151, 0, 0" ElementVisibilityArgument="Interactive" FullSelectorArgument="&lt;webctrl id='protocolo_gerado' tag='STRONG' /&gt;" Guid="0770af1b-06a4-40bf-a266-e54d5e572a87" Reference="_cWfONPWakSrNxtJNHc2gg/9Lxm-hpFrE2Pa04-8nvqdw" ScopeSelectorArgument="&lt;html app='chrome.exe' title='Portal de Zeladoria (MOCK)' url='http://localhost:8080/*' /&gt;" SearchSteps="Selector" Version="V6" WaitForReadyArgument="Interactive" />
+                            </uix:NCheckState.Target>
+                          </uix:NCheckState>
+                        </Sequence>
+                      </TryCatch.Try>
+                      <TryCatch.Catches>
+                        <Catch x:TypeArguments="s:Exception" sap2010:WorkflowViewState.IdRef="Catch`1_1">
+                          <ActivityAction x:TypeArguments="s:Exception">
+                            <ActivityAction.Argument>
+                              <DelegateInArgument x:TypeArguments="s:Exception" Name="exception" />
+                            </ActivityAction.Argument>
+                            <Sequence DisplayName="Catch - pular ocorrência" sap:VirtualizedContainerService.HintSize="686,503" sap2010:WorkflowViewState.IdRef="Sequence_9">
+                              <sap:WorkflowViewStateService.ViewState>
+                                <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                                  <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+                                </scg:Dictionary>
+                              </sap:WorkflowViewStateService.ViewState>
+                              <ui:LogMessage DisplayName="Log erro da ocorrência" sap:VirtualizedContainerService.HintSize="652,175" sap2010:WorkflowViewState.IdRef="LogMessage_5" Level="Error" Message="[exception.Message]" />
+                              <uix:NTakeScreenshot ContinueOnError="True" DisplayName="Take Screenshot - erro da ocorrência" FileName="[System.IO.Path.Combine(Environment.CurrentDirectory, &quot;assets&quot;, &quot;erro_&quot; &amp; row(&quot;id_captura&quot;).ToString &amp; &quot;_&quot; &amp; DateTime.Now.ToString(&quot;yyyyMMdd_HHmmss_fff&quot;) &amp; &quot;.png&quot;)]" FileNameMode="None" HealingAgentBehavior="SameAsCard" sap:VirtualizedContainerService.HintSize="652,268" sap2010:WorkflowViewState.IdRef="NTakeScreenshot_1" ScopeIdentifier="044c9d02-d7ae-4ecf-b4a9-91458560abdb" Version="V5" />
+                            </Sequence>
+                          </ActivityAction>
+                        </Catch>
+                      </TryCatch.Catches>
+                    </TryCatch>
+                  </Sequence>
+                </ActivityAction>
+              </ui:ForEachRow.Body>
+            </ui:ForEachRow>
+            <ui:AppendWriteCsvFile PathResource="{x:Null}" AddHeaders="True" CsvAction="Write" DataTable="[dtProtocolos]" Delimitator="Comma" DelimitatorForViewModel="Comma" DisplayName="Write CSV - Protocolos" Encoding="utf-8" FilePath="C:/Users/Vincius Yamashita/Downloads/05-rpa/outbox/protocolos_portal.csv" sap:VirtualizedContainerService.HintSize="724,264" sap2010:WorkflowViewState.IdRef="AppendWriteCsvFile_1" ShouldQuote="True" />
+          </Sequence>
+        </ActivityAction>
+      </uix:NApplicationCard.Body>
+      <uix:NApplicationCard.OCREngine>
+        <ActivityFunc x:TypeArguments="sd:Image, scg:IEnumerable(scg:KeyValuePair(sd1:Rectangle, x:String))">
+          <ActivityFunc.Argument>
+            <DelegateInArgument x:TypeArguments="sd:Image" Name="Image" />
+          </ActivityFunc.Argument>
+        </ActivityFunc>
+      </uix:NApplicationCard.OCREngine>
+      <uix:NApplicationCard.TargetApp>
+        <uix:TargetApp Area="-8, -8, 1936, 1048" BrowserType="Chrome" ContentHash="-suz-FFVCUOm1g0N5GsEIw" InformativeScreenshot="110f9f958c714b656b295d6dc81fc8f1.jpg" Reference="_cWfONPWakSrNxtJNHc2gg/VmPuWccKzEiaT7ujplL96w" Selector="&lt;html app='chrome.exe' title='Portal de Zeladoria (MOCK)' url='http://localhost:8080/*' /&gt;" Url="http://localhost:8080/" Version="V3">
+          <uix:TargetApp.SapInfo>
+            <uix:SAPElementInfo IsSapSubsystem="False" WebAutomationFramework="Default" />
+          </uix:TargetApp.SapInfo>
+        </uix:TargetApp>
+      </uix:NApplicationCard.TargetApp>
+    </uix:NApplicationCard>
+    <ui:LogMessage DisplayName="Log fim" sap:VirtualizedContainerService.HintSize="760,166" sap2010:WorkflowViewState.IdRef="LogMessage_6" Level="Info" Message="[&quot;Fim do processo&quot;]" />
+  </Sequence>
+</Activity>
