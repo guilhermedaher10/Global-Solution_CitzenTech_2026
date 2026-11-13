@@ -63,3 +63,40 @@ cena:                       # análise da foto inteira (visao/cena.py): a regiã
   indice_pouca_iluminacao: 55
   fontes_max_apagao: 0        # possível apagão: escuro E nenhuma fonte de luz na cena...
   area_fontes_max_apagao: 0.0005  # ...nem mesmo pequenas (janelas, letreiros, faróis)
+
+encaminhamento:             # para quem vai cada tipo de chamado (canais de São Paulo; troque por cidade)
+  iluminacao: &iluminacao
+    orgao: "Iluminação pública · Prefeitura de São Paulo"
+    canal: "SP156: telefone 156 ou portal sp156.prefeitura.sp.gov.br"
+  subprefeitura: &subprefeitura
+    orgao: "Subprefeitura · zeladoria"
+    canal: "SP156: telefone 156 ou portal sp156.prefeitura.sp.gov.br"
+  energia: &energia
+    orgao: "Distribuidora de energia · Enel São Paulo"
+    canal: "emergência 0800 72 72 196, app Enel São Paulo ou SMS para 27373"
+  defesa_civil: &defesa_civil
+    orgao: "Defesa Civil"
+    canal: "telefone 199 (só se houver risco: fio caído, alagamento, árvore sobre a rede)"
+  por_tipo:                 # tipo de chamado -> órgão(s) e o motivo mostrado ao cidadão
+    conserto_poste: [{<<: *iluminacao, motivo: "poste apagado é manutenção da iluminação pública"}]
+    trecho_sem_luz: [{<<: *iluminacao, motivo: "trecho sem luz precisa de vistoria da iluminação pública"}]
+    instalacao_iluminacao: [{<<: *iluminacao, motivo: "rua escura sem poste: pedido de instalação"}]
+    poda_ou_obstrucao: [{<<: *subprefeitura, motivo: "árvore ou obstáculo tapando a luz: poda pela subprefeitura"}]
+    buraco: [{<<: *subprefeitura, motivo: "buraco na via é zeladoria da subprefeitura"}]
+    falta_de_energia:
+      - {<<: *energia, motivo: "sem nenhuma luz na região (nem janelas): falta de energia é da distribuidora"}
+      - {<<: *defesa_civil, motivo: "acione só se houver risco na rua"}
+    suspeita_escuro: [{<<: *iluminacao, motivo: "relato de rua escura: vistoria da iluminação pública"}]
+    suspeita_buraco: [{<<: *subprefeitura, motivo: "relato de buraco: vistoria da subprefeitura"}]
+
+regioes:                    # agrupamento de relatos: muitos pedidos no mesmo lugar viram UM alerta
+  raio_m: 500                 # relatos a até esta distância um do outro entram no mesmo grupo
+  janela_horas: 6             # só relatos recentes (um apagão é agora, não na semana passada)
+  min_relatos: 3              # mínimo de chamados no grupo para virar alerta de região
+  min_sinais_apagao: 2        # quantos deles com sinal de falta de energia para chamar de "apagão"
+
+video:                      # /v1/analisar-video: vídeo curto gravado ao vivo no navegador
+  max_mb: 25
+  max_segundos: 20            # o resto do vídeo é ignorado
+  intervalo_s: 0.5            # um quadro a cada meio segundo...
+  max_quadros: 16             # ...até este limite (o mais evidente vira a prova)

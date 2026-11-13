@@ -312,6 +312,8 @@ h3 { font-size: 1.05rem; font-weight: 700; }
 .kpi strong { font-family: var(--serifa); font-size: 2.6rem; line-height: 1.1; }
 .kpi.alta strong { color: var(--alerta); }
 .kpi.ok strong { color: var(--elfica); }
+.kpi.apagao strong { color: var(--cuidado); }
+@media (min-width: 900px) { .kpis { grid-template-columns: repeat(5, 1fr); } }
 .filtros { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 16px 0; }
 .filtros select { padding: 9px 12px; border-radius: 10px; border: 1px solid var(--borda-forte); background: rgba(10,30,19,.75); }
 .filtros .link { margin-left: auto; }
@@ -348,3 +350,47 @@ h3 { font-size: 1.05rem; font-weight: 700; }
 .credito { font-size: .74rem; }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+
+/* ================================================================ ao vivo, QR, encaminhamento, regiões */
+.botao-qr { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--borda-forte); background: transparent; color: var(--texto-2); font: 500 .8rem var(--sans); cursor: pointer; }
+.botao-qr:hover, .botao-qr:focus-visible { color: var(--texto); border-color: var(--elfica); }
+@media (max-width: 820px) { .botao-qr span { display: none; } }
+.botao.agora { background: linear-gradient(135deg, #ffd58a, var(--luz)); color: var(--abismo); box-shadow: 0 0 28px rgba(255, 200, 107, .35); }
+.grade-4 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.porta.destaque { border-color: rgba(255, 200, 107, .45); box-shadow: 0 0 24px rgba(255, 200, 107, .12); }
+.ao-vivo { display: grid; gap: 6px; margin-bottom: 12px; }
+.soltar video { width: 100%; max-height: 300px; object-fit: cover; }
+
+.camera { position: fixed; inset: 0; width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: #000; color: var(--texto); }
+.camera::backdrop { background: #000; }
+.camera video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.camera-topo { position: absolute; top: max(12px, env(safe-area-inset-top)); left: 12px; right: 12px; display: flex; align-items: center; gap: 8px; }
+.chip { padding: 6px 12px; border-radius: 999px; background: rgba(10, 30, 19, .75); border: 1px solid var(--borda-forte); font-size: .82rem; backdrop-filter: blur(6px); }
+.chip.gravando { color: #fff; background: rgba(200, 40, 40, .85); border-color: transparent; font-variant-numeric: tabular-nums; }
+.camera-fechar { margin-left: auto; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--borda-forte); background: rgba(10, 30, 19, .75); color: var(--texto); font-size: 1.1rem; cursor: pointer; }
+.camera-dica { position: absolute; left: 16px; right: 16px; bottom: 150px; margin: 0; text-align: center; font-size: .9rem; text-shadow: 0 1px 6px #000; }
+.camera-acoes { position: absolute; left: 0; right: 0; bottom: max(24px, env(safe-area-inset-bottom)); display: flex; justify-content: center; gap: 40px; }
+.camera-botao { display: grid; place-items: center; gap: 4px; width: 84px; height: 84px; border-radius: 50%; border: 3px solid #fff; background: rgba(10, 30, 19, .55); color: #fff; font-size: 1.6rem; cursor: pointer; }
+.camera-botao small { font-size: .7rem; letter-spacing: .5px; }
+.camera-botao .bola { width: 30px; height: 30px; border-radius: 50%; background: #e53935; transition: border-radius .2s, transform .2s; }
+.camera-botao.ativo .bola { border-radius: 6px; transform: scale(.8); animation: cintilar 1s infinite; }
+.camera-botao:focus-visible, .camera-fechar:focus-visible { outline: 3px solid var(--elfica); outline-offset: 3px; }
+.camera-erro { position: absolute; left: 16px; right: 16px; top: 45%; margin: 0; padding: 16px; border-radius: 14px; background: rgba(10, 30, 19, .92); border: 1px solid var(--alerta); text-align: center; }
+
+.qr { border: 1px solid var(--borda-forte); border-radius: 20px; padding: 24px; background: #0d2418; color: var(--texto); width: min(380px, calc(100vw - 32px)); text-align: center; box-shadow: var(--sombra); }
+.qr::backdrop { background: rgba(3, 10, 6, .75); backdrop-filter: blur(4px); }
+.qr h2 { margin: 0 0 12px; font-family: var(--serifa); font-size: 1.7rem; }
+.qr img { width: 240px; height: 240px; border-radius: 14px; background: var(--texto); }
+.qr p { color: var(--texto-2); font-size: .92rem; }
+
+.encaminhamento { padding: 14px; border-radius: 14px; background: rgba(143, 210, 167, .06); border: 1px solid var(--borda-forte); font-size: .92rem; }
+.encaminhamento ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 8px; }
+.encaminhamento li { display: grid; gap: 2px; }
+.encaminhamento span { color: var(--texto-2); }
+.encaminhamento small { color: var(--texto-3); }
+
+.regioes { display: grid; gap: 10px; margin: 14px 0; }
+.regiao { display: grid; gap: 4px; padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(242, 210, 122, .4); background: rgba(242, 210, 122, .06); }
+.regiao.apagao_regiao { border-color: rgba(255, 122, 107, .55); background: rgba(255, 122, 107, .08); }
+.regiao span { color: var(--texto-2); font-size: .9rem; }
+.regiao small { color: var(--texto-3); }

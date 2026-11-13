@@ -9,7 +9,7 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
-VERSAO_CONTRATO = "1.4"   # 1.1 robô/fusão · 1.2 GenAI · 1.3 breu/endereço/relato · 1.4 análise de cena
+VERSAO_CONTRATO = "1.5"   # 1.1 robô/fusão · 1.2 GenAI · 1.3 breu/endereço/relato · 1.4 cena · 1.5 central/vídeo/regiões
 
 
 class Origem(str, Enum):
@@ -147,6 +147,23 @@ class Cena(BaseModel):
     motivos: list[str]
 
 
+class Encaminhamento(BaseModel):
+    """Quem resolve: poste é da iluminação pública (prefeitura); apagão é da distribuidora de energia."""
+    orgao: str
+    canal: str
+    motivo: str
+
+
+class Video(BaseModel):
+    """Resumo da análise de um vídeo curto: vários quadros analisados, o mais evidente vira a prova."""
+    quadros_analisados: int
+    duracao_s: float
+    quadro_escolhido_s: float = Field(description="Segundo do vídeo usado como evidência")
+    apagados_max: int = Field(description="Maior número de postes apagados num mesmo quadro")
+    quadros_com_apagado: int
+    quadros_com_apagao: int = Field(description="Quadros com sinal de possível apagão na análise de cena")
+
+
 class ModeloInfo(BaseModel):
     nome: str
     versao: str
@@ -173,6 +190,10 @@ class Analise(BaseModel):
         default=None, description="JPEG com rostos borrados; só quando pedido")
     orientacao: list[Orientacao] | None = Field(
         default=None, description="Prazo/canal oficial via GenAI; só com incluir_orientacao e chamado aberto")
+    protocolo: str | None = Field(default=None, description="Protocolo na central (quando o chamado foi aberto)")
+    encaminhar_para: list[Encaminhamento] = Field(default_factory=list,
+                                                  description="Órgão(s) responsável(is) por resolver")
+    video: Video | None = Field(default=None, description="Só em /v1/analisar-video")
 
 
 class AlertaRobo(BaseModel):
@@ -203,6 +224,8 @@ class RespostaAlerta(BaseModel):
     prioridade_previa: Prioridade
     proximo_passo: str
     acao_robo: AcaoRobo
+    protocolo: str | None = Field(default=None, description="Protocolo da suspeita na central")
+    encaminhar_para: list[Encaminhamento] = Field(default_factory=list)
 
 
 class RelatoCidadao(BaseModel):
@@ -216,3 +239,80 @@ class RelatoCidadao(BaseModel):
     model_config = {"json_schema_extra": {"examples": [
         {"latitude": -23.5614, "longitude": -46.6559, "endereco": "Av. Paulista, 1578 - Bela Vista, São Paulo",
          "problema": ["escuro"]}]}}
+
+
+class StatusChamado(str, Enum):
+    suspeita = "suspeita"         # relato sem foto ou alerta do robô
+    recebido = "recebido"         # a IA validou a evidência
+    confirmado = "confirmado"     # o atendente confirmou
+    encaminhado = "encaminhado"   # enviado ao órgão responsável (RPA)
+    em_reparo = "em_reparo"
+    resolvido = "resolvido"
+    recusado = "recusado"
+
+
+class Evidencia(str, Enum):
+    foto = "foto"
+    video = "video"
+    relato = "relato"         # só o local, sem imagem
+    sensores = "sensores"     # robô (luz e distância)
+
+
+class EventoChamado(BaseModel):
+    status: StatusChamado
+    ts: str
+    nota: str | None = None
+
+
+class Chamado(BaseModel):
+    """Um chamado na central (o que a prefeitura/distribuidora vê). Nunca guarda a foto nem o vídeo."""
+    versao_contrato: str = VERSAO_CONTRATO
+    protocolo: str
+    id: str = Field(description="id_captura da análise ou id_alerta da suspeita")
+    ts: str
+    origem: str = Field(description="cidadao, relato, robo ou robo+foto")
+    evidencia: Evidencia
+    latitude: float | None = None
+    longitude: float | None = None
+    endereco: str | None = None
+    nivel: NivelPrioridade
+    pontos: int = Field(ge=0, le=100)
+    tipos: list[str] = Field(description="TipoChamado, ou suspeita_escuro/suspeita_buraco")
+    trecho: str
+    cena_nivel: NivelLuz | None = None
+    possivel_apagao: bool = False
+    fatores: list[str] = Field(default_factory=list)
+    motivos: list[str] = Field(default_factory=list)
+    encaminhar_para: list[Encaminhamento] = Field(default_factory=list)
+    status: StatusChamado
+    historico: list[EventoChamado]
+
+
+class MudancaStatus(BaseModel):
+    status: StatusChamado
+    nota: str | None = Field(default=None, max_length=200)
+
+    model_config = {"json_schema_extra": {"examples": [{"status": "confirmado", "nota": "pelo atendente"}]}}
+
+
+class TipoRegiao(str, Enum):
+    apagao_regiao = "apagao_regiao"                         # vários relatos + sinais de falta de energia
+    trecho_escuro_recorrente = "trecho_escuro_recorrente"   # vários relatos de escuro no mesmo lugar
+
+
+class Regiao(BaseModel):
+    """Vários relatos próximos no tempo e no espaço viram UM alerta de região."""
+    id: str
+    tipo: TipoRegiao
+    titulo: str
+    bairro: str | None = None
+    latitude: float
+    longitude: float
+    raio_m: int
+    relatos: int
+    sinais_apagao: int
+    protocolos: list[str]
+    primeiro: str
+    ultimo: str
+    encaminhar_para: list[Encaminhamento]
+    motivos: list[str]

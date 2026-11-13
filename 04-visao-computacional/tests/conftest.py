@@ -47,3 +47,17 @@ def jpeg(img) -> bytes:
 @pytest.fixture
 def detector_falso():
     return DetectorFalso
+
+
+@pytest.fixture(autouse=True)
+def central_isolada(tmp_path, monkeypatch):
+    """Cada teste com a sua central (SQLite temporário): nunca toca a central de verdade."""
+    monkeypatch.delenv("CENTRAL_TABELA_URL", raising=False)
+    monkeypatch.setenv("CENTRAL_DB", str(tmp_path / "central.db"))
+    mod = sys.modules.get("api.main")
+    if mod is not None:
+        mod._estado["central"] = None
+    yield
+    mod = sys.modules.get("api.main")
+    if mod is not None:
+        mod._estado["central"] = None
