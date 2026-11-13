@@ -1,45 +1,68 @@
-# GS 2026.2 · CitizenTech · Ruas Escuras
+# Vésper · da escuridão à luz
 
-Global Solution da FIAP · Engenharia de Software, 4º ano.
+**GS 2026.2 · CitizenTech · tema Ruas Escuras** · FIAP · Engenharia de Software, 4º ano.
 Um único produto que atravessa 7 disciplinas: cada integrante cuida de uma pasta.
+
+🌐 **MVP no ar:** https://ca-ruasescuras-visao.bravehill-24590cb4.eastus.azurecontainerapps.io
+(API documentada em [`/docs`](https://ca-ruasescuras-visao.bravehill-24590cb4.eastus.azurecontainerapps.io/docs))
 
 ## Ficha Técnica do MVP
 
 | Campo | Conteúdo |
 |---|---|
-| **Nome do produto** | _a definir_ |
-| **Cidadão e território** | Pedestres, ciclistas, motociclistas e moradores que circulam à noite em ruas com iluminação pública falha |
-| **Problema, em uma frase** | Ruas escuras geram medo, assaltos e acidentes, e a falha demora a chegar à prefeitura porque depende de alguém reclamar |
-| **Proposta de valor** | Ponte entre o cidadão e a prefeitura: o chamado chega confirmado, com localização, evidência e prioridade, e o cidadão acompanha até o conserto |
-| **Arquitetura: componentes** | App do cidadão · Visão (YOLO26) · GenAI local · RPA · Big Data · robô com sensor de luz · deploy seguro ([docs/arquitetura.md](docs/arquitetura.md)) |
-| **Fontes de dados** | Fotos do cidadão e do robô · datasets públicos de postes · dados abertos (SP156, Open-Meteo, IBGE) _a confirmar_ |
-| **Modelos de IA utilizados** | YOLO26 (detecção de postes acesos/apagados) · LLM local com RAG _a definir_ |
-| **URL do MVP e repositório** | _a definir_ · https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026 |
-| **Indicadores de impacto** | Tempo da falha até o chamado · tempo até o conserto · % de chamados válidos · chamados por mil habitantes, centro × periferia |
-| **ODS conectados** | 11, 3, 10 e 9 (detalhes abaixo) |
+| **Nome do produto** | **Vésper**: o nome da "estrela" que aparece logo depois que escurece. A ponte entre a rua escura e quem pode acendê-la |
+| **Cidadão e território** | Pedestres, ciclistas, motociclistas e moradores que circulam à noite em ruas com iluminação pública falha ou em bairros sem energia, com foco nas periferias das metrópoles, onde a falha demora mais para ser consertada |
+| **Problema, em uma frase** | Ruas escuras geram medo, assaltos e acidentes, e a falha demora a chegar à prefeitura ou à distribuidora de energia porque depende de alguém reclamar, no canal certo, com informação suficiente |
+| **Proposta de valor** | O cidadão aponta o celular para a rua e, em segundos, o chamado chega **confirmado por IA**, com localização, evidência, prioridade e **ao responsável certo** (poste apagado vai para a iluminação pública; apagão vai para a distribuidora de energia). O cidadão acompanha até o conserto. Sem cadastro, sem guardar a foto |
+| **Arquitetura: componentes** | App web Vésper (cidadão, acompanhamento e central de chamados) · API de Visão (YOLO26 + análise de cena) · assistente GenAI local com RAG · robô Maker Lab com sensores de luz e distância · RPA que despacha os chamados · pipeline de Big Data · deploy na Azure com Terraform, CI/CD seguro e observabilidade ([docs/arquitetura.md](docs/arquitetura.md)) |
+| **Fontes de dados** | Fotos do cidadão e do robô (analisadas e descartadas) · datasets públicos de postes no Roboflow Universe (licença CC BY 4.0) e imagens Openverse/Wikimedia com autor e licença registrados ([dataset](04-visao-computacional/docs/dataset.md)) · 135 fotos noturnas próprias, revisadas pela equipe · 31 trechos de fontes oficiais sobre iluminação pública (base do RAG) · dados abertos (SP156, IBGE, Open-Meteo) no Big Data |
+| **Modelos de IA utilizados** | **YOLO26s** treinado por nós (postes acesos e apagados) · análise de cena explicável (índice de escuridão, fontes de luz, possível apagão) · YuNet (borrar rostos, LGPD) · **qwen2.5:1.5b-instruct** + embeddings **nomic-embed-text** via Ollama (RAG local, com citação e recusa) |
+| **URL do MVP e repositório** | https://ca-ruasescuras-visao.bravehill-24590cb4.eastus.azurecontainerapps.io · https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026 |
+| **Indicadores de impacto** | Tempo da falha até o chamado · tempo até o conserto · % de chamados válidos (a IA filtra foto de dia, repetida ou sem evidência) · chamados encaminhados ao responsável certo · chamados por mil habitantes, centro × periferia |
+| **ODS conectados** | 11, 3, 10, 9 e 16 (explicação abaixo) |
 
 ## Problema
 Ruas com iluminação pública falha geram medo, aumentam o risco de assalto e causam acidentes
-(quedas de pedestres, ciclistas e motociclistas). Isso afeta o bem-estar e a mobilidade das pessoas.
-Além disso, a falha demora a chegar até a prefeitura, porque depende de alguém reclamar.
+(quedas de pedestres, ciclistas e motociclistas). Quando falta energia no bairro, o breu é total.
+A falha demora a chegar a quem conserta, porque depende de alguém reclamar, saber **para quem** reclamar
+(prefeitura ou distribuidora de energia) e descrever o local direito.
 
 ## Solução
-Nós não consertamos o poste: somos a **ponte entre o cidadão e a prefeitura**.
+Nós não consertamos o poste: somos a **ponte entre o cidadão e quem pode acender a rua**.
 
-- **Cidadão:** reporta a rua escura com uma foto (ou um robô com câmera e sensor de luz detecta sozinho) e acompanha o status até o conserto.
-- **Prefeitura:** recebe o chamado já confirmado, com localização, evidência e prioridade.
+- **Cidadão:** abre o site (inclusive pelo **QR Code** colado em pontos da cidade), fotografa ou filma a rua
+  **ao vivo** pelo próprio navegador, ou só informa o endereço quando está tudo escuro. Recebe um protocolo e
+  acompanha o status.
+- **IA (Visão):** encontra os postes acesos e apagados, mede o quanto a cena está escura e reconhece sinais de
+  **apagão** (nenhuma luz, nem janelas, nem letreiros). Explica cada decisão.
+- **Robô (Maker Lab):** patrulha com sensores de luz e distância e dispara alertas; a foto confirma.
+- **Central:** a prefeitura ou a distribuidora recebe o chamado já confirmado, priorizado e com evidência;
+  muitos relatos próximos viram um único alerta de região.
+- **GenAI:** orienta o cidadão com base em fontes oficiais (prazos, canais), citando a fonte.
+- **RPA:** despacha os chamados confirmados para o sistema de quem conserta e devolve o protocolo.
 
-## ODS
-- **ODS 11:** cidades e comunidades sustentáveis
-- **ODS 3:** saúde e bem-estar (acidentes)
-- **ODS 10:** redução das desigualdades
-- **ODS 9:** indústria, inovação e infraestrutura
+## ODS: como o Vésper contribui
+| ODS | Contribuição concreta |
+|---|---|
+| **11 · Cidades e comunidades sustentáveis** (meta 11.7: espaços públicos seguros e inclusivos) | Encurta o tempo entre a rua apagar e o conserto, e mostra no mapa onde a cidade está no escuro |
+| **3 · Saúde e bem-estar** (meta 3.6: reduzir mortes e lesões no trânsito) | Rua iluminada reduz atropelamentos, quedas e acidentes de moto e bicicleta à noite; trechos com buraco e sem luz ganham prioridade |
+| **10 · Redução das desigualdades** (meta 10.2: inclusão de todos) | Basta um celular simples e um navegador, sem cadastro e sem app para instalar; o indicador "chamados por mil habitantes, centro × periferia" expõe onde o conserto demora mais |
+| **9 · Indústria, inovação e infraestrutura** (meta 9.1: infraestrutura resiliente) | Visão computacional, sensores e automação transformam relatos soltos em dados confiáveis para a manutenção da rede |
+| **16 · Paz, justiça e instituições eficazes** (meta 16.6: instituições eficazes e transparentes) | O cidadão acompanha cada etapa do chamado com protocolo, e o encaminhamento vai direto ao órgão responsável |
+
+## IA responsável
+- **Explica:** toda análise traz os motivos em português (quantos postes, quão escura, por que é ou não apagão).
+- **Pessoa no circuito:** a IA sugere; o atendente da central confirma, encaminha ou recusa.
+- **Privacidade (LGPD):** a foto não é guardada, rostos são borrados, os metadados (EXIF) são descartados.
+- **Vieses conhecidos:** a maior parte dos datasets públicos de postes é de ruas asiáticas e europeias; por isso
+  incluímos fotos noturnas próprias de São Paulo e medimos o desempenho separado por cenário
+  ([relatório da Visão](04-visao-computacional/docs/relatorio.md)).
 
 ## Integrantes
 
 | Nome completo | RM | Disciplina |
 |---|---|---|
-| Guilherme Gonçalves Calil Daher | 98611 | Visão Computacional · DevOps e Cloud |
+| Guilherme Daher | 98611 | Visão Computacional · DevOps e Cloud |
 | Gabriel Freitas | 550187 | Generative AI |
 | Heitor Nobre | 551539 | Maker Lab |
 | Vinicius Yamashita | 550908 | RPA |
