@@ -76,21 +76,21 @@
         ]
       },
       "fusao": {
-        "acuracia": 0.767,
+        "acuracia": 0.814,
         "por_classe": {
           "iluminada": {
-            "precisao": 0.821,
+            "precisao": 0.885,
             "recall": 0.92,
             "n": 25
           },
           "trecho_escuro": {
-            "precisao": 0.667,
-            "recall": 0.571,
+            "precisao": 0.714,
+            "recall": 0.714,
             "n": 7
           },
           "apagao": {
-            "precisao": 0.667,
-            "recall": 0.545,
+            "precisao": 0.7,
+            "recall": 0.636,
             "n": 11
           }
         },
@@ -101,14 +101,14 @@
             1
           ],
           [
-            1,
-            4,
+            0,
+            5,
             2
           ],
           [
-            4,
+            3,
             1,
-            6
+            7
           ]
         ]
       }
@@ -189,15 +189,15 @@
         ]
       },
       "fusao": {
-        "acuracia": 0.474,
+        "acuracia": 0.447,
         "por_classe": {
           "iluminada": {
-            "precisao": 0.833,
-            "recall": 0.833,
+            "precisao": 0.8,
+            "recall": 0.667,
             "n": 6
           },
           "trecho_escuro": {
-            "precisao": 0.7,
+            "precisao": 0.636,
             "recall": 0.292,
             "n": 24
           },
@@ -209,8 +209,8 @@
         },
         "matriz": [
           [
-            5,
-            1,
+            4,
+            2,
             0
           ],
           [
@@ -254,14 +254,6 @@
     },
     {
       "conjunto": "test",
-      "arquivo": "60327bd9c0c0e080.jpg",
-      "verdade": "trecho_escuro",
-      "fusao": "iluminada",
-      "regra": "trecho_escuro",
-      "classificador": "iluminada"
-    },
-    {
-      "conjunto": "test",
       "arquivo": "e8e6ac346dae9e16.jpg",
       "verdade": "trecho_escuro",
       "fusao": "apagao",
@@ -274,14 +266,6 @@
       "verdade": "apagao",
       "fusao": "iluminada",
       "regra": "iluminada",
-      "classificador": "iluminada"
-    },
-    {
-      "conjunto": "test",
-      "arquivo": "80dbdadac88f8f9c.jpg",
-      "verdade": "apagao",
-      "fusao": "iluminada",
-      "regra": "trecho_escuro",
       "classificador": "iluminada"
     },
     {
@@ -315,6 +299,14 @@
       "fusao": "trecho_escuro",
       "regra": "iluminada",
       "classificador": "trecho_escuro"
+    },
+    {
+      "conjunto": "teste_equipe",
+      "arquivo": "a060e0e16129293a.jpg",
+      "verdade": "iluminada",
+      "fusao": "trecho_escuro",
+      "regra": "trecho_escuro",
+      "classificador": "iluminada"
     },
     {
       "conjunto": "teste_equipe",

@@ -8,7 +8,8 @@ Classes: iluminada · trecho_escuro (falha de iluminação, há luz elétrica po
 
 Fusão (limiar em configs/regras.yaml, seção classificador_cena), escolhida pela avaliação por cenário
 (scripts/avaliar_cena.py, results/cena/):
-  - veto da física: cena medida como ILUMINADA nunca vira apagão, diga o classificador o que disser;
+  - veto da física nos dois sentidos: cena medida como ILUMINADA nunca vira apagão, e cena medida como
+    MUITO ESCURA/BREU nunca vira "iluminada", diga o classificador o que disser;
   - classificador confiante (>= confianca_minima): vale o classificador;
   - classificador indeciso: valem as medidas de luz.
 Sem o arquivo do modelo (models/cena.pt), tudo funciona só com as regras.
@@ -57,6 +58,12 @@ def fundir_cena(c: Cena, probs: dict | None) -> LeituraCena:
         top = ordem[1]
         return LeituraCena(top, probs[top], "regras+classificador", probs,
                            f"o classificador sugeriu apagão, mas a cena tem luz medida: {top.replace('_', ' ')}")
+    # e o contrário: cena medida como muito escura ou breu não é "iluminada" (há falha de luz, ao menos local)
+    if top == "iluminada" and c.nivel.value in ("muito_escura", "breu"):
+        top = next(k for k in ordem if k != "iluminada")
+        return LeituraCena(top, probs[top], "regras+classificador", probs,
+                           f"o classificador viu luz, mas a cena medida está {c.nivel.value.replace('_', ' ')}: "
+                           f"{top.replace('_', ' ')}")
     if probs[top] >= cfg.get("confianca_minima", 0.5):
         concorda = top == r
         return LeituraCena(top, probs[top], "regras+classificador" if concorda else "classificador", probs,
