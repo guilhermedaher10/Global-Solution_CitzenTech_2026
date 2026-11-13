@@ -14,6 +14,9 @@ Variáveis de ambiente (todas opcionais):
     GENAI_TIMEOUT    segundos de espera pelo GenAI (padrão: 120)
     GENAI_CIDADE     cidade usada nas perguntas ao GenAI (padrão: São Paulo)
     METRICS_TOKEN    se definido, GET /metrics exige 'Authorization: Bearer <token>' (use na nuvem)
+    CENTRAL_TABELA_URL  Azure Table da central de chamados (na nuvem, com identidade gerenciada)
+    CENTRAL_DB       arquivo SQLite da central (padrão: pasta temporária), quando não há tabela
+    CENTRAL_TOKEN    se definido, libera POST /v1/central/limpar com 'Authorization: Bearer <token>'
 """
 from __future__ import annotations
 
@@ -30,19 +33,24 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from visao import metricas
+from visao.central import Central, TransicaoInvalida
 from visao.fusao import triar_alerta
 from visao.orientacao import ClienteGenAI
 from visao.pipeline import ImagemInvalida, analisar_bytes
 from visao.privacidade import BorradorRostos
+from visao.regioes import agrupar
 from visao.schemas import (
-    VERSAO_CONTRATO, AlertaRobo, Analise, Origem, RelatoCidadao, RespostaAlerta, TipoAlerta,
+    VERSAO_CONTRATO, AlertaRobo, Analise, Chamado, Evidencia, MudancaStatus, Origem, Regiao, RelatoCidadao,
+    RespostaAlerta, TipoAlerta,
 )
+from visao.video import SUFIXOS, analisar_video_bytes
+from visao.config import regras
 
 log = logging.getLogger("visao.api")
 MAX_BYTES = int(float(os.getenv("MAX_UPLOAD_MB", "10")) * 1024 * 1024)
 TIPOS_ACEITOS = {"image/jpeg", "image/png", "image/webp"}
 
-_estado: dict = {"detector": None, "erro": None, "borrador": None, "genai": None}
+_estado: dict = {"detector": None, "erro": None, "borrador": None, "genai": None, "central": None}
 
 
 @asynccontextmanager
@@ -113,7 +121,7 @@ WEB = Path(__file__).resolve().parent.parent / "web"
 # (Nominatim); nada de iframe de terceiros.
 CSP = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
        "img-src 'self' data: blob: https://tile.openstreetmap.org; font-src 'self'; "
-       "connect-src 'self' https://nominatim.openstreetmap.org; "
+       "connect-src 'self' https://nominatim.openstreetmap.org; media-src 'self' blob:; "
        "frame-ancestors 'none'; base-uri 'self'; form-action 'self'")
 
 
@@ -154,6 +162,39 @@ def obter_genai() -> ClienteGenAI:
     return _estado["genai"]
 
 
+def obter_central() -> Central:
+    if _estado["central"] is None:
+        _estado["central"] = Central()
+    return _estado["central"]
+
+
+def _registrar_analise(central: Central, analise: Analise, evidencia: Evidencia) -> None:
+    """Chamado aberto -> grava na central e devolve o protocolo. Se a central falhar, a análise segue."""
+    from visao.central import encaminhar
+
+    if not analise.validacao.abrir_chamado:
+        return
+    analise.encaminhar_para = encaminhar([t.value for t in analise.fusao.tipos_chamado])
+    try:
+        analise.protocolo = central.registrar_analise(analise, evidencia).protocolo
+    except Exception:
+        log.exception("central indisponível: chamado %s não registrado", analise.id_captura)
+        metricas.registrar_falha_central()
+
+
+def _registrar_suspeita(central: Central, resposta: RespostaAlerta, origem: str, nota: str) -> None:
+    from visao.central import encaminhar
+
+    if resposta.status != "suspeita":
+        return
+    resposta.encaminhar_para = encaminhar([f"suspeita_{a.value}" for a in resposta.alertas])
+    try:
+        resposta.protocolo = central.registrar_suspeita(resposta, origem=origem, nota=nota).protocolo
+    except Exception:
+        log.exception("central indisponível: suspeita %s não registrada", resposta.id_alerta)
+        metricas.registrar_falha_central()
+
+
 def obter_borrador() -> BorradorRostos:
     if _estado["borrador"] is None:
         _estado["borrador"] = BorradorRostos()
@@ -187,9 +228,11 @@ async def analisar(
     retornar_imagem: bool = Form(False, description="Devolver a imagem anonimizada em base64"),
     incluir_orientacao: bool = Form(False, description="Perguntar ao GenAI o prazo/canal oficial "
                                     "(só se abrir chamado; pode levar alguns segundos)"),
+    registrar: bool = Form(True, description="Abrir o chamado na central quando a foto confirmar a falha"),
     detector=Depends(obter_detector),
     borrador: BorradorRostos = Depends(obter_borrador),
     genai: ClienteGenAI = Depends(obter_genai),
+    central: Central = Depends(obter_central),
 ):
     if imagem.content_type not in TIPOS_ACEITOS:
         raise HTTPException(415, f"tipo {imagem.content_type} não aceito; use JPEG, PNG ou WebP")
@@ -210,13 +253,57 @@ async def analisar(
     if incluir_orientacao and analise.validacao.abrir_chamado:
         # o LLM do GenAI roda em CPU e pode demorar: fora do loop de eventos
         analise.orientacao = await run_in_threadpool(genai.orientar, analise.fusao.tipos_chamado)
+    if registrar:
+        await run_in_threadpool(_registrar_analise, central, analise, Evidencia.foto)
     metricas.registrar_analise(analise)
+    return analise
+
+
+@app.post("/v1/analisar-video", response_model=Analise, tags=["analise"],
+          summary="Analisa um vídeo curto gravado ao vivo e abre o chamado")
+async def analisar_video(
+    video: UploadFile = File(..., description="Vídeo WebM ou MP4 (até ~20 s); só os primeiros segundos contam"),
+    latitude: float | None = Form(None, ge=-90, le=90),
+    longitude: float | None = Form(None, ge=-180, le=180),
+    endereco: str | None = Form(None, max_length=200, description="Endereço legível do local (opcional)"),
+    retornar_imagem: bool = Form(False, description="Devolver o quadro escolhido, anonimizado, em base64"),
+    incluir_orientacao: bool = Form(False, description="Perguntar ao GenAI o prazo/canal oficial"),
+    registrar: bool = Form(True, description="Abrir o chamado na central quando o vídeo confirmar a falha"),
+    detector=Depends(obter_detector),
+    borrador: BorradorRostos = Depends(obter_borrador),
+    genai: ClienteGenAI = Depends(obter_genai),
+    central: Central = Depends(obter_central),
+):
+    """Para o cidadão que está no escuro AGORA: grava alguns segundos pela câmera do navegador e envia.
+
+    Um quadro a cada meio segundo passa pelo detector; o mais evidente (mais postes apagados, sinal de
+    apagão, mais nítido) vira a prova e segue o mesmo fluxo da foto. O vídeo é apagado logo após a análise.
+    """
+    tipo = (video.content_type or "").split(";")[0].strip()
+    if tipo not in SUFIXOS:
+        raise HTTPException(415, f"tipo {video.content_type} não aceito; use WebM ou MP4")
+    limite = int(regras()["video"]["max_mb"] * 1024 * 1024)
+    dados = await video.read(limite + 1)
+    if len(dados) > limite:
+        raise HTTPException(413, f"vídeo maior que {limite // (1024 * 1024)} MB; grave menos segundos")
+    try:
+        analise = await run_in_threadpool(
+            analisar_video_bytes, dados, tipo, detector, origem=Origem.cidadao, latitude=latitude,
+            longitude=longitude, endereco=endereco, borrador=borrador, retornar_imagem=retornar_imagem)
+    except ImagemInvalida as e:
+        raise HTTPException(422, str(e)) from e
+    if incluir_orientacao and analise.validacao.abrir_chamado:
+        analise.orientacao = await run_in_threadpool(genai.orientar, analise.fusao.tipos_chamado)
+    if registrar:
+        await run_in_threadpool(_registrar_analise, central, analise, Evidencia.video)
+    metricas.registrar_analise(analise)
+    metricas.registrar_video(analise)
     return analise
 
 
 @app.post("/v1/alerta-robo", response_model=RespostaAlerta, tags=["robo"],
           summary="Alerta do robô (só sensores, sem foto): registra a suspeita")
-def alerta_robo(alerta: AlertaRobo):
+def alerta_robo(alerta: AlertaRobo, central: Central = Depends(obter_central)):
     """Chamado pelo robô do Maker Lab quando o LDR ou o ultrassônico dispara.
 
     Não precisa do modelo carregado (funciona mesmo com a API degradada). A resposta é curta
@@ -224,13 +311,15 @@ def alerta_robo(alerta: AlertaRobo):
     O ponto vira chamado quando uma foto do lugar for enviada a /v1/analisar com os mesmos sensores.
     """
     resposta = triar_alerta(alerta)
+    _registrar_suspeita(central, resposta, "robo",
+                        f"robô: {alerta.sensor_lux} lux, {alerta.sensor_distancia_cm} cm")
     metricas.registrar_alerta(resposta)
     return resposta
 
 
 @app.post("/v1/relatos", response_model=RespostaAlerta, tags=["cidadao"],
           summary="Relato do cidadão SEM foto (só o local): registra a suspeita")
-def relato_cidadao(relato: RelatoCidadao):
+def relato_cidadao(relato: RelatoCidadao, central: Central = Depends(obter_central)):
     """Para quem não consegue fotografar (breu total, celular sem câmera, acessibilidade).
 
     Vira uma suspeita com prioridade prévia, como o alerta do robô; uma foto do mesmo local enviada a
@@ -238,8 +327,56 @@ def relato_cidadao(relato: RelatoCidadao):
     """
     resposta = triar_alerta(AlertaRobo(origem=Origem.cidadao, latitude=relato.latitude, longitude=relato.longitude,
                                        endereco=relato.endereco, alerta=relato.problema))
+    _registrar_suspeita(central, resposta, "relato", "relato do cidadão, aguardando foto")
     metricas.registrar_relato(resposta)
     return resposta
+
+
+# ---------------------------------------------------------------- central de chamados
+@app.get("/v1/chamados", response_model=list[Chamado], tags=["central"],
+         summary="Fila da central: chamados mais recentes primeiro")
+def listar_chamados(limite: int = 300, central: Central = Depends(obter_central)):
+    """O que a prefeitura e a distribuidora veem. Só dados do chamado: nunca foto, vídeo ou dado pessoal."""
+    return central.listar(max(1, min(limite, 1000)))
+
+
+@app.get("/v1/chamados/{protocolo}", response_model=Chamado, tags=["central"],
+         summary="Acompanhar um chamado pelo protocolo")
+def obter_chamado(protocolo: str, central: Central = Depends(obter_central)):
+    c = central.obter(protocolo[:20])
+    if c is None:
+        raise HTTPException(404, "protocolo não encontrado")
+    return c
+
+
+@app.post("/v1/chamados/{protocolo}/status", response_model=Chamado, tags=["central"],
+          summary="Atendente muda o status (confirmar, encaminhar, em reparo, resolvido, recusar)")
+def mudar_status(protocolo: str, mudanca: MudancaStatus, central: Central = Depends(obter_central)):
+    """Só transições válidas (não dá para pular de 'recebido' para 'resolvido'). Na demonstração, sem login."""
+    try:
+        c = central.mudar_status(protocolo[:20].strip().upper(), mudanca.status, mudanca.nota)
+    except TransicaoInvalida as e:
+        raise HTTPException(409, str(e)) from e
+    if c is None:
+        raise HTTPException(404, "protocolo não encontrado")
+    metricas.registrar_status(mudanca.status.value)
+    return c
+
+
+@app.get("/v1/regioes", response_model=list[Regiao], tags=["central"],
+         summary="Relatos agrupados: 'possível apagão na região X'")
+def regioes(central: Central = Depends(obter_central)):
+    """Muitos chamados próximos e recentes viram um alerta de região (regra em configs/regras.yaml)."""
+    return agrupar(central.listar(1000))
+
+
+@app.post("/v1/central/limpar", tags=["central"], include_in_schema=False)
+def limpar_central(authorization: str | None = Header(None), central: Central = Depends(obter_central)):
+    """Zera a demonstração. Só com CENTRAL_TOKEN definido e enviado."""
+    token = os.getenv("CENTRAL_TOKEN")
+    if not token or not hmac.compare_digest(authorization or "", f"Bearer {token}"):
+        raise HTTPException(403, "limpeza desativada ou token inválido")
+    return {"removidos": central.limpar()}
 
 
 @app.get("/metrics", include_in_schema=False)

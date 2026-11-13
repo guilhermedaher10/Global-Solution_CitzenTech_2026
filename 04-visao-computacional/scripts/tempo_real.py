@@ -27,7 +27,8 @@ from visao.config import CLASSE_ACESO, CLASSE_APAGADO
 from visao.detector import YoloDetector
 from visao.imagem import luminosidade_media
 from visao.overlay import desenhar_deteccoes, desenhar_painel
-from visao.pipeline import analisar_imagem
+from visao.cena import analisar_cena
+from visao.pipeline import analisar_imagem, ler_classe
 from visao.privacidade import BorradorRostos
 from visao.regras import classificar_trecho
 
@@ -70,6 +71,7 @@ def main() -> int:
     reportados: set[int] = set()
     arq_eventos = open(args.eventos, "a", encoding="utf-8") if args.eventos else None
     ultimo_chamado, t_ant, fps, pausado = None, time.time(), 0.0, False
+    n_quadro, regiao = 0, None
 
     try:
         while True:
@@ -111,13 +113,20 @@ def main() -> int:
                 lum = luminosidade_media(frame)
                 status = classificar_trecho(acesos, apagados, lum)
 
+                if n_quadro % 15 == 0:   # leitura da região (escuridão + classificador de cena), sem pesar no FPS
+                    c = analisar_cena(frame)
+                    ler_classe(frame, c, postes_acesos=sum(d.classe == CLASSE_ACESO for d in deteccoes))
+                    regiao = (f"Regiao: {c.nivel.value.replace('_', ' ').upper()} ({c.indice_escuridao}/100)"
+                              + (" | POSSIVEL APAGAO" if c.possivel_apagao else f" | {(c.classe or '').replace('_', ' ')}"))
+                n_quadro += 1
+
                 agora = time.time()
                 fps = 0.9 * fps + 0.1 * (1 / max(agora - t_ant, 1e-6))
                 t_ant = agora
 
                 saida, _ = borrador.borrar(frame)  # o vídeo gravado também respeita a LGPD
                 desenhar_deteccoes(saida, deteccoes)
-                desenhar_painel(saida, status, acesos, apagados, lum, fps, unicos, ultimo_chamado)
+                desenhar_painel(saida, status, acesos, apagados, lum, fps, unicos, ultimo_chamado, regiao)
 
                 if args.salvar:
                     if escritor is None:

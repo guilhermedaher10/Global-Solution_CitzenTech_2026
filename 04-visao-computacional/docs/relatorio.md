@@ -1,4 +1,7 @@
-# Rascunho do relatório (vira o PDF de até 5 pts)
+# Rascunho do relatório (histórico)
+
+> **Versão final entregue:** [Relatorio-Visao-Computacional.pdf](Relatorio-Visao-Computacional.pdf), gerado de
+> [relatorio/relatorio-visao.html](relatorio/relatorio-visao.html) com `python scripts/gerar_pdf.py docs/relatorio/relatorio-visao.html docs/Relatorio-Visao-Computacional.pdf`.
 
 > Siga exatamente esta ordem, que é a do professor. Trechos em _itálico_ são para preencher depois do treino.
 > Limites: resumo com até **250 palavras**, objetivo com até **50 palavras**.
