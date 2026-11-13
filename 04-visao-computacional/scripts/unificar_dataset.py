@@ -38,6 +38,7 @@ def fontes_disponiveis() -> list[Path]:
     listadas = {item["projeto"] for item in fontes().get("roboflow", [])}
     candidatas = [p for p in sorted((BRUTO / "roboflow").glob("*")) if p.name in listadas]
     candidatas.append(DATA / "anotado")
+    candidatas.append(DATA / "sintetico")   # scripts/apagar_lampadas.py: vai inteira para o TREINO
     return [p for p in candidatas if (p / "data.yaml").exists()]
 
 
@@ -85,6 +86,9 @@ def ler_label(caminho: Path) -> list[tuple[int, float, float, float, float]]:
     return caixas
 
 
+SO_TREINO = {"sintetico"}
+
+
 def split_por_hash(nome: str) -> str:
     h = int(hashlib.sha256(nome.encode()).hexdigest(), 16) % 100
     return "train" if h < 80 else ("valid" if h < 90 else "test")
@@ -128,7 +132,9 @@ def unificar(teste_fontes: set[str]) -> None:
                 if any(mapa.get(c) is None for c, *_ in caixas):
                     descartadas[fonte.name] += 1
                     continue
-                if fonte.name in teste_fontes:
+                if fonte.name in SO_TREINO:
+                    split = "train"   # sintético nunca entra na validação/teste: métrica só em foto real
+                elif fonte.name in teste_fontes:
                     split = "test"
                 elif redistribuir:
                     split = split_por_hash(img.name)

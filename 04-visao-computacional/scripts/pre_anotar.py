@@ -48,9 +48,14 @@ def main() -> int:
     ap.add_argument("--modelo", default=None, help="para --metodo modelo (padrão: models/best.pt)")
     ap.add_argument("--conf", type=float, default=0.15)
     ap.add_argument("--manter-sem-poste", action="store_true", help="não descartar imagens sem detecção")
+    ap.add_argument("--origem", default=str(DATA / "anotar"), help="pasta com as imagens (busca recursiva)")
+    ap.add_argument("--destino", default=str(DATA / "anotar_yolo"))
+    ap.add_argument("--so-noite", action="store_true",
+                    help=f"descarta cenas claras (brilho médio >= {CENA_ESCURA}): o foco é a rua à noite")
     args = ap.parse_args()
 
-    origem, destino = DATA / "anotar", DATA / "anotar_yolo"
+    from pathlib import Path
+    origem, destino = Path(args.origem), Path(args.destino)
     if destino.exists():
         shutil.rmtree(destino)
     (destino / "images").mkdir(parents=True)
@@ -77,13 +82,16 @@ def main() -> int:
         def detectar(img):
             return [(d.classe, tuple(d.bbox)) for d in det.detectar(img)]
 
-    total = mantidas = 0
+    total = mantidas = claras = 0
     contagem = {c: 0 for c in nossas}
     for p in listar_imagens(origem):
         img = cv2.imread(str(p))
         if img is None:
             continue
         total += 1
+        if args.so_noite and float(cv2.cvtColor(img, cv2.COLOR_BGR2HSV)[..., 2].mean()) >= CENA_ESCURA:
+            claras += 1
+            continue
         achados = detectar(img)
         if not achados and not args.manter_sem_poste:
             continue
@@ -93,13 +101,16 @@ def main() -> int:
             contagem[classe] += 1
             linhas.append(f"{nossas.index(classe)} {(x1 + x2) / 2 / w:.6f} {(y1 + y2) / 2 / h:.6f} "
                           f"{(x2 - x1) / w:.6f} {(y2 - y1) / h:.6f}")
-        shutil.copy2(p, destino / "images" / p.name)
-        (destino / "labels" / f"{p.stem}.txt").write_text("\n".join(linhas))
+        nome = f"{p.parent.name}__{p.stem}"  # pastas diferentes podem repetir nomes ("images (1).jpg")
+        nome = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in nome)
+        shutil.copy2(p, destino / "images" / f"{nome}{p.suffix.lower()}")
+        (destino / "labels" / f"{nome}.txt").write_text("\n".join(linhas))
         mantidas += 1
 
     with open(destino / "data.yaml", "w", encoding="utf-8") as f:
         yaml.safe_dump({"names": nossas, "nc": len(nossas)}, f, allow_unicode=True)
-    print(f"{total} imagens analisadas -> {mantidas} com poste em {destino}")
+    print(f"{total} imagens analisadas -> {mantidas} mantidas em {destino}"
+          + (f" ({claras} descartadas por serem claras)" if args.so_noite else ""))
     print("caixas sugeridas:", ", ".join(f"{k}={v}" for k, v in contagem.items()))
     print("Próximo passo: python scripts/subir_roboflow.py --criar  (e revise TODAS as caixas)")
     return 0

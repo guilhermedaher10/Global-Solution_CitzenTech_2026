@@ -9,7 +9,7 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
-VERSAO_CONTRATO = "1.2"   # 1.1: robô (ultrassônico, alertas) e fusão; 1.2: orientação do GenAI
+VERSAO_CONTRATO = "1.4"   # 1.1 robô/fusão · 1.2 GenAI · 1.3 breu/endereço/relato · 1.4 análise de cena
 
 
 class Origem(str, Enum):
@@ -44,6 +44,8 @@ class TipoChamado(str, Enum):
     instalacao_iluminacao = "instalacao_iluminacao"   # trecho escuro sem poste
     poda_ou_obstrucao = "poda_ou_obstrucao"           # poste aceso, mas a luz não chega ao chão
     buraco = "buraco"                                 # buraco na via
+    trecho_sem_luz = "trecho_sem_luz"                 # breu: poste apagado invisível no escuro ou inexistente
+    falta_de_energia = "falta_de_energia"             # possível apagão na região: concessionária, não prefeitura
 
 
 class Confirmacao(str, Enum):
@@ -63,6 +65,7 @@ class Localizacao(BaseModel):
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
     fonte: str = Field(description="'informada' (app/robô) ou 'exif' (GPS da foto)")
+    endereco: str | None = Field(default=None, max_length=200, description="Endereço legível, se informado")
 
 
 class Deteccao(BaseModel):
@@ -125,6 +128,25 @@ class Orientacao(BaseModel):
     motivo: str | None = Field(default=None, description="Por que não há resposta (nao_consta/indisponivel)")
 
 
+class NivelLuz(str, Enum):
+    iluminada = "iluminada"
+    pouca_iluminacao = "pouca_iluminacao"
+    muito_escura = "muito_escura"
+    breu = "breu"
+
+
+class Cena(BaseModel):
+    """A região está no escuro? Medida na foto inteira, não só nos postes (visao/cena.py)."""
+    indice_escuridao: int = Field(ge=0, le=100, description="0 = bem iluminada, 100 = breu")
+    nivel: NivelLuz
+    luz_no_chao: float = Field(description="Brilho médio do terço de baixo (onde se anda), 0-255")
+    area_iluminada: float = Field(ge=0, le=1, description="Fração da imagem com luz útil")
+    fontes_de_luz: int = Field(ge=0, description="Pontos de luz visíveis: postes, janelas, faróis, letreiros")
+    possivel_apagao: bool = Field(description="Escuro e sem nenhuma fonte de luz: possível falta de energia")
+    grade_luz: list[list[int]] = Field(description="Brilho médio em 6x8 blocos (mapa de luz)")
+    motivos: list[str]
+
+
 class ModeloInfo(BaseModel):
     nome: str
     versao: str
@@ -141,6 +163,7 @@ class Analise(BaseModel):
     sensor_distancia_cm: float | None = None
     deteccoes: list[Deteccao]
     resumo: Resumo
+    cena: Cena | None = Field(default=None, description="Análise da região inteira (luz, fontes, apagão)")
     validacao: Validacao
     prioridade: Prioridade
     fusao: Fusao
@@ -159,6 +182,7 @@ class AlertaRobo(BaseModel):
     longitude: float = Field(ge=-180, le=180)
     sensor_lux: float | None = Field(default=None, ge=0, description="Leitura do LDR")
     sensor_distancia_cm: float | None = Field(default=None, ge=0, description="Leitura do ultrassônico")
+    endereco: str | None = Field(default=None, max_length=200)
     alerta: list[TipoAlerta] = Field(default_factory=list,
                                      description="O que disparou; vazio = a API deduz pelas leituras")
 
@@ -179,3 +203,16 @@ class RespostaAlerta(BaseModel):
     prioridade_previa: Prioridade
     proximo_passo: str
     acao_robo: AcaoRobo
+
+
+class RelatoCidadao(BaseModel):
+    """Relato SEM foto (só o local): vira suspeita, como o alerta do robô, até uma foto confirmar."""
+    latitude: float = Field(ge=-90, le=90)
+    longitude: float = Field(ge=-180, le=180)
+    endereco: str | None = Field(default=None, max_length=200)
+    problema: list[TipoAlerta] = Field(default_factory=lambda: [TipoAlerta.escuro], min_length=1,
+                                       description="O que o cidadão viu: escuro e/ou buraco")
+
+    model_config = {"json_schema_extra": {"examples": [
+        {"latitude": -23.5614, "longitude": -46.6559, "endereco": "Av. Paulista, 1578 - Bela Vista, São Paulo",
+         "problema": ["escuro"]}]}}
