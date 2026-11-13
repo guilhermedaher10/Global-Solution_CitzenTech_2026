@@ -11,6 +11,9 @@ E as do produto, que mostram o MVP funcionando:
     visao_chamados_total{tipo, prioridade}         para qual setor da prefeitura e com que urgência
     visao_alertas_robo_total{status, acao}         alertas do robô do Maker Lab
     visao_modelo_carregado                          1/0 (alerta "ModeloNaoCarregado")
+    visao_videos_total{abriu_chamado}              vídeos gravados ao vivo e analisados
+    visao_central_status_total{status}             mudanças de status feitas na central
+    visao_central_falhas_total                     chamado analisado que NÃO chegou à central
 
 A rota vai como o MOLDE (/v1/analisar), nunca a URL crua: evita explosão de séries e não
 registra nada do cidadão (LGPD). Nenhuma métrica tem localização, imagem ou identificador.
@@ -31,6 +34,9 @@ ANALISES = Counter("visao_analises_total", "Fotos analisadas", ["origem", "foto_
 CHAMADOS = Counter("visao_chamados_total", "Chamados abertos", ["tipo", "prioridade"])
 ALERTAS_ROBO = Counter("visao_alertas_robo_total", "Alertas recebidos do robô", ["status", "acao"])
 RELATOS = Counter("visao_relatos_total", "Relatos de cidadãos sem foto", ["status"])
+VIDEOS = Counter("visao_videos_total", "Vídeos ao vivo analisados", ["abriu_chamado"])
+CENTRAL_STATUS = Counter("visao_central_status_total", "Mudanças de status na central", ["status"])
+CENTRAL_FALHAS = Counter("visao_central_falhas_total", "Chamados que não foram gravados na central")
 MODELO_CARREGADO = Gauge("visao_modelo_carregado", "1 se o modelo YOLO está carregado")
 
 ROTAS_IGNORADAS = {"/metrics"}   # o próprio Prometheus não entra na latência/tráfego do produto
@@ -72,6 +78,18 @@ def registrar_alerta(resposta) -> None:
 
 def registrar_relato(resposta) -> None:
     RELATOS.labels(resposta.status).inc()
+
+
+def registrar_video(analise) -> None:
+    VIDEOS.labels(str(analise.validacao.abrir_chamado).lower()).inc()
+
+
+def registrar_status(status: str) -> None:
+    CENTRAL_STATUS.labels(status).inc()
+
+
+def registrar_falha_central() -> None:
+    CENTRAL_FALHAS.inc()
 
 
 def exportar() -> tuple[bytes, str]:

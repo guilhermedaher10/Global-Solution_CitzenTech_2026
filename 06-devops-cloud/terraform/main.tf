@@ -6,6 +6,7 @@
 #   ├── Identidade gerenciada    "crachá" do container para puxar a imagem (AcrPull)
 #   ├── Container Apps Env       ambiente serverless (WorkloadProfiles/Consumption, via azapi), sem VM nem porta de admin
 #   ├── Container App "visao"    API da Visão, HTTPS público, escala 0..N
+#   ├── Storage "central"        tabela "chamados" da central (o container entra pela identidade, sem chave)
 #   └── Orçamento + alertas      e-mail em 50/80/100% do valor mensal
 #
 # Divisão de responsabilidade: o Terraform cria e mantém a INFRA. A VERSÃO da imagem em produção
@@ -184,6 +185,50 @@ resource "azurerm_container_app" "visao" {
   }
 
   depends_on = [azurerm_role_assignment.visao_puxa_imagem]
+}
+
+# ---------------------------------------------------------------- central de chamados
+# Os chamados (nunca foto nem vídeo) precisam sobreviver quando o container dorme (escala a zero) e valer
+# para todos os aparelhos: ficam numa Azure Table. Sem chave de acesso: a conta só aceita login Entra ID,
+# e o container entra com a identidade gerenciada (papel "Storage Table Data Contributor", só nesta conta).
+# Rede pública liberada de propósito: o Container Apps Consumption não tem IP de saída fixo nem VNet aqui;
+# a proteção é a identidade (sem chave para vazar) + HTTPS/TLS 1.2.
+#trivy:ignore:AVD-AZU-0012
+resource "azurerm_storage_account" "central" {
+  name                            = "stcentral${local.sufixo}"
+  resource_group_name             = data.azurerm_resource_group.app.name
+  location                        = local.local
+  account_tier                    = "Standard"
+  account_replication_type        = "LRS" # dado de demonstração: a cópia mais barata basta
+  account_kind                    = "StorageV2"
+  min_tls_version                 = "TLS1_2"
+  https_traffic_only_enabled      = true
+  shared_access_key_enabled       = false # nada de chave: só Entra ID
+  default_to_oauth_authentication = true
+  allow_nested_items_to_be_public = false
+  public_network_access_enabled   = true
+  tags                            = var.tags
+
+  network_rules {
+    default_action = "Allow"
+    bypass         = ["AzureServices"]
+  }
+}
+
+# Tabela criada pelo plano de gerenciamento (azapi): o robô do pipeline não precisa de acesso aos dados
+resource "azapi_resource" "tabela_chamados" {
+  type      = "Microsoft.Storage/storageAccounts/tableServices/tables@2023-05-01"
+  name      = "chamados"
+  parent_id = "${azurerm_storage_account.central.id}/tableServices/default"
+  body      = {}
+}
+
+# Como o AcrPull: criado no apply feito pelo Owner (o robô do pipeline não concede papéis)
+resource "azurerm_role_assignment" "visao_escreve_central" {
+  scope                = azurerm_storage_account.central.id
+  role_definition_name = "Storage Table Data Contributor"
+  principal_id         = azurerm_user_assigned_identity.visao.principal_id
+  principal_type       = "ServicePrincipal"
 }
 
 # ---------------------------------------------------------------- custo

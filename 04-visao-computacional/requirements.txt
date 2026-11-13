@@ -11,5 +11,5 @@ PyYAML==6.0.3
 pillow==13.0.0; python_version >= "3.11"   # imagem Docker (3.11): 12.x tem CVEs críticas (Trivy)
 pillow==12.3.0; python_version < "3.11"    # venv local de treino (3.10), nunca vai para produção
 numpy==2.2.6
-lap==0.5.14
-prometheus-client==0.21.1      # GET /metrics (Prometheus/Grafana do 06-devops-cloud)                    # rastreamento ByteTrack no vídeo
+lap==0.5.14                    # rastreamento ByteTrack no vídeo
+prometheus-client==0.21.1      # GET /metrics (Prometheus/Grafana do 06-devops-cloud)
