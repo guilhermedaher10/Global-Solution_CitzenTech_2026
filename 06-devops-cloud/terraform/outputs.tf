@@ -21,6 +21,16 @@ output "container_app_nome" {
   value = azurerm_container_app.visao.name
 }
 
+output "central_tabela_url" {
+  description = "Tabela da central de chamados (variável CENTRAL_TABELA_URL do container)"
+  value       = "${azurerm_storage_account.central.primary_table_endpoint}${azapi_resource.tabela_chamados.name}"
+}
+
+output "identidade_client_id" {
+  description = "Client ID da identidade gerenciada do container (variável AZURE_CLIENT_ID)"
+  value       = azurerm_user_assigned_identity.visao.client_id
+}
+
 output "resource_group" {
   value = data.azurerm_resource_group.app.name
 }

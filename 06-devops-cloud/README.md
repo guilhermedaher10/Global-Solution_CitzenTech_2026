@@ -36,6 +36,8 @@ flowchart LR
     id[Identidade gerenciada] -- AcrPull --> acr
     ca -. usa .-> id
     ca --> log[(Log Analytics)]
+    id -- Table Data Contributor --> tab[(Storage · tabela chamados<br/>sem chave)]
+    ca -- central de chamados --> tab
     bud[Orçamento + alertas]
   end
   dep -- push da imagem --> acr
@@ -72,6 +74,7 @@ nunca volta a produção para uma versão antiga.
 | Imagem | `python:3.11-slim`, pacotes do SO atualizados no build, **usuário sem privilégios** (uid 10001), sem segredo, healthcheck |
 | Acesso à nuvem | **OIDC**: o GitHub prova quem é a cada execução; nenhuma senha guardada. A identidade do pipeline tem **Contributor só no grupo da aplicação** e não pode conceder permissões |
 | Registro de imagens | ACR **privado**, sem usuário admin; o container puxa a imagem com **identidade gerenciada** (AcrPull) |
+| Central de chamados | Azure Table numa Storage **sem chave compartilhada**; o container escreve com a **identidade gerenciada** (papel só nesta conta). Guarda só tipo, prioridade, local e status: **nunca foto nem vídeo** |
 | State do Terraform | Storage **sem chave compartilhada** (só login Entra ID), TLS 1.2, versionado, fora do repositório |
 | Execução | HTTPS obrigatório; `/metrics` protegido por token; no compose: `read_only`, `cap_drop: ALL`, `no-new-privileges` |
 | Custo | escala a zero, teto de réplicas, cota diária de logs, orçamento com alertas ([custo](docs/custo.md)) |
@@ -115,10 +118,11 @@ az login
 cd terraform
 copy terraform.tfvars.example terraform.tfvars                              # seu e-mail para alertas de custo
 terraform init -backend-config="resource_group_name=rg-ruasescuras-tfstate" -backend-config="storage_account_name=<saída do bootstrap>"
-terraform apply                                                             # 1º apply: cria o papel AcrPull
+terraform apply                                                             # 1º apply: cria os papéis AcrPull e Table Data Contributor
 ```
 No GitHub (**Settings → Secrets and variables → Actions**), cadastre as saídas do bootstrap: `AZURE_CLIENT_ID`,
-`AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`, `TFSTATE_RG`, `TFSTATE_STORAGE`, além de `ALERTA_EMAIL` e `METRICS_TOKEN`.
+`AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`, `TFSTATE_RG`, `TFSTATE_STORAGE`, além de `ALERTA_EMAIL` e `METRICS_TOKEN`
+(opcional: `CENTRAL_TOKEN`, que libera zerar a central antes de uma demonstração).
 Daí em diante, **todo push na `main` publica sozinho**.
 
 ### 3. Monitorar a nuvem pelo Grafana local

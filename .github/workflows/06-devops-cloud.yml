@@ -119,6 +119,8 @@ jobs:
       acr: ${{ steps.saida.outputs.acr }}
       app: ${{ steps.saida.outputs.app }}
       url: ${{ steps.saida.outputs.url }}
+      tabela: ${{ steps.saida.outputs.tabela }}
+      identidade: ${{ steps.saida.outputs.identidade }}
     defaults:
       run:
         working-directory: ${{ env.TF_DIR }}
@@ -149,6 +151,8 @@ jobs:
           echo "acr=$(terraform output -raw acr_nome)" >> "$GITHUB_OUTPUT"
           echo "app=$(terraform output -raw container_app_nome)" >> "$GITHUB_OUTPUT"
           echo "url=$(terraform output -raw url_visao)" >> "$GITHUB_OUTPUT"
+          echo "tabela=$(terraform output -raw central_tabela_url)" >> "$GITHUB_OUTPUT"
+          echo "identidade=$(terraform output -raw identidade_client_id)" >> "$GITHUB_OUTPUT"
 
   # ------------------------------------------------------------------ 5. deploy
   deploy:
@@ -181,20 +185,31 @@ jobs:
           ACR: ${{ needs.terraform.outputs.acr }}
           APP: ${{ needs.terraform.outputs.app }}
           TAG: ${{ needs.build.outputs.tag }}
+          TABELA: ${{ needs.terraform.outputs.tabela }}
+          IDENTIDADE: ${{ needs.terraform.outputs.identidade }}
           METRICS_TOKEN: ${{ secrets.METRICS_TOKEN }}
+          CENTRAL_TOKEN: ${{ secrets.CENTRAL_TOKEN }}
         run: |
-          # o token do /metrics vira um SEGREDO do Container App (não aparece na config nem nos logs)
-          az containerapp secret set -n "$APP" -g rg-ruasescuras \
-            --secrets metrics-token="$METRICS_TOKEN" -o none
+          # tokens viram SEGREDOS do Container App (não aparecem na config nem nos logs)
+          segredos=(metrics-token="$METRICS_TOKEN")
+          variaveis=(MODELO_VERSAO="$TAG" METRICS_TOKEN=secretref:metrics-token
+                     CENTRAL_TABELA_URL="$TABELA" AZURE_CLIENT_ID="$IDENTIDADE")
+          # opcional: libera "limpar a central" (POST /v1/central/limpar) antes de gravar a demonstração
+          if [ -n "$CENTRAL_TOKEN" ]; then
+            segredos+=(central-token="$CENTRAL_TOKEN"); variaveis+=(CENTRAL_TOKEN=secretref:central-token)
+          fi
+          az containerapp secret set -n "$APP" -g rg-ruasescuras --secrets "${segredos[@]}" -o none
           az containerapp update -n "$APP" -g rg-ruasescuras \
-            --image "$ACR.azurecr.io/$IMAGEM:$TAG" \
-            --set-env-vars MODELO_VERSAO="$TAG" METRICS_TOKEN=secretref:metrics-token -o none
+            --image "$ACR.azurecr.io/$IMAGEM:$TAG" --set-env-vars "${variaveis[@]}" -o none
       - name: Smoke test (/saude responde 200)
         env:
           URL: ${{ needs.terraform.outputs.url }}
         run: |
           for i in $(seq 1 30); do
-            if curl -fsS "$URL/saude"; then echo; echo "no ar: $URL"; exit 0; fi
+            if curl -fsS "$URL/saude"; then
+              echo; curl -fsS "$URL/v1/chamados?limite=1" > /dev/null && echo "central respondendo"
+              echo "no ar: $URL"; exit 0
+            fi
             sleep 10
           done
           echo "::error::$URL/saude não respondeu em 5 min"; exit 1
