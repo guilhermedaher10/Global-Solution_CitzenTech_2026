@@ -71,11 +71,12 @@ def main():
     a = ap.parse_args()
     from ultralytics import YOLO
     clf = YOLO(a.modelo)
+    det = YOLO("models/best.pt")   # veto do detector: poste aceso na foto = a rede tem energia
     saida = Path(a.saida)
     saida.mkdir(parents=True, exist_ok=True)
     resultado, erros = {}, []
     for nome, pasta in [("test", Path("data/cena/dataset/test")), ("teste_equipe", Path("data/cena/teste_equipe"))]:
-        verdade, pr, pc, pf = [], [], [], []
+        verdade, pr, pc, pf, pd = [], [], [], [], []
         for classe in CLASSES:
             for p in sorted((pasta / classe).glob("*")):
                 img = cv2.imdecode(np.fromfile(str(p), np.uint8), cv2.IMREAD_COLOR)
@@ -86,12 +87,14 @@ def main():
                 pr.append(regra(cena))
                 pc.append(max(probs, key=probs.get))
                 pf.append(fundir_cena(cena, probs).classe)
-                if pf[-1] != classe:
-                    erros.append({"conjunto": nome, "arquivo": p.name, "verdade": classe, "fusao": pf[-1],
+                acesos = sum(det.names[int(k)] == "poste_aceso" for k in det.predict(img, verbose=False, conf=0.35)[0].boxes.cls)
+                pd.append("trecho_escuro" if pf[-1] == "apagao" and acesos > 0 else pf[-1])
+                if pd[-1] != classe:
+                    erros.append({"conjunto": nome, "arquivo": p.name, "verdade": classe, "fusao": pd[-1],
                                   "regra": pr[-1], "classificador": pc[-1]})
         resultado[nome] = {k: metricas(verdade, v) for k, v in
-                           [("regras", pr), ("classificador", pc), ("fusao", pf)]}
-        for k in ("regras", "classificador", "fusao"):
+                           [("regras", pr), ("classificador", pc), ("fusao", pf), ("fusao_detector", pd)]}
+        for k in ("regras", "classificador", "fusao", "fusao_detector"):
             desenhar(resultado[nome][k]["matriz"], f"{nome} - {k} (acuracia {resultado[nome][k]['acuracia']:.0%})",
                      saida / f"matriz_{nome}_{k}.png")
     (saida / "avaliacao.json").write_text(json.dumps({"resultado": resultado, "erros_fusao": erros},

@@ -81,3 +81,16 @@ def test_escuro_de_verdade_fica_explicado():
     a = analisar_bytes(jpeg_com_exif(cena(20), 0.25, 1.8, 3200, flash=1), DetectorFalso())
     assert a.cena.possivel_apagao and any("escuro de verdade" in m for m in a.cena.motivos)
     assert any("flash" in m for m in a.cena.motivos)
+
+
+def test_poste_aceso_veta_apagao(monkeypatch):
+    from conftest import poste
+
+    class Falso:
+        def ler(self, img, c):
+            return cc.fundir_cena(c, {"apagao": 0.9, "iluminada": 0.05, "trecho_escuro": 0.05})
+    monkeypatch.setattr("visao.pipeline.classificador_padrao", lambda: Falso())
+    a = analisar_imagem(cena(20), DetectorFalso([poste("poste_aceso"), poste("poste_apagado", bbox=(300, 50, 340, 300))]))
+    assert a.cena.classe == "trecho_escuro" and not a.cena.possivel_apagao
+    assert "falta_de_energia" not in [t.value for t in a.fusao.tipos_chamado]
+    assert any("rede tem energia" in m for m in a.cena.motivos)

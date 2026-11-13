@@ -111,6 +111,43 @@
             7
           ]
         ]
+      },
+      "fusao_detector": {
+        "acuracia": 0.814,
+        "por_classe": {
+          "iluminada": {
+            "precisao": 0.885,
+            "recall": 0.92,
+            "n": 25
+          },
+          "trecho_escuro": {
+            "precisao": 0.625,
+            "recall": 0.714,
+            "n": 7
+          },
+          "apagao": {
+            "precisao": 0.778,
+            "recall": 0.636,
+            "n": 11
+          }
+        },
+        "matriz": [
+          [
+            23,
+            2,
+            0
+          ],
+          [
+            0,
+            5,
+            2
+          ],
+          [
+            3,
+            1,
+            7
+          ]
+        ]
       }
     },
     "teste_equipe": {
@@ -224,6 +261,43 @@
             6
           ]
         ]
+      },
+      "fusao_detector": {
+        "acuracia": 0.474,
+        "por_classe": {
+          "iluminada": {
+            "precisao": 0.8,
+            "recall": 0.667,
+            "n": 6
+          },
+          "trecho_escuro": {
+            "precisao": 0.667,
+            "recall": 0.333,
+            "n": 24
+          },
+          "apagao": {
+            "precisao": 0.286,
+            "recall": 0.75,
+            "n": 8
+          }
+        },
+        "matriz": [
+          [
+            4,
+            2,
+            0
+          ],
+          [
+            1,
+            8,
+            15
+          ],
+          [
+            0,
+            2,
+            6
+          ]
+        ]
       }
     }
   },
@@ -240,7 +314,7 @@
       "conjunto": "test",
       "arquivo": "b9fbdef6c766fe7e.jpg",
       "verdade": "iluminada",
-      "fusao": "apagao",
+      "fusao": "trecho_escuro",
       "regra": "iluminada",
       "classificador": "apagao"
     },
@@ -311,14 +385,6 @@
     {
       "conjunto": "teste_equipe",
       "arquivo": "0408914371582000.jpg",
-      "verdade": "trecho_escuro",
-      "fusao": "apagao",
-      "regra": "apagao",
-      "classificador": "apagao"
-    },
-    {
-      "conjunto": "teste_equipe",
-      "arquivo": "0a0919514766e1e8.jpg",
       "verdade": "trecho_escuro",
       "fusao": "apagao",
       "regra": "apagao",

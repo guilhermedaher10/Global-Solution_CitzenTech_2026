@@ -115,7 +115,7 @@ def main() -> int:
 
                 if n_quadro % 15 == 0:   # leitura da região (escuridão + classificador de cena), sem pesar no FPS
                     c = analisar_cena(frame)
-                    ler_classe(frame, c)
+                    ler_classe(frame, c, postes_acesos=sum(d.classe == CLASSE_ACESO for d in deteccoes))
                     regiao = (f"Regiao: {c.nivel.value.replace('_', ' ').upper()} ({c.indice_escuridao}/100)"
                               + (" | POSSIVEL APAGAO" if c.possivel_apagao else f" | {(c.classe or '').replace('_', ' ')}"))
                 n_quadro += 1

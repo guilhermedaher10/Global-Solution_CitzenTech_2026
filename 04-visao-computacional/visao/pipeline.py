@@ -52,7 +52,7 @@ def analisar_imagem(img: np.ndarray, detector: Detector, *, origem: Origem | str
     status = classificar_trecho(acesos, apagados, lum)
     sinais = ler_sensores(sensor_lux, sensor_distancia_cm, alerta)
     cena = analisar_cena(img)
-    ler_classe(img, cena)
+    ler_classe(img, cena, postes_acesos=acesos)
     ler_exposicao(cena, metadados)
     # sem poste visível, só uma região MUITO escura vale como evidência (ou breu); com fonte de luz
     # forte na cena (ex.: foto de um poste aceso contra o céu) não é "região no escuro"
@@ -98,9 +98,13 @@ def analisar_imagem(img: np.ndarray, detector: Detector, *, origem: Origem | str
     )
 
 
-def ler_classe(img: np.ndarray, cena) -> None:
-    """Classificador de cena + fusão: a leitura final decide o possível apagão (falta de energia)."""
+def ler_classe(img: np.ndarray, cena, postes_acesos: int = 0) -> None:
+    """Classificador de cena + fusão: a leitura final decide o possível apagão (falta de energia).
+    Poste aceso na foto = a rede tem energia: nunca é apagão (veto do detector)."""
     leitura = classificador_padrao().ler(img, cena)
+    if leitura.classe == "apagao" and postes_acesos > 0:
+        leitura.classe, leitura.fonte = "trecho_escuro", "regras+classificador+detector"
+        leitura.motivo = f"{postes_acesos} poste(s) aceso(s) na foto: a rede tem energia, então é falha local, não apagão"
     pelas_regras = cena.possivel_apagao
     cena.classe, cena.confianca_classe = leitura.classe, round(leitura.confianca, 3)
     cena.fonte_classe, cena.probabilidades = leitura.fonte, leitura.probabilidades or None
