@@ -62,10 +62,10 @@ Nós não consertamos o poste: somos a **ponte entre o cidadão e quem pode acen
 
 | Nome completo | RM | Disciplina |
 |---|---|---|
-| Guilherme Gonçalves Calil Daher | 98611 | Visão Computacional · DevOps e Cloud |
+| Guilherme Daher | 98611 | Visão Computacional · DevOps e Cloud |
 | Gabriel Freitas | 550187 | Generative AI |
 | Heitor Nobre | 551539 | Maker Lab |
-| Vinicius Santos Yamashita de Farias | 550908 | RPA |
+| Vinicius Yamashita | 550908 | RPA |
 | Lucca Alexandre | 99700 | Big Data · Negócio e Pitch |
 
 > ⚠️ Vários professores tiram nota se faltar **nome completo** ou RM. Cada um confira e complete o seu nome.
