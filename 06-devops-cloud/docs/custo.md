@@ -13,6 +13,7 @@
 | Container Registry Basic | por dia | ~US$ 0,167/dia (~US$ 5/mês) |
 | Log Analytics | por GB ingerido | primeiros 5 GB/mês grátis; teto configurado de 0,5 GB/dia |
 | Storage do state | por GB e operação | centavos (o state tem poucos KB) |
+| Storage da central (Table, LRS) | por GB e por 10 mil transações | ~US$ 0,045/GB·mês e ~US$ 0,00036/10 mil operações: centavos (cada chamado tem ~2 KB) |
 | Orçamento, identidade, OIDC | — | grátis |
 
 ## Cenários (Visão com 1 vCPU e 2 GiB por réplica)
