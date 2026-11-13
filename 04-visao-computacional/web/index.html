@@ -76,7 +76,7 @@
           reclama, sem prova nem prioridade. O Vésper muda o começo dessa história.</p>
         <ol class="jornada">
           <li><span class="num">1</span><h3>Descobrir</h3><p>O cidadão fotografa, relata o endereço ou o robô detecta com sensores de luz e distância.</p></li>
-          <li><span class="num">2</span><h3>Confirmar</h3><p>Visão computacional encontra postes acesos e apagados, entende o breu e valida a evidência.</p></li>
+          <li><span class="num">2</span><h3>Confirmar</h3><p>Visão computacional encontra postes acesos e apagados e lê a cena inteira: rua escura, breu ou apagão na região.</p></li>
           <li><span class="num">3</span><h3>Priorizar</h3><p>Regras auditáveis somam pontos e definem o setor: conserto, inspeção, poda ou buraco.</p></li>
           <li><span class="num">4</span><h3>Orientar</h3><p>IA generativa local informa o prazo oficial e cita a fonte.</p></li>
           <li><span class="num">5</span><h3>Encaminhar</h3><p>Robô de RPA registra no sistema da prefeitura; o cidadão acompanha cada etapa.</p></li>
@@ -185,9 +185,11 @@
           <div class="resultado-imagem" id="resultado-imagem">
             <canvas id="canvas-resultado" aria-label="Foto analisada com os postes marcados"></canvas>
             <div class="legenda"><span class="tag aceso">aceso</span><span class="tag apagado">apagado</span></div>
+            <button class="botao mapa-luz" id="ver-mapa-luz" type="button" aria-pressed="false">🌗 Mapa de luz</button>
           </div>
           <div class="resultado-corpo">
             <div class="veredito" id="veredito"></div>
+            <div class="cena" id="cena" hidden></div>
             <div class="prioridade" id="bloco-prioridade">
               <div class="prioridade-topo"><span>Prioridade</span><strong id="prioridade-nivel"></strong></div>
               <div class="barra"><span id="prioridade-barra"></span></div>

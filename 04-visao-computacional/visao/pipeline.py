@@ -14,6 +14,7 @@ import numpy as np
 from . import imagem as im
 from .config import CLASSE_ACESO, CLASSE_APAGADO, CLASSE_BURACO, regras
 from .detector import Detector
+from .cena import analisar_cena
 from .fusao import fundir, ler_sensores
 from .privacidade import BorradorRostos, ler_metadados
 from .regras import classificar_trecho, priorizar, validar
@@ -49,15 +50,20 @@ def analisar_imagem(img: np.ndarray, detector: Detector, *, origem: Origem | str
     lum = im.luminosidade_media(img)
     status = classificar_trecho(acesos, apagados, lum)
     sinais = ler_sensores(sensor_lux, sensor_distancia_cm, alerta)
+    cena = analisar_cena(img)
+    # sem poste visível, só uma região MUITO escura vale como evidência (ou breu); com fonte de luz
+    # forte na cena (ex.: foto de um poste aceso contra o céu) não é "região no escuro"
+    cena_escura = cena.nivel.value == "breu" or (cena.nivel.value == "muito_escura" and cena.fontes_de_luz == 0)
 
     validacao = validar(origem=origem.value, acesos=acesos, apagados=apagados, luminosidade=lum,
                         nitidez=im.nitidez(img), lado_menor=im.lado_menor(img), status=status,
-                        sensor_lux=sensor_lux, buracos=buracos, sensor_escuro=sinais.escuro)
+                        sensor_lux=sensor_lux, buracos=buracos, sensor_escuro=sinais.escuro,
+                        cena_escura=cena_escura)
     fusao = fundir(sinais, acesos=acesos, apagados=apagados, buracos=buracos, status=status,
-                   foto_valida=validacao.foto_valida, luminosidade=lum)
+                   foto_valida=validacao.foto_valida, luminosidade=lum, cena=cena)
     prioridade = priorizar(apagados=apagados, status=status, sensor_lux=sensor_lux,
                            abrir_chamado=validacao.abrir_chamado, buracos=buracos,
-                           sensor_escuro=sinais.escuro, fusao=fusao)
+                           sensor_escuro=sinais.escuro, fusao=fusao, cena=cena)
 
     borrador = borrador or BorradorRostos()
     anonimizada, n_rostos = borrador.borrar(img)
@@ -79,6 +85,7 @@ def analisar_imagem(img: np.ndarray, detector: Detector, *, origem: Origem | str
         deteccoes=deteccoes,
         resumo=Resumo(postes_acesos=acesos, postes_apagados=apagados,
                       buracos=buracos, luminosidade_media=lum, status_trecho=status),
+        cena=cena,
         validacao=validacao,
         prioridade=prioridade,
         fusao=fusao,

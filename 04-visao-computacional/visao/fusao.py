@@ -59,7 +59,8 @@ def ler_sensores(sensor_lux: float | None = None, sensor_distancia_cm: float | N
 
 
 def fundir(sinais: Sinais, *, acesos: int, apagados: int, buracos: int,
-           status: StatusTrecho, foto_valida: bool = True, luminosidade: float | None = None) -> Fusao:
+           status: StatusTrecho, foto_valida: bool = True, luminosidade: float | None = None,
+           cena=None) -> Fusao:
     if not foto_valida:
         # foto ruim não confirma nem desmente o sensor: a suspeita do robô continua aberta
         return Fusao(alertas_sensor=sinais.alertas, tipos_chamado=[],
@@ -75,6 +76,10 @@ def fundir(sinais: Sinais, *, acesos: int, apagados: int, buracos: int,
         tipos.append(TipoChamado.conserto_poste)
         motivos.append("poste apagado na foto: conserto")
     breu = luminosidade is not None and luminosidade < regras()["luminosidade"]["limiar_breu"]
+    breu = breu or (cena is not None and cena.nivel.value in ("breu", "muito_escura"))
+    if cena is not None and cena.possivel_apagao:
+        tipos.append(TipoChamado.falta_de_energia)
+        motivos.append("possível apagão: nenhuma fonte de luz na região; acionar também a concessionária de energia")
     if sem_poste and breu:
         tipos.append(TipoChamado.trecho_sem_luz)
         motivos.append("breu sem poste visível: poste apagado no escuro ou inexistente; inspeção no local")

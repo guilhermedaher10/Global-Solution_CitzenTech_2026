@@ -202,6 +202,17 @@ h3 { font-size: 1.05rem; font-weight: 700; }
 .veredito.abre { background: rgba(255,122,107,.08); border: 1px solid rgba(255,122,107,.35); }
 .veredito.ok { background: rgba(143,210,167,.07); border: 1px solid var(--borda-forte); }
 .veredito.invalida, .veredito.suspeita { background: rgba(242,210,122,.07); border: 1px solid rgba(242,210,122,.35); }
+.cena { display: grid; gap: 8px; padding: 14px; border-radius: 14px; border: 1px solid var(--borda); background: rgba(5, 15, 9, .55); }
+.cena-topo { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: .9rem; color: var(--texto-2); }
+.cena-topo strong { color: var(--texto); }
+/* a barra é a LUZ que sobra na cena (100 - índice de escuridão): quase vazia = breu */
+.medidor { height: 8px; border-radius: 999px; overflow: hidden; background: #04110a; border: 1px solid var(--borda); }
+.medidor span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #ffd58a, var(--luz)); box-shadow: 0 0 10px rgba(255, 200, 107, .6); }
+.cena-dados { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .82rem; color: var(--texto-2); }
+.cena .apagao { margin: 4px 0 0; padding: 10px 12px; border-radius: 10px; font-size: .86rem; background: rgba(242, 210, 122, .08); border: 1px solid rgba(242, 210, 122, .4); color: var(--texto); }
+.cena[data-nivel="breu"] .cena-topo strong, .cena[data-nivel="muito_escura"] .cena-topo strong { color: var(--cuidado); }
+.mapa-luz { position: absolute; right: 12px; top: 12px; padding: 7px 12px; font-size: .82rem; background: rgba(5, 15, 9, .8); backdrop-filter: blur(6px); }
+.mapa-luz[aria-pressed="true"] { background: var(--elfica); color: var(--abismo); }
 .prioridade-topo { display: flex; justify-content: space-between; font-size: .9rem; color: var(--texto-2); }
 .prioridade-topo strong { color: var(--texto); letter-spacing: .5px; }
 .barra { height: 10px; border-radius: 999px; background: rgba(10,30,19,.8); overflow: hidden; margin: 8px 0; }
