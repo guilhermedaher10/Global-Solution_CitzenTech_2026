@@ -77,7 +77,7 @@ def test_pipeline_buraco_no_escuro_e_prioridade_maxima():
 def test_cidadao_sem_poste_vale_se_o_robo_marcou_escuro():
     a = analisar_bytes(jpeg(cena(30)), DetectorFalso([]), origem="cidadao", alerta=["escuro"])
     assert a.validacao.foto_valida and a.validacao.abrir_chamado
-    assert TipoChamado.instalacao_iluminacao in a.fusao.tipos_chamado
+    assert TipoChamado.trecho_sem_luz in a.fusao.tipos_chamado        # região muito escura sem poste
 
 
 # ---------------------------------------------------------------- alerta só de sensores

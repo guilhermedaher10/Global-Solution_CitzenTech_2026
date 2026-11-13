@@ -10,8 +10,9 @@ from visao.schemas import TipoChamado
 def test_breu_sem_poste_visivel_vira_evidencia_de_trecho_sem_luz():
     a = analisar_bytes(jpeg(cena(12)), DetectorFalso([]), origem="cidadao")
     assert a.validacao.foto_valida and a.validacao.abrir_chamado
-    assert a.fusao.tipos_chamado == [TipoChamado.trecho_sem_luz]
-    assert any("breu" in m for m in a.validacao.motivos)
+    assert TipoChamado.trecho_sem_luz in a.fusao.tipos_chamado
+    assert TipoChamado.falta_de_energia in a.fusao.tipos_chamado      # nenhuma fonte de luz: possível apagão
+    assert any("muito escura sem poste" in m for m in a.validacao.motivos)
 
 
 def test_noite_comum_sem_poste_continua_pedindo_para_enquadrar():

@@ -14,6 +14,7 @@ const TIPOS = {
   poda_ou_obstrucao: "Poda / obstrução",
   buraco: "Buraco na via",
   trecho_sem_luz: "Trecho sem luz (inspeção)",
+  falta_de_energia: "Falta de energia (concessionária)",
   suspeita_escuro: "Suspeita: rua escura",
   suspeita_buraco: "Suspeita: buraco",
 };
@@ -30,7 +31,8 @@ const ORIGENS = { cidadao: "📷 Foto", relato: "📍 Relato", robo: "🤖 Robô
 
 const $ = (s, raiz = document) => raiz.querySelector(s);
 const $$ = (s, raiz = document) => [...raiz.querySelectorAll(s)];
-const estado = { modo: "foto", arquivo: null, local: null, sensores: null, mapas: {}, marcadorLocal: null, camadaCentral: null };
+const estado = { modo: "foto", arquivo: null, local: null, sensores: null, mapas: {}, marcadorLocal: null, camadaCentral: null, analise: null, mapaLuz: false };
+const NIVEIS_LUZ = { iluminada: "Iluminada", pouca_iluminacao: "Pouca iluminação", muito_escura: "Muito escura", breu: "Breu" };
 
 function el(tag, props = {}, ...filhos) {
   const n = document.createElement(tag);
@@ -316,10 +318,35 @@ $("#form-relato").addEventListener("submit", async (e) => {
   finally { botao.textContent = rotulo; atualizarBotaoEnviar(); }
 });
 
+/* Mapa de luz: a grade 6x8 da análise de cena pintada sobre a foto (breu = verde-noite, luz = âmbar). */
+function pintarMapaLuz(ctx, grade, w, h) {
+  const L = grade.length, C = grade[0].length, cw = w / C, ch = h / L;
+  const max = Math.max(30, ...grade.flat()); // relativo à própria foto: o bloco mais claro brilha
+  for (let i = 0; i < L; i++) for (let j = 0; j < C; j++) {
+    const v = grade[i][j] / max;
+    ctx.fillStyle = v < 0.4 ? `rgba(6, 26, 15, ${0.8 - v * 1.2})` : `rgba(255, 200, 107, ${0.18 + (v - 0.4) * 0.6})`;
+    ctx.fillRect(j * cw, i * ch, Math.ceil(cw), Math.ceil(ch));
+    ctx.fillStyle = "rgba(231, 243, 236, .85)";
+    ctx.font = `600 ${Math.max(11, Math.round(ch / 6))}px Inter, system-ui, sans-serif`;
+    ctx.fillText(String(grade[i][j]), j * cw + 6, i * ch + Math.max(14, ch / 5));
+  }
+  ctx.strokeStyle = "rgba(143, 210, 167, .25)"; ctx.lineWidth = 1;
+  for (let j = 1; j < C; j++) { ctx.beginPath(); ctx.moveTo(j * cw, 0); ctx.lineTo(j * cw, h); ctx.stroke(); }
+  for (let i = 1; i < L; i++) { ctx.beginPath(); ctx.moveTo(0, i * ch); ctx.lineTo(w, i * ch); ctx.stroke(); }
+}
+$("#ver-mapa-luz").addEventListener("click", () => {
+  estado.mapaLuz = !estado.mapaLuz;
+  $("#ver-mapa-luz").setAttribute("aria-pressed", String(estado.mapaLuz));
+  if (estado.analise) desenhar(estado.analise);
+});
+
 function desenhar(a) {
+  estado.analise = a;
+  $("#ver-mapa-luz").hidden = !a.cena;
   const canvas = $("#canvas-resultado"), ctx = canvas.getContext("2d"), img = new Image();
   img.onload = () => {
     canvas.width = img.naturalWidth; canvas.height = img.naturalHeight; ctx.drawImage(img, 0, 0);
+    if (estado.mapaLuz && a.cena) pintarMapaLuz(ctx, a.cena.grade_luz, img.naturalWidth, img.naturalHeight);
     const e = Math.max(3, Math.round(Math.max(img.naturalWidth, img.naturalHeight) / 260));
     ctx.font = `700 ${e * 6}px Inter, system-ui, sans-serif`;
     for (const d of a.deteccoes) {
@@ -357,6 +384,7 @@ function mostrarAnalise(a) {
   else if (!a.validacao.foto_valida) veredito("invalida", "📷", "A foto não serviu de prova", a.validacao.motivos[0] || "tente outra foto");
   else veredito("ok", "✨", "Rua iluminada", "Nenhuma falha encontrada: nenhum chamado necessário");
   prioridade(a.prioridade);
+  mostrarCena(a.cena);
   $("#info-trecho").textContent = TRECHOS[r.status_trecho] || r.status_trecho;
   $("#info-postes").textContent = `${r.postes_acesos} aceso${r.postes_acesos === 1 ? "" : "s"} · ${r.postes_apagados} apagado${r.postes_apagados === 1 ? "" : "s"}`;
   $("#info-setor").textContent = tipos.length ? nomeTipos(tipos) : "—";
@@ -378,8 +406,25 @@ function mostrarAnalise(a) {
   $("#resultado").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+function mostrarCena(c) {
+  const box = $("#cena");
+  box.hidden = !c;
+  if (!c) return;
+  box.dataset.nivel = c.nivel;
+  box.replaceChildren(...[
+    el("div", { class: "cena-topo" }, el("span", {}, "Leitura da região"), el("strong", {}, `${NIVEIS_LUZ[c.nivel] || c.nivel} · escuridão ${c.indice_escuridao}/100`)),
+    el("div", { class: "medidor", title: "luz que sobra na cena" }, el("span", { style: `width:${Math.max(2, 100 - c.indice_escuridao)}%` })),
+    el("div", { class: "cena-dados" },
+      el("span", {}, `💡 ${c.fontes_de_luz} fonte${c.fontes_de_luz === 1 ? "" : "s"} de luz`),
+      el("span", {}, `🚶 luz no chão ${Math.round(c.luz_no_chao)}/255`),
+      el("span", {}, `🗺️ ${Math.round(c.area_iluminada * 100)}% da cena iluminada`)),
+    c.possivel_apagao && el("p", { class: "apagao" }, el("strong", {}, "⚡ Possível apagão na região. "),
+      "Nenhuma fonte de luz na cena, nem janelas nem letreiros: além da prefeitura, acione a concessionária de energia (em São Paulo, a Enel)."),
+  ].filter(Boolean)); // sem apagão, o "false" do && não pode virar texto na tela
+}
+
 function mostrarSuspeita(r) {
-  $("#resultado").hidden = false; $("#resultado-imagem").hidden = true;
+  $("#resultado").hidden = false; $("#resultado-imagem").hidden = true; $("#cena").hidden = true;
   veredito("suspeita", "📍", "Relato registrado", r.proximo_passo);
   prioridade(r.prioridade_previa);
   $("#info-trecho").textContent = "A confirmar";

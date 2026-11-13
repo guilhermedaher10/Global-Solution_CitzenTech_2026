@@ -1,6 +1,6 @@
 # Integração: como os outros componentes usam a Visão
 
-A Visão expõe **uma API HTTP** e **um formato de JSON** (o contrato, versão `1.3`).
+A Visão expõe **uma API HTTP** e **um formato de JSON** (o contrato, versão `1.4`).
 Quem precisa saber se uma foto é evidência de rua escura chama a API. Ninguém precisa entender o YOLO.
 
 ```
@@ -61,7 +61,7 @@ if analise["validacao"]["abrir_chamado"]:
 
 ```json
 {
-  "versao_contrato": "1.3",
+  "versao_contrato": "1.4",
   "id_captura": "b58cccb5-ab16-43cb-8f35-180c00b2939d",
   "timestamp": "2026-11-09T22:12:45-03:00",
   "hora_captura": null,
@@ -134,6 +134,25 @@ if analise["validacao"]["abrir_chamado"]:
 > A classe `buraco` entra no modelo no próximo treino (dataset público de buracos). Até lá, buraco só do
 > ultrassônico fica como suspeita, que é o comportamento correto: não abrimos chamado sem prova.
 
+### Novidades da 1.4: análise de CENA (a região está no escuro?)
+Além dos postes, a foto inteira é lida (`visao/cena.py`), de forma explicável:
+
+```json
+"cena": {
+  "indice_escuridao": 98, "nivel": "breu", "luz_no_chao": 1.0, "area_iluminada": 0.01,
+  "fontes_de_luz": 0, "possivel_apagao": true,
+  "grade_luz": [[7, 7, 12, 15, 9, 8, 7, 7], "... 6 linhas x 8 colunas ..."],
+  "motivos": ["índice de escuridão 98/100 (breu)", "luz no chão 1/255, área iluminada 1%", "0 fonte(s) de luz visível(is)",
+              "nenhuma fonte de luz na cena (nem janelas, nem letreiros): possível falta de energia na região"]
+}
+```
+- `nivel`: `iluminada`, `pouca_iluminacao`, `muito_escura` ou `breu`.
+- `possivel_apagao`: escuro **e** nenhuma fonte de luz (nem janelas, nem letreiros). Gera o tipo de chamado
+  `falta_de_energia`: apagão é da **concessionária de energia**, não da iluminação pública.
+- Região muito escura ou breu soma pontos na prioridade; sem poste visível, vira evidência (`trecho_sem_luz`).
+- `grade_luz` alimenta o "mapa de luz" do front.
+- Validado em fotos reais: 39/40 ruas iluminadas à noite saíram `iluminada`, sem nenhum falso apagão.
+
 ### Novidades da 1.3
 - **Breu como evidência:** foto noturna nítida com quase nenhuma luz (brilho < `limiar_breu`) e sem poste visível é
   aceita: o poste apagado não aparece no escuro. Tipo de chamado `trecho_sem_luz` (equipe inspeciona no local).
@@ -193,7 +212,7 @@ carregado**. Se `alerta` vier vazio, a API deduz pelas leituras (`sensor_lux < 5
 Resposta (curta, para a placa ler):
 ```json
 {
-  "versao_contrato": "1.3", "recebido": true,
+  "versao_contrato": "1.4", "recebido": true,
   "id_alerta": "1f0c…", "timestamp": "2026-11-10T21:40:12-03:00",
   "status": "suspeita",
   "alertas": ["escuro", "buraco"],

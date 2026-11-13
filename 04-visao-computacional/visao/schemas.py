@@ -9,7 +9,7 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
-VERSAO_CONTRATO = "1.3"   # 1.1: robô e fusão; 1.2: orientação do GenAI; 1.3: breu, endereço, relato sem foto
+VERSAO_CONTRATO = "1.4"   # 1.1 robô/fusão · 1.2 GenAI · 1.3 breu/endereço/relato · 1.4 análise de cena
 
 
 class Origem(str, Enum):
@@ -45,6 +45,7 @@ class TipoChamado(str, Enum):
     poda_ou_obstrucao = "poda_ou_obstrucao"           # poste aceso, mas a luz não chega ao chão
     buraco = "buraco"                                 # buraco na via
     trecho_sem_luz = "trecho_sem_luz"                 # breu: poste apagado invisível no escuro ou inexistente
+    falta_de_energia = "falta_de_energia"             # possível apagão na região: concessionária, não prefeitura
 
 
 class Confirmacao(str, Enum):
@@ -127,6 +128,25 @@ class Orientacao(BaseModel):
     motivo: str | None = Field(default=None, description="Por que não há resposta (nao_consta/indisponivel)")
 
 
+class NivelLuz(str, Enum):
+    iluminada = "iluminada"
+    pouca_iluminacao = "pouca_iluminacao"
+    muito_escura = "muito_escura"
+    breu = "breu"
+
+
+class Cena(BaseModel):
+    """A região está no escuro? Medida na foto inteira, não só nos postes (visao/cena.py)."""
+    indice_escuridao: int = Field(ge=0, le=100, description="0 = bem iluminada, 100 = breu")
+    nivel: NivelLuz
+    luz_no_chao: float = Field(description="Brilho médio do terço de baixo (onde se anda), 0-255")
+    area_iluminada: float = Field(ge=0, le=1, description="Fração da imagem com luz útil")
+    fontes_de_luz: int = Field(ge=0, description="Pontos de luz visíveis: postes, janelas, faróis, letreiros")
+    possivel_apagao: bool = Field(description="Escuro e sem nenhuma fonte de luz: possível falta de energia")
+    grade_luz: list[list[int]] = Field(description="Brilho médio em 6x8 blocos (mapa de luz)")
+    motivos: list[str]
+
+
 class ModeloInfo(BaseModel):
     nome: str
     versao: str
@@ -143,6 +163,7 @@ class Analise(BaseModel):
     sensor_distancia_cm: float | None = None
     deteccoes: list[Deteccao]
     resumo: Resumo
+    cena: Cena | None = Field(default=None, description="Análise da região inteira (luz, fontes, apagão)")
     validacao: Validacao
     prioridade: Prioridade
     fusao: Fusao

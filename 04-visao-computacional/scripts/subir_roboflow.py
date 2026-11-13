@@ -23,6 +23,8 @@ def main() -> int:
     ap.add_argument("--criar", action="store_true", help="cria o projeto se ainda não existir")
     ap.add_argument("--pasta", default=str(DATA / "anotar_yolo"))
     ap.add_argument("--max", type=int, default=None)
+    ap.add_argument("--lote", default="web-pre-anotado", help="nome do lote (batch) no Roboflow")
+    ap.add_argument("--tag", default="web")
     args = ap.parse_args()
 
     carregar_env()
@@ -53,8 +55,8 @@ def main() -> int:
         try:
             projeto.single_upload(image_path=str(img),
                                   annotation_path=str(label) if label.exists() and label.stat().st_size else None,
-                                  annotation_labelmap=mapa, split="train", batch_name="web-pre-anotado",
-                                  tag_names=["web"], num_retry_uploads=2,
+                                  annotation_labelmap=mapa, split="train", batch_name=args.lote,
+                                  tag_names=[args.tag], num_retry_uploads=2,
                                   annotation_overwrite=True)
             ok += 1
         except Exception as e:
