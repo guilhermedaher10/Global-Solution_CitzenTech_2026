@@ -1,0 +1,4 @@
+# Opcional: rede de seguranca de LGPD (desfoque de rostos/placas na foto do chamado).
+# Sem isso o robo ainda remove EXIF/GPS da foto e registra um aviso no log.
+opencv-python-headless>=4.9
+numpy>=1.26

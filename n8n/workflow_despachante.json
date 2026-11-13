@@ -1,0 +1,85 @@
+{
+  "name": "Despachante - resumo da execucao",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "despachante-resumo",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0001-4000-8000-000000000001",
+      "name": "Webhook resumo",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "despachante-resumo"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.body.resumo.aguardando_confirmacao }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0002-4000-8000-000000000002",
+      "name": "Tem chamado aguardando o atendente?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "SEU_EMAIL@exemplo.com",
+        "subject": "=[Despachante] ATENCAO: {{ $json.body.resumo.aguardando_confirmacao }} chamado(s) aguardam o atendente",
+        "emailType": "text",
+        "message": "=Execucao {{ $json.body.execucao_id }} ({{ $json.body.data }})\n\nChamados aguardando confirmacao do atendente: {{ $json.body.itens_aguardando_confirmacao.join(', ') }}\nO robo so encaminha chamados com status confirmado.\n\nResumo: {{ $json.body.resumo.encaminhados }} encaminhados ({{ $json.body.resumo.alta }} alta, {{ $json.body.resumo.media }} media, {{ $json.body.resumo.baixa }} baixa), {{ $json.body.resumo.agrupados }} agrupados por proximidade, {{ $json.body.resumo.falhas_dados }} com falha de dados, {{ $json.body.resumo.erros }} erros.",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0003-4000-8000-000000000003",
+      "name": "Gmail - aguardando atendente",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [700, 200],
+      "credentials": { "gmailOAuth2": { "id": "CONFIGURAR", "name": "Gmail account" } }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "SEU_EMAIL@exemplo.com",
+        "subject": "=[Despachante] Execucao {{ $json.body.execucao_id }}: {{ $json.body.resumo.encaminhados }} encaminhados",
+        "emailType": "text",
+        "message": "=Execucao {{ $json.body.execucao_id }} ({{ $json.body.data }})\n\n{{ $json.body.resumo.encaminhados }} encaminhados ({{ $json.body.resumo.alta }} alta, {{ $json.body.resumo.media }} media, {{ $json.body.resumo.baixa }} baixa)\n{{ $json.body.resumo.agrupados }} agrupados por proximidade\n{{ $json.body.resumo.falhas_dados }} com falha de dados\n{{ $json.body.resumo.erros }} erros\n\nNenhum chamado aguardando o atendente.",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0004-4000-8000-000000000004",
+      "name": "Gmail - resumo",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [700, 400],
+      "credentials": { "gmailOAuth2": { "id": "CONFIGURAR", "name": "Gmail account" } }
+    }
+  ],
+  "connections": {
+    "Webhook resumo": {
+      "main": [[{ "node": "Tem chamado aguardando o atendente?", "type": "main", "index": 0 }]]
+    },
+    "Tem chamado aguardando o atendente?": {
+      "main": [
+        [{ "node": "Gmail - aguardando atendente", "type": "main", "index": 0 }],
+        [{ "node": "Gmail - resumo", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "tags": []
+}
