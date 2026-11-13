@@ -99,7 +99,7 @@ def agrupar(chamados: list[Chamado], referencia: str | None = None) -> list[Regi
                        else f"menos de {cfg['min_sinais_apagao']} sinais de apagão: tratar como falha de iluminação")
         protocolos = sorted(c.protocolo for c in g)
         regioes.append(Regiao(
-            id="REG-" + hashlib.sha1(",".join(protocolos).encode()).hexdigest()[:6].upper(),
+            id="REG-" + hashlib.sha256(",".join(protocolos).encode()).hexdigest()[:6].upper(),
             tipo=tipo, titulo=titulo, bairro=bairro, latitude=round(lat, 6), longitude=round(lon, 6),
             raio_m=raio, relatos=len(g), sinais_apagao=sinais, protocolos=protocolos,
             primeiro=min(c.ts for c in g), ultimo=max(c.ts for c in g),

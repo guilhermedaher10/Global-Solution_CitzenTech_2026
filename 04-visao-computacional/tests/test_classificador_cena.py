@@ -43,6 +43,7 @@ def test_sem_modelo_tudo_segue_pelas_regras():
 
 @pytest.mark.skipif(not MODELO.exists(), reason="models/cena.pt não incluído")
 def test_modelo_real_carrega_e_devolve_as_3_classes():
+    pytest.importorskip("ultralytics")   # o CI de testes não instala o PyTorch (fica leve)
     c = cc.ClassificadorCena(str(MODELO))
     p = c.probabilidades(cena(30))
     assert set(p) == {"iluminada", "trecho_escuro", "apagao"} and abs(sum(p.values()) - 1) < 0.01

@@ -77,7 +77,8 @@ def main():
             destino = saida["teste_equipe"] / classe
             split = "teste_equipe"
         else:
-            r = int(hashlib.md5(str(h).encode()).hexdigest(), 16) % 100
+            # MD5 aqui só sorteia o split de forma estável (não protege nada); trocar mudaria o split já avaliado
+            r = int(hashlib.md5(str(h).encode(), usedforsecurity=False).hexdigest(), 16) % 100  # nosemgrep: python.lang.security.insecure-hash-algorithms-md5.insecure-hash-algorithm-md5
             split = "train" if r < 70 else "val" if r < 85 else "test"
             destino = saida["dataset"] / split / classe
         destino.mkdir(parents=True, exist_ok=True)
