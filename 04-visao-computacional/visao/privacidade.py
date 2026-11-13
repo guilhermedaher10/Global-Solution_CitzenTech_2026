@@ -21,6 +21,7 @@ _TAG_EXIF_IFD = 0x8769
 _TAG_GPS_IFD = 0x8825
 _TAG_DATA_ORIGINAL = 36867
 _TAG_DATA = 306
+_TAG_EXPOSICAO, _TAG_ABERTURA, _TAG_ISO, _TAG_FLASH = 33434, 33437, 34855, 37385
 
 
 @dataclass
@@ -28,6 +29,19 @@ class MetadadosFoto:
     latitude: float | None = None
     longitude: float | None = None
     hora_captura: str | None = None   # "AAAA-MM-DDTHH:MM:SS", sem fuso (o EXIF não guarda fuso)
+    exposicao_s: float | None = None  # tempo de exposição (s)
+    abertura: float | None = None     # número f
+    iso: float | None = None
+    flash: bool | None = None         # o flash disparou?
+
+    @property
+    def ev100(self) -> float | None:
+        """Exposição normalizada para ISO 100: quanto MENOR, mais escura estava a cena de verdade
+        (rua iluminada à noite ~ 4 a 7; breu ~ 0 ou menos; dia ~ 12 a 15)."""
+        import math
+        if not (self.exposicao_s and self.abertura and self.iso) or min(self.exposicao_s, self.abertura, self.iso) <= 0:
+            return None
+        return round(math.log2(self.abertura ** 2 / self.exposicao_s) - math.log2(self.iso / 100), 1)
 
 
 def _graus(valor, ref: str) -> float:
@@ -49,6 +63,17 @@ def ler_metadados(dados: bytes) -> MetadadosFoto:
         if data:
             d, h = str(data).strip().split(" ")
             meta.hora_captura = f"{d.replace(':', '-')}T{h}"
+    except Exception:
+        pass
+
+    try:   # exposição: separa "câmera ruim" de "escuro de verdade" (visao/cena.py)
+        ifd = exif.get_ifd(_TAG_EXIF_IFD)
+        iso = ifd.get(_TAG_ISO)
+        iso = iso[0] if isinstance(iso, (tuple, list)) else iso
+        meta.exposicao_s = float(ifd[_TAG_EXPOSICAO]) if _TAG_EXPOSICAO in ifd else None
+        meta.abertura = float(ifd[_TAG_ABERTURA]) if _TAG_ABERTURA in ifd else None
+        meta.iso = float(iso) if iso else None
+        meta.flash = bool(int(ifd[_TAG_FLASH]) & 1) if _TAG_FLASH in ifd else None
     except Exception:
         pass
 

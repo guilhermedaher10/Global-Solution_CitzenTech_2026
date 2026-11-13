@@ -1,0 +1,472 @@
+{
+  "resultado": {
+    "test": {
+      "regras": {
+        "acuracia": 0.721,
+        "por_classe": {
+          "iluminada": {
+            "precisao": 0.806,
+            "recall": 1.0,
+            "n": 25
+          },
+          "trecho_escuro": {
+            "precisao": 0.444,
+            "recall": 0.571,
+            "n": 7
+          },
+          "apagao": {
+            "precisao": 0.667,
+            "recall": 0.182,
+            "n": 11
+          }
+        },
+        "matriz": [
+          [
+            25,
+            0,
+            0
+          ],
+          [
+            2,
+            4,
+            1
+          ],
+          [
+            4,
+            5,
+            2
+          ]
+        ]
+      },
+      "classificador": {
+        "acuracia": 0.767,
+        "por_classe": {
+          "iluminada": {
+            "precisao": 0.875,
+            "recall": 0.84,
+            "n": 25
+          },
+          "trecho_escuro": {
+            "precisao": 0.667,
+            "recall": 0.571,
+            "n": 7
+          },
+          "apagao": {
+            "precisao": 0.615,
+            "recall": 0.727,
+            "n": 11
+          }
+        },
+        "matriz": [
+          [
+            21,
+            1,
+            3
+          ],
+          [
+            1,
+            4,
+            2
+          ],
+          [
+            2,
+            1,
+            8
+          ]
+        ]
+      },
+      "fusao": {
+        "acuracia": 0.767,
+        "por_classe": {
+          "iluminada": {
+            "precisao": 0.821,
+            "recall": 0.92,
+            "n": 25
+          },
+          "trecho_escuro": {
+            "precisao": 0.667,
+            "recall": 0.571,
+            "n": 7
+          },
+          "apagao": {
+            "precisao": 0.667,
+            "recall": 0.545,
+            "n": 11
+          }
+        },
+        "matriz": [
+          [
+            23,
+            1,
+            1
+          ],
+          [
+            1,
+            4,
+            2
+          ],
+          [
+            4,
+            1,
+            6
+          ]
+        ]
+      }
+    },
+    "teste_equipe": {
+      "regras": {
+        "acuracia": 0.421,
+        "por_classe": {
+          "iluminada": {
+            "precisao": 0.556,
+            "recall": 0.833,
+            "n": 6
+          },
+          "trecho_escuro": {
+            "precisao": 0.625,
+            "recall": 0.208,
+            "n": 24
+          },
+          "apagao": {
+            "precisao": 0.286,
+            "recall": 0.75,
+            "n": 8
+          }
+        },
+        "matriz": [
+          [
+            5,
+            1,
+            0
+          ],
+          [
+            4,
+            5,
+            15
+          ],
+          [
+            0,
+            2,
+            6
+          ]
+        ]
+      },
+      "classificador": {
+        "acuracia": 0.447,
+        "por_classe": {
+          "iluminada": {
+            "precisao": 0.8,
+            "recall": 0.667,
+            "n": 6
+          },
+          "trecho_escuro": {
+            "precisao": 0.7,
+            "recall": 0.292,
+            "n": 24
+          },
+          "apagao": {
+            "precisao": 0.261,
+            "recall": 0.75,
+            "n": 8
+          }
+        },
+        "matriz": [
+          [
+            4,
+            1,
+            1
+          ],
+          [
+            1,
+            7,
+            16
+          ],
+          [
+            0,
+            2,
+            6
+          ]
+        ]
+      },
+      "fusao": {
+        "acuracia": 0.474,
+        "por_classe": {
+          "iluminada": {
+            "precisao": 0.833,
+            "recall": 0.833,
+            "n": 6
+          },
+          "trecho_escuro": {
+            "precisao": 0.7,
+            "recall": 0.292,
+            "n": 24
+          },
+          "apagao": {
+            "precisao": 0.273,
+            "recall": 0.75,
+            "n": 8
+          }
+        },
+        "matriz": [
+          [
+            5,
+            1,
+            0
+          ],
+          [
+            1,
+            7,
+            16
+          ],
+          [
+            0,
+            2,
+            6
+          ]
+        ]
+      }
+    }
+  },
+  "erros_fusao": [
+    {
+      "conjunto": "test",
+      "arquivo": "00909ad8f86ee1d4.jpg",
+      "verdade": "iluminada",
+      "fusao": "trecho_escuro",
+      "regra": "iluminada",
+      "classificador": "trecho_escuro"
+    },
+    {
+      "conjunto": "test",
+      "arquivo": "b9fbdef6c766fe7e.jpg",
+      "verdade": "iluminada",
+      "fusao": "apagao",
+      "regra": "iluminada",
+      "classificador": "apagao"
+    },
+    {
+      "conjunto": "test",
+      "arquivo": "1021132327f6d75f.jpg",
+      "verdade": "trecho_escuro",
+      "fusao": "apagao",
+      "regra": "iluminada",
+      "classificador": "apagao"
+    },
+    {
+      "conjunto": "test",
+      "arquivo": "60327bd9c0c0e080.jpg",
+      "verdade": "trecho_escuro",
+      "fusao": "iluminada",
+      "regra": "trecho_escuro",
+      "classificador": "iluminada"
+    },
+    {
+      "conjunto": "test",
+      "arquivo": "e8e6ac346dae9e16.jpg",
+      "verdade": "trecho_escuro",
+      "fusao": "apagao",
+      "regra": "apagao",
+      "classificador": "apagao"
+    },
+    {
+      "conjunto": "test",
+      "arquivo": "183058dad9f97938.jpg",
+      "verdade": "apagao",
+      "fusao": "iluminada",
+      "regra": "iluminada",
+      "classificador": "iluminada"
+    },
+    {
+      "conjunto": "test",
+      "arquivo": "80dbdadac88f8f9c.jpg",
+      "verdade": "apagao",
+      "fusao": "iluminada",
+      "regra": "trecho_escuro",
+      "classificador": "iluminada"
+    },
+    {
+      "conjunto": "test",
+      "arquivo": "e6f9fcede9e8f0f0.jpg",
+      "verdade": "apagao",
+      "fusao": "iluminada",
+      "regra": "iluminada",
+      "classificador": "apagao"
+    },
+    {
+      "conjunto": "test",
+      "arquivo": "f152517959316145.jpg",
+      "verdade": "apagao",
+      "fusao": "trecho_escuro",
+      "regra": "trecho_escuro",
+      "classificador": "trecho_escuro"
+    },
+    {
+      "conjunto": "test",
+      "arquivo": "f1f07070f2848cac.jpg",
+      "verdade": "apagao",
+      "fusao": "iluminada",
+      "regra": "iluminada",
+      "classificador": "apagao"
+    },
+    {
+      "conjunto": "teste_equipe",
+      "arquivo": "845070f010111198.jpg",
+      "verdade": "iluminada",
+      "fusao": "trecho_escuro",
+      "regra": "iluminada",
+      "classificador": "trecho_escuro"
+    },
+    {
+      "conjunto": "teste_equipe",
+      "arquivo": "0408914371582000.jpg",
+      "verdade": "trecho_escuro",
+      "fusao": "apagao",
+      "regra": "apagao",
+      "classificador": "apagao"
+    },
+    {
+      "conjunto": "teste_equipe",
+      "arquivo": "0a0919514766e1e8.jpg",
+      "verdade": "trecho_escuro",
+      "fusao": "apagao",
+      "regra": "apagao",
+      "classificador": "apagao"
+    },
+    {
+      "conjunto": "teste_equipe",
+      "arquivo": "4080e4e8e004f0f0.jpg",
+      "verdade": "trecho_escuro",
+      "fusao": "apagao",
+      "regra": "iluminada",
+      "classificador": "apagao"
+    },
+    {
+      "conjunto": "teste_equipe",
+      "arquivo": "54f0f3fb3078f84a.jpg",
+      "verdade": "trecho_escuro",
+      "fusao": "apagao",
+      "regra": "trecho_escuro",
+      "classificador": "apagao"
+    },
+    {
+      "conjunto": "teste_equipe",
+      "arquivo": "7070f070d0b04820.jpg",
+      "verdade": "trecho_escuro",
+      "fusao": "apagao",
+      "regra": "apagao",
+      "classificador": "apagao"
+    },
+    {
+      "conjunto": "teste_equipe",
+      "arquivo": "848088e86c12507c.jpg",
+      "verdade": "trecho_escuro",
+      "fusao": "apagao",
+      "regra": "apagao",
+      "classificador": "apagao"
+    },
+    {
+      "conjunto": "teste_equipe",
+      "arquivo": "86af8f0110734828.jpg",
+      "verdade": "trecho_escuro",
+      "fusao": "apagao",
+      "regra": "iluminada",
+      "classificador": "apagao"
+    },
+    {
+      "conjunto": "teste_equipe",
+      "arquivo": "a0a0684b4044c280.jpg",
+      "verdade": "trecho_escuro",
+      "fusao": "apagao",
+      "regra": "iluminada",
+      "classificador": "apagao"
+    },
+    {
+      "conjunto": "teste_equipe",
+      "arquivo": "a8eadc45549c94ac.jpg",
+      "verdade": "trecho_escuro",
+      "fusao": "apagao",
+      "regra": "apagao",
+      "classificador": "apagao"
+    },
+    {
+      "conjunto": "teste_equipe",
+      "arquivo": "bdd8f8f054707030.jpg",
+      "verdade": "trecho_escuro",
+      "fusao": "apagao",
+      "regra": "apagao",
+      "classificador": "apagao"
+    },
+    {
+      "conjunto": "teste_equipe",
+      "arquivo": "f060f3f742c84185.jpg",
+      "verdade": "trecho_escuro",
+      "fusao": "apagao",
+      "regra": "apagao",
+      "classificador": "apagao"
+    },
+    {
+      "conjunto": "teste_equipe",
+      "arquivo": "f8d8f87078700000.jpg",
+      "verdade": "trecho_escuro",
+      "fusao": "apagao",
+      "regra": "apagao",
+      "classificador": "apagao"
+    },
+    {
+      "conjunto": "teste_equipe",
+      "arquivo": "f8fcfc6c468cccd8.jpg",
+      "verdade": "trecho_escuro",
+      "fusao": "apagao",
+      "regra": "trecho_escuro",
+      "classificador": "apagao"
+    },
+    {
+      "conjunto": "teste_equipe",
+      "arquivo": "f9c9e0e4f4fcf0f0.jpg",
+      "verdade": "trecho_escuro",
+      "fusao": "iluminada",
+      "regra": "iluminada",
+      "classificador": "iluminada"
+    },
+    {
+      "conjunto": "teste_equipe",
+      "arquivo": "fcf8f0f0f8600a06.jpg",
+      "verdade": "trecho_escuro",
+      "fusao": "apagao",
+      "regra": "apagao",
+      "classificador": "apagao"
+    },
+    {
+      "conjunto": "teste_equipe",
+      "arquivo": "fcfcfcdcfcbc3858.jpg",
+      "verdade": "trecho_escuro",
+      "fusao": "apagao",
+      "regra": "apagao",
+      "classificador": "apagao"
+    },
+    {
+      "conjunto": "teste_equipe",
+      "arquivo": "ffffffff2fab3a50.jpg",
+      "verdade": "trecho_escuro",
+      "fusao": "apagao",
+      "regra": "apagao",
+      "classificador": "apagao"
+    },
+    {
+      "conjunto": "teste_equipe",
+      "arquivo": "00202020206b60e3.jpg",
+      "verdade": "apagao",
+      "fusao": "trecho_escuro",
+      "regra": "apagao",
+      "classificador": "trecho_escuro"
+    },
+    {
+      "conjunto": "teste_equipe",
+      "arquivo": "216368494943c4c2.jpg",
+      "verdade": "apagao",
+      "fusao": "trecho_escuro",
+      "regra": "apagao",
+      "classificador": "trecho_escuro"
+    }
+  ]
+}

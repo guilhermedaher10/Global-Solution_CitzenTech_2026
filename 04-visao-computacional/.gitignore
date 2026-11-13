@@ -9,3 +9,6 @@ weights/
 yolov8*-world*.pt
 results/*.log
 results/base/
+
+# saídas de avaliação geradas pelos scripts (as que vão para o relatório ficam em docs/img/)
+results/

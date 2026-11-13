@@ -15,6 +15,7 @@ from . import imagem as im
 from .config import CLASSE_ACESO, CLASSE_APAGADO, CLASSE_BURACO, regras
 from .detector import Detector
 from .cena import analisar_cena
+from .classificador_cena import classificador_padrao
 from .fusao import fundir, ler_sensores
 from .privacidade import BorradorRostos, ler_metadados
 from .regras import classificar_trecho, priorizar, validar
@@ -35,7 +36,7 @@ def analisar_imagem(img: np.ndarray, detector: Detector, *, origem: Origem | str
                     retornar_imagem: bool = False, hora_captura: str | None = None,
                     fonte_localizacao: str = "informada", exif_removido: bool = True,
                     endereco: str | None = None,
-                    deteccoes=None) -> Analise:
+                    deteccoes=None, metadados=None) -> Analise:
     origem = Origem(origem)
     if deteccoes is None:
         deteccoes = detector.detectar(img)
@@ -51,6 +52,8 @@ def analisar_imagem(img: np.ndarray, detector: Detector, *, origem: Origem | str
     status = classificar_trecho(acesos, apagados, lum)
     sinais = ler_sensores(sensor_lux, sensor_distancia_cm, alerta)
     cena = analisar_cena(img)
+    ler_classe(img, cena)
+    ler_exposicao(cena, metadados)
     # sem poste visível, só uma região MUITO escura vale como evidência (ou breu); com fonte de luz
     # forte na cena (ex.: foto de um poste aceso contra o céu) não é "região no escuro"
     cena_escura = cena.nivel.value == "breu" or (cena.nivel.value == "muito_escura" and cena.fontes_de_luz == 0)
@@ -95,6 +98,38 @@ def analisar_imagem(img: np.ndarray, detector: Detector, *, origem: Origem | str
     )
 
 
+def ler_classe(img: np.ndarray, cena) -> None:
+    """Classificador de cena + fusão: a leitura final decide o possível apagão (falta de energia)."""
+    leitura = classificador_padrao().ler(img, cena)
+    pelas_regras = cena.possivel_apagao
+    cena.classe, cena.confianca_classe = leitura.classe, round(leitura.confianca, 3)
+    cena.fonte_classe, cena.probabilidades = leitura.fonte, leitura.probabilidades or None
+    cena.possivel_apagao = leitura.classe == "apagao"
+    if leitura.fonte != "regras" or pelas_regras != cena.possivel_apagao:
+        cena.motivos.append(f"leitura da cena: {leitura.classe.replace('_', ' ')} ({leitura.motivo})")
+    if cena.possivel_apagao and not pelas_regras:
+        cena.motivos.append("possível falta de energia na região (reconhecida pelo classificador de cena)")
+
+
+def ler_exposicao(cena, meta) -> None:
+    """EXIF de exposição: a foto está escura porque a RUA está escura ou porque a CÂMERA fechou rápido?"""
+    ev = getattr(meta, "ev100", None) if meta is not None else None
+    if ev is None:
+        return
+    c = regras().get("exposicao", {})
+    cena.ev100 = ev
+    escura = cena.nivel.value in ("muito_escura", "breu")
+    if ev <= c.get("ev_escuro_real", 3):
+        cena.motivos.append(f"a câmera precisou de muita exposição (EV {ev}): o lugar está escuro de verdade")
+    elif escura and ev >= c.get("ev_subexposta", 8):
+        cena.motivos.append(f"foto escura com exposição curta (EV {ev}): pode ser a câmera, não a rua")
+        if cena.possivel_apagao:
+            cena.possivel_apagao = False
+            cena.motivos.append("possível apagão descartado: a câmera estava subexposta")
+    if getattr(meta, "flash", None):
+        cena.motivos.append("o flash disparou: o brilho do primeiro plano não é a luz da rua")
+
+
 def analisar_bytes(dados: bytes, detector: Detector, *, origem: Origem | str = Origem.cidadao,
                    latitude: float | None = None, longitude: float | None = None,
                    sensor_lux: float | None = None, sensor_distancia_cm: float | None = None,
@@ -117,4 +152,4 @@ def analisar_bytes(dados: bytes, detector: Detector, *, origem: Origem | str = O
     return analisar_imagem(img, detector, origem=origem, latitude=latitude, longitude=longitude,
                            sensor_lux=sensor_lux, sensor_distancia_cm=sensor_distancia_cm, alerta=alerta,
                            borrador=borrador, retornar_imagem=retornar_imagem, endereco=endereco,
-                           hora_captura=meta.hora_captura, fonte_localizacao=fonte)
+                           hora_captura=meta.hora_captura, fonte_localizacao=fonte, metadados=meta)

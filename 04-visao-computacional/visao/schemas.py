@@ -145,6 +145,13 @@ class Cena(BaseModel):
     possivel_apagao: bool = Field(description="Escuro e sem nenhuma fonte de luz: possível falta de energia")
     grade_luz: list[list[int]] = Field(description="Brilho médio em 6x8 blocos (mapa de luz)")
     motivos: list[str]
+    classe: str | None = Field(default=None, description="Leitura final: iluminada, trecho_escuro ou apagao "
+                                                        "(classificador YOLO26-cls fundido com as medidas)")
+    confianca_classe: float | None = Field(default=None, ge=0, le=1)
+    fonte_classe: str | None = Field(default=None, description="regras, classificador ou regras+classificador")
+    probabilidades: dict[str, float] | None = Field(default=None, description="Saída do classificador de cena")
+    ev100: float | None = Field(default=None, description="Exposição da câmera (EXIF) normalizada a ISO 100: "
+                                                         "baixo = escuro de verdade; só fotos com EXIF")
 
 
 class Encaminhamento(BaseModel):

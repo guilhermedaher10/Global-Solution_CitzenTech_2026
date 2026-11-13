@@ -6,6 +6,10 @@ import numpy as np
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+# os testes das regras usam imagens sintéticas: o classificador de cena real fica desligado por padrão
+# (test_classificador_cena.py liga de propósito)
+import os  # noqa: E402
+os.environ.setdefault("CENA_MODELO_PATH", str(Path(__file__).resolve().parent / "sem_classificador.pt"))
 
 from visao.schemas import Deteccao  # noqa: E402
 

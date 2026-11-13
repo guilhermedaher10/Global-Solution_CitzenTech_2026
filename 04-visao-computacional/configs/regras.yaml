@@ -100,3 +100,11 @@ video:                      # /v1/analisar-video: vídeo curto gravado ao vivo n
   max_segundos: 20            # o resto do vídeo é ignorado
   intervalo_s: 0.5            # um quadro a cada meio segundo...
   max_quadros: 16             # ...até este limite (o mais evidente vira a prova)
+
+exposicao:                  # EXIF da foto (tempo, abertura, ISO): separa câmera ruim de escuro de verdade
+  ev_escuro_real: 3           # EV100 até aqui: a câmera "forçou" a exposição; o lugar está mesmo escuro
+  ev_subexposta: 8            # foto escura com EV100 a partir daqui: culpa da câmera; não vale como apagão
+
+classificador_cena:         # YOLO26-cls (models/cena.pt) fundido com as medidas de luz (visao/classificador_cena.py)
+  imgsz: 320
+  confianca_minima: 0.5       # abaixo disso, valem as medidas de luz; cena iluminada nunca vira apagão
