@@ -1,0 +1,128 @@
+{
+  "uid": "ruas-escuras",
+  "title": "Ruas Escuras · 4 métricas de ouro",
+  "description": "Tráfego, erros, latência e saturação da API da Visão + indicadores do produto (chamados e robô).",
+  "tags": ["ruas-escuras", "golden-signals"],
+  "timezone": "America/Sao_Paulo",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "time": { "from": "now-1h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "ambiente",
+        "label": "Ambiente",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "query": "label_values(up{job=~\"visao.*\"}, ambiente)",
+        "includeAll": true,
+        "multi": true,
+        "current": { "text": "All", "value": "$__all" },
+        "refresh": 2
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "row", "title": "Saúde agora", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }, "collapsed": false, "panels": []
+    },
+    {
+      "type": "stat", "title": "API no ar", "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "refId": "A", "expr": "min(up{job=~\"visao.*\", ambiente=~\"$ambiente\"})" }],
+      "fieldConfig": { "defaults": {
+        "mappings": [{ "type": "value", "options": { "0": { "text": "FORA", "color": "red" }, "1": { "text": "NO AR", "color": "green" } } }],
+        "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] } } },
+      "options": { "colorMode": "background", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat", "title": "Modelo YOLO carregado", "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "refId": "A", "expr": "min(visao_modelo_carregado{ambiente=~\"$ambiente\"})" }],
+      "fieldConfig": { "defaults": {
+        "mappings": [{ "type": "value", "options": { "0": { "text": "NÃO", "color": "red" }, "1": { "text": "SIM", "color": "green" } } }],
+        "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] } } },
+      "options": { "colorMode": "background", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat", "title": "Chamados abertos (período)", "gridPos": { "h": 4, "w": 5, "x": 8, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "refId": "A", "expr": "sum(increase(visao_chamados_total{ambiente=~\"$ambiente\"}[$__range]))" }],
+      "fieldConfig": { "defaults": { "decimals": 0, "color": { "mode": "fixed", "fixedColor": "orange" } } },
+      "options": { "colorMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat", "title": "Alertas do robô (período)", "gridPos": { "h": 4, "w": 5, "x": 13, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "refId": "A", "expr": "sum(increase(visao_alertas_robo_total{ambiente=~\"$ambiente\"}[$__range]))" }],
+      "fieldConfig": { "defaults": { "decimals": 0, "color": { "mode": "fixed", "fixedColor": "purple" } } },
+      "options": { "colorMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat", "title": "% de fotos recusadas", "description": "Fotos que não serviram de evidência (de dia, tremidas, sem poste). Mede o quanto a validação filtra lixo antes de chegar à prefeitura.",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "refId": "A", "expr": "sum(increase(visao_analises_total{foto_valida=\"false\", ambiente=~\"$ambiente\"}[$__range])) / clamp_min(sum(increase(visao_analises_total{ambiente=~\"$ambiente\"}[$__range])), 1)" }],
+      "fieldConfig": { "defaults": { "unit": "percentunit", "decimals": 0 } },
+      "options": { "colorMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "row", "title": "4 métricas de ouro", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 }, "collapsed": false, "panels": []
+    },
+    {
+      "type": "timeseries", "title": "1 · Tráfego (requisições/s por rota)", "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "refId": "A", "expr": "sum by (rota) (rate(http_requisicoes_total{ambiente=~\"$ambiente\", rota!=\"/metrics\"}[1m]))", "legendFormat": "{{rota}}" }],
+      "fieldConfig": { "defaults": { "unit": "reqps" } }
+    },
+    {
+      "type": "timeseries", "title": "2 · Erros (% de respostas 5xx e 4xx)", "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(http_requisicoes_total{status=~\"5..\", ambiente=~\"$ambiente\"}[5m])) / clamp_min(sum(rate(http_requisicoes_total{ambiente=~\"$ambiente\"}[5m])), 1e-9)", "legendFormat": "5xx (falha nossa)" },
+        { "refId": "B", "expr": "sum(rate(http_requisicoes_total{status=~\"4..\", ambiente=~\"$ambiente\"}[5m])) / clamp_min(sum(rate(http_requisicoes_total{ambiente=~\"$ambiente\"}[5m])), 1e-9)", "legendFormat": "4xx (pedido inválido)" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "percentunit", "max": 1,
+        "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 0.05 }] },
+        "custom": { "thresholdsStyle": { "mode": "line" } } } }
+    },
+    {
+      "type": "timeseries", "title": "3 · Latência da análise de foto (p50 / p95 / p99)", "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "histogram_quantile(0.50, sum by (le) (rate(http_duracao_segundos_bucket{rota=\"/v1/analisar\", ambiente=~\"$ambiente\"}[5m])))", "legendFormat": "p50" },
+        { "refId": "B", "expr": "histogram_quantile(0.95, sum by (le) (rate(http_duracao_segundos_bucket{rota=\"/v1/analisar\", ambiente=~\"$ambiente\"}[5m])))", "legendFormat": "p95" },
+        { "refId": "C", "expr": "histogram_quantile(0.99, sum by (le) (rate(http_duracao_segundos_bucket{rota=\"/v1/analisar\", ambiente=~\"$ambiente\"}[5m])))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s",
+        "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 3 }] },
+        "custom": { "thresholdsStyle": { "mode": "line" } } } }
+    },
+    {
+      "type": "timeseries", "title": "4 · Saturação (análises simultâneas, CPU e memória)", "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(http_requisicoes_em_andamento{ambiente=~\"$ambiente\"})", "legendFormat": "em andamento" },
+        { "refId": "B", "expr": "sum(rate(process_cpu_seconds_total{job=~\"visao.*\", ambiente=~\"$ambiente\"}[1m]))", "legendFormat": "CPU (núcleos)" },
+        { "refId": "C", "expr": "sum(process_resident_memory_bytes{job=~\"visao.*\", ambiente=~\"$ambiente\"}) / 2^30", "legendFormat": "memória (GiB)" }
+      ]
+    },
+    {
+      "type": "row", "title": "Produto", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 22 }, "collapsed": false, "panels": []
+    },
+    {
+      "type": "barchart", "title": "Chamados por tipo (para qual setor da prefeitura)", "gridPos": { "h": 8, "w": 12, "x": 0, "y": 23 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "refId": "A", "expr": "sum by (tipo) (increase(visao_chamados_total{ambiente=~\"$ambiente\"}[$__range]))", "legendFormat": "{{tipo}}", "instant": true, "format": "table" }],
+      "transformations": [{ "id": "reduce", "options": { "reducers": ["lastNotNull"] } }],
+      "options": { "orientation": "horizontal", "showValue": "always" }
+    },
+    {
+      "type": "piechart", "title": "Chamados por prioridade", "gridPos": { "h": 8, "w": 12, "x": 12, "y": 23 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "refId": "A", "expr": "sum by (prioridade) (increase(visao_chamados_total{ambiente=~\"$ambiente\"}[$__range]))", "legendFormat": "{{prioridade}}", "instant": true }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "pieType": "donut", "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] } }
+    }
+  ]
+}

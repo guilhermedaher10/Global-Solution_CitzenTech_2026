@@ -1,0 +1,110 @@
+# Regras de negócio que transformam detecções em decisão. Ajuste aqui, não no código.
+deteccao:
+  confianca_minima: 0.35      # abaixo disso a detecção é ignorada
+  iou: 0.5
+  tamanho_imagem: 640
+  area_maxima: 0.5           # caixa cobrindo mais que isso da foto não é luminária: descartada
+
+luminosidade:               # brilho médio da cena, de 0 (preto) a 255 (branco)
+  limiar_escuro: 55           # abaixo: cena escura
+  limiar_dia: 120             # acima: provavelmente foto de dia (não serve de evidência)
+  limiar_breu: 25             # abaixo: breu, quase nenhuma luz; o poste pode nem aparecer na foto
+
+validacao:                  # foto enviada pelo cidadão
+  lado_minimo_px: 320         # imagem menor que isso não serve
+  nitidez_minima: 5.0         # ver imagem.nitidez(): fotos boas >= 8, borradas <= 2.6
+
+prioridade:                 # pontuação de 0 a 100, sempre com os fatores explicados
+  pontos_por_poste_apagado: 25
+  max_pontos_postes: 50
+  pontos_trecho_escuro: 30
+  pontos_trecho_parcial: 15
+  pontos_sensor_lux_baixo: 20
+  pontos_cena_muito_escura: 15  # análise de cena: região muito escura ou breu
+  pontos_apagao: 20             # análise de cena: nenhuma fonte de luz (possível falta de energia)
+  limiar_sensor_lux: 5.0      # lux medido pelo robô; rua bem iluminada fica acima de ~10 lux
+  faixas:                     # pontuação mínima de cada nível
+    alta: 60
+    media: 30
+
+sensores:                   # robô do Maker Lab (LDR + ultrassônico + GPS)
+  # Se o robô não mandar a lista `alerta`, a API deduz pelos valores:
+  #   sensor_lux < prioridade.limiar_sensor_lux       -> "escuro"
+  #   sensor_distancia_cm >= distancia_buraco_cm      -> "buraco"
+  distancia_buraco_cm: 15.0   # ultrassônico apontado para o chão: acima disso = desnível. AJUSTAR com o Heitor
+
+fusao:                      # pontos extras quando sensor e foto são cruzados
+  pontos_buraco: 30           # buraco visto na foto
+  pontos_buraco_no_escuro: 25 # buraco + trecho escuro: risco de queda (ODS 3)
+  pontos_confirmado: 15       # o sensor do robô e a foto concordam
+
+alerta_robo:                # alerta só com sensores (sem foto): prioridade prévia
+  pontos_escuro: 30
+  pontos_buraco: 30
+  pontos_escuro_e_buraco: 25
+
+orientacao:                 # perguntas feitas ao GenAI (01) para cada tipo de chamado confirmado
+  perguntas:                # {cidade} = GENAI_CIDADE (padrão São Paulo)
+    conserto_poste: "Qual o prazo para consertar a iluminação pública em {cidade}?"
+    instalacao_iluminacao: "Como pedir a instalação de iluminação pública em uma rua sem poste em {cidade}?"
+    poda_ou_obstrucao: "O que pode atrasar o reparo da iluminação pública em {cidade}?"
+    buraco: "Qual o prazo para tapar um buraco na rua em {cidade}?"
+    trecho_sem_luz: "Qual o prazo para consertar a iluminação pública em {cidade}?"
+    falta_de_energia: "O que fazer quando falta energia elétrica na rua em {cidade}?"
+
+cena:                       # análise da foto inteira (visao/cena.py): a região está no escuro?
+  limiar_iluminado: 90        # pixel com brilho acima disso conta como "área iluminada"
+  limiar_fonte: 225           # pixel quase saturado = parte de uma fonte de luz
+  area_minima_fonte: 0.0002   # fração mínima da imagem para contar como fonte (ignora ruído/estrelas)
+  chao_referencia: 110        # brilho do chão de uma rua bem iluminada à noite
+  area_referencia: 0.35       # fração iluminada de uma rua bem iluminada
+  media_referencia: 110
+  indice_muito_escura: 78     # índice de escuridão (0-100) a partir do qual a região é "muito escura"
+  indice_pouca_iluminacao: 55
+  fontes_max_apagao: 0        # possível apagão: escuro E nenhuma fonte de luz na cena...
+  area_fontes_max_apagao: 0.0005  # ...nem mesmo pequenas (janelas, letreiros, faróis)
+
+encaminhamento:             # para quem vai cada tipo de chamado (canais de São Paulo; troque por cidade)
+  iluminacao: &iluminacao
+    orgao: "Iluminação pública · Prefeitura de São Paulo"
+    canal: "SP156: telefone 156 ou portal sp156.prefeitura.sp.gov.br"
+  subprefeitura: &subprefeitura
+    orgao: "Subprefeitura · zeladoria"
+    canal: "SP156: telefone 156 ou portal sp156.prefeitura.sp.gov.br"
+  energia: &energia
+    orgao: "Distribuidora de energia · Enel São Paulo"
+    canal: "emergência 0800 72 72 196, app Enel São Paulo ou SMS para 27373"
+  defesa_civil: &defesa_civil
+    orgao: "Defesa Civil"
+    canal: "telefone 199 (só se houver risco: fio caído, alagamento, árvore sobre a rede)"
+  por_tipo:                 # tipo de chamado -> órgão(s) e o motivo mostrado ao cidadão
+    conserto_poste: [{<<: *iluminacao, motivo: "poste apagado é manutenção da iluminação pública"}]
+    trecho_sem_luz: [{<<: *iluminacao, motivo: "trecho sem luz precisa de vistoria da iluminação pública"}]
+    instalacao_iluminacao: [{<<: *iluminacao, motivo: "rua escura sem poste: pedido de instalação"}]
+    poda_ou_obstrucao: [{<<: *subprefeitura, motivo: "árvore ou obstáculo tapando a luz: poda pela subprefeitura"}]
+    buraco: [{<<: *subprefeitura, motivo: "buraco na via é zeladoria da subprefeitura"}]
+    falta_de_energia:
+      - {<<: *energia, motivo: "sem nenhuma luz na região (nem janelas): falta de energia é da distribuidora"}
+      - {<<: *defesa_civil, motivo: "acione só se houver risco na rua"}
+    suspeita_escuro: [{<<: *iluminacao, motivo: "relato de rua escura: vistoria da iluminação pública"}]
+    suspeita_buraco: [{<<: *subprefeitura, motivo: "relato de buraco: vistoria da subprefeitura"}]
+
+regioes:                    # agrupamento de relatos: muitos pedidos no mesmo lugar viram UM alerta
+  raio_m: 500                 # relatos a até esta distância um do outro entram no mesmo grupo
+  janela_horas: 6             # só relatos recentes (um apagão é agora, não na semana passada)
+  min_relatos: 3              # mínimo de chamados no grupo para virar alerta de região
+  min_sinais_apagao: 2        # quantos deles com sinal de falta de energia para chamar de "apagão"
+
+video:                      # /v1/analisar-video: vídeo curto gravado ao vivo no navegador
+  max_mb: 25
+  max_segundos: 20            # o resto do vídeo é ignorado
+  intervalo_s: 0.5            # um quadro a cada meio segundo...
+  max_quadros: 16             # ...até este limite (o mais evidente vira a prova)
+
+exposicao:                  # EXIF da foto (tempo, abertura, ISO): separa câmera ruim de escuro de verdade
+  ev_escuro_real: 3           # EV100 até aqui: a câmera "forçou" a exposição; o lugar está mesmo escuro
+  ev_subexposta: 8            # foto escura com EV100 a partir daqui: culpa da câmera; não vale como apagão
+
+classificador_cena:         # YOLO26-cls (models/cena.pt) fundido com as medidas de luz (visao/classificador_cena.py)
+  imgsz: 320
+  confianca_minima: 0.5       # abaixo disso, valem as medidas de luz; cena iluminada nunca vira apagão

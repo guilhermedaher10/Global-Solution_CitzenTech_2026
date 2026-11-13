@@ -1,0 +1,4 @@
+config,perguntas,acertos,acuracia,acerto_com_resposta,recusa_correta,json_valido,citacao_valida_nas_ok,seg_medio
+A_sem_contexto,30,3/30,0.1,1/19,2/11,0.933,0.0,12.0
+B_rag_simples,30,25/30,0.833,17/19,8/11,1.0,0.824,8.5
+C_agente_verificador,30,22/30,0.733,12/19,10/11,1.0,1.0,11.6

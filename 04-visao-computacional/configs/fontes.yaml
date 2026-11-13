@@ -1,0 +1,41 @@
+# De onde vêm as imagens. Confira a licença de cada dataset na página do Roboflow Universe
+# antes de usar e registre em docs/dataset.md.
+
+roboflow:                 # workspace/projeto do link universe.roboflow.com/<workspace>/<projeto>
+  # `classes` traduz os nomes DESTE dataset (vale mais que os aliases globais de classes.yaml).
+  # Nomes não listados aqui nem em classes.yaml são descartados (e a imagem sai junto).
+  # Todos conferidos visualmente em 09/11 (mosaicos com as caixas desenhadas).
+  - workspace: sashank-s            # close de luminárias acesas à noite
+    projeto: streetlight-night
+    classes: {StreetLight: poste_aceso}
+  - workspace: streetlight-detection  # noite, fiação parecida com a brasileira
+    projeto: led-only
+    classes: {sodium_on: poste_aceso, sodium_off: poste_apagado}
+  - workspace: street-lightv        # ruas à noite; "Streetlight" = cabeça da luminária acesa
+    projeto: nighttime-streetlight-detection
+    classes: {Streetlight: poste_aceso}   # "0" (poste inteiro) fica de fora: padrão de caixa diferente
+  - workspace: sba-pothole          # poste inteiro, dia e noite misturados: fica para relabel
+    projeto: poles-dataset-e00t2
+    classes: {}
+
+  # DESCARTADOS após inspeção visual:
+  # - datasets-cobjh/light_off: imagens geradas por IA (Gemini), caixas sem sentido
+  # - cnn-maker/infras: banco de imagens/clipart (bueiro, placa, desenho de poste)
+  # - carsmoke-detection/street-light-lbrt8: caixa do tamanho da imagem e rótulos on/off trocados
+  # - datasets-cobjh/street-light-off (10/11): a classe "off" ensinou o modelo a marcar a imagem
+  #   inteira como "apagado" no treino-base; postes de dia também não servem de evidência
+  # versao: 3   <- opcional em cada item; sem isso baixa a mais recente
+
+busca_web:                # termos para scripts/coletar_web.py (Bing Imagens)
+  - rua escura poste apagado
+  - poste de luz apagado à noite
+  - rua sem iluminação pública
+  - iluminação pública queimada bairro
+  - moradores reclamam rua escura
+  - street light not working at night
+  - broken street light night
+  - dark street lamp off night
+  - streetlight outage night street
+
+videos:                   # vídeos noturnos para extrair frames (scripts/extrair_frames.py)
+  # - https://www.youtube.com/watch?v=XXXXXXXXXXX

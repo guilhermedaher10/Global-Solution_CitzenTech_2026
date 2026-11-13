@@ -1,0 +1,142 @@
+# Robô que valida todo Pull Request para a main.
+# Se algum job falhar, o merge fica bloqueado (proteção da branch main).
+# Regras explicadas no README da raiz, seção "Como cada um trabalha".
+name: pr-validacao
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  regras-do-repo:
+    name: regras-do-repo
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Dados do PR vêm por variável de ambiente (nunca interpolados direto no script)
+      - name: Nome da branch e escopo dos arquivos
+        env:
+          BRANCH: ${{ github.head_ref }}
+          BASE: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          PERMITIDAS="01-generative-ai 02-big-data 03-negocio-pitch 04-visao-computacional 05-rpa 06-devops-cloud 07-maker-lab docs-projeto"
+          if [[ " $PERMITIDAS " != *" $BRANCH "* ]]; then   # comparação exata, palavra inteira
+            echo "::error::Branch '$BRANCH' fora do padrão. Use o nome da pasta da sua matéria: $PERMITIDAS"
+            exit 1
+          fi
+
+          git diff --name-only "origin/$BASE...HEAD" > arquivos.txt
+          echo "Arquivos alterados:"; cat arquivos.txt
+          erros=0
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            if [ "$BRANCH" = "docs-projeto" ]; then
+              # docs-projeto: raiz, docs/ e .github/; nas pastas das matérias, só o README de primeiro nível
+              if [[ "$f" =~ ^0[1-7]-[^/]+/ ]] && [[ ! "$f" =~ ^0[1-7]-[^/]+/README\.md$ ]]; then
+                echo "::error file=$f::docs-projeto não mexe dentro da pasta de uma matéria (só no README dela)."
+                erros=$((erros+1))
+              fi
+            else
+              # branch de matéria: só a própria pasta e o próprio workflow
+              if [[ "$f" != "$BRANCH/"* ]] && [[ "$f" != ".github/workflows/$BRANCH.yml" ]]; then
+                echo "::error file=$f::A branch '$BRANCH' só pode alterar a pasta '$BRANCH/' (e .github/workflows/$BRANCH.yml)."
+                erros=$((erros+1))
+              fi
+            fi
+          done < arquivos.txt
+          [ "$erros" -eq 0 ] || { echo "::error::$erros arquivo(s) fora do escopo. Mudanças da raiz vão pela branch docs-projeto."; exit 1; }
+          echo "Escopo OK"
+
+      - name: Arquivos proibidos ou grandes demais
+        run: |
+          set -euo pipefail
+          erros=0
+          while IFS= read -r f; do
+            [ -z "$f" ] || [ ! -f "$f" ] && continue   # arquivo removido no PR
+            nome=$(basename "$f")
+            if [[ "$nome" == ".env" ]] || { [[ "$nome" == .env.* ]] && [[ "$nome" != ".env.example" ]]; } \
+               || [[ "$f" =~ \.(tfstate|tfvars|pem|key|p12|pfx)$ ]] || [[ "$f" =~ \.tfstate\. ]] \
+               || [[ "$f" =~ \.(mp4|avi|mov|mkv|webm)$ ]]; then
+              echo "::error file=$f::Arquivo proibido no Git (segredo, state do Terraform ou vídeo). Vídeo vai por link do YouTube."
+              erros=$((erros+1))
+            fi
+            tamanho=$(stat -c %s "$f")
+            limite=10485760   # 10 MB
+            # exceção: o modelo da Visão em produção (pesos .pt em models/) pode ter até 25 MB, porque a
+            # imagem Docker publicada pelo pipeline precisa dele; vídeo e dataset continuam barrados
+            if [[ "$f" =~ ^04-visao-computacional/models/[^/]+\.pt$ ]]; then limite=26214400; fi
+            if [ "$tamanho" -gt "$limite" ]; then
+              echo "::error file=$f::Arquivo com $((tamanho/1048576)) MB (limite $((limite/1048576)) MB). Dataset e modelo pesado vão por link."
+              erros=$((erros+1))
+            fi
+          done < arquivos.txt
+          [ "$erros" -eq 0 ] || exit 1
+          echo "Arquivos OK"
+
+      - name: 'Título do PR no formato "pasta: descrição"'
+        env:
+          TITULO: ${{ github.event.pull_request.title }}
+        run: |
+          if [[ ! "$TITULO" =~ ^[a-z0-9-]+:\ .{5,} ]]; then
+            echo "::error::Título '$TITULO' fora do padrão. Exemplo: 'rpa: fluxo de registro dos chamados'"
+            exit 1
+          fi
+          echo "Título OK"
+
+  segredos:
+    name: segredos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # Gitleaks direto (não o gitleaks-action): o action varre "primeiro_commit^..último" e quebra
+      # quando o PR começa num commit sem pai (ex.: upload pelo site, como no PR #8). Aqui varremos
+      # "commits do PR que não estão na base", que funciona com qualquer histórico.
+      - name: Gitleaks nos commits do PR
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          VERSAO: 8.24.3
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP"
+          curl -sSLO "https://github.com/gitleaks/gitleaks/releases/download/v${VERSAO}/gitleaks_${VERSAO}_linux_x64.tar.gz"
+          curl -sSLO "https://github.com/gitleaks/gitleaks/releases/download/v${VERSAO}/gitleaks_${VERSAO}_checksums.txt"
+          grep "gitleaks_${VERSAO}_linux_x64.tar.gz" "gitleaks_${VERSAO}_checksums.txt" | sha256sum -c -
+          tar xzf "gitleaks_${VERSAO}_linux_x64.tar.gz" gitleaks
+          cd "$GITHUB_WORKSPACE"
+          "$RUNNER_TEMP/gitleaks" git --redact -v --no-banner --log-opts="${BASE_SHA}..${HEAD_SHA}" . || {
+            echo "::error::Gitleaks encontrou senha/chave nos commits do PR. Remova o segredo, troque a chave e faça push de novo."
+            exit 1
+          }
+
+  python:
+    name: python
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Erros graves em Python (sintaxe, nome indefinido)
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          mapfile -t arquivos < <(git diff --name-only --diff-filter=AM "origin/$BASE...HEAD" -- '*.py')
+          if [ "${#arquivos[@]}" -eq 0 ]; then echo "Nenhum .py alterado"; exit 0; fi
+          pip install --quiet ruff
+          # Só regras de erro de verdade: não reprova estilo, reprova código que quebra
+          ruff check --select E9,F63,F7,F82 --output-format=github "${arquivos[@]}"

@@ -1,0 +1,7 @@
+# Coleta e preparo do dataset (scripts/coletar_web, extrair_frames, deduplicar, baixar_roboflow)
+-r requirements.txt
+httpx==0.28.1
+ImageHash==4.3.2
+yt-dlp==2026.10.21
+python-dotenv==1.2.4
+roboflow==1.7.3                # upload para revisão (subir_roboflow.py)

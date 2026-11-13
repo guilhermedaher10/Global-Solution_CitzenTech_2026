@@ -1,0 +1,15 @@
+# Núcleo: inferência, API e treino.
+# GPU NVIDIA? Instale o PyTorch com CUDA ANTES deste arquivo:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+ultralytics==8.4.208
+opencv-python>=4.9,<5          # 4.x: traz os classificadores Haar usados para borrar rostos
+fastapi==0.162.2
+uvicorn[standard]==0.54.0
+python-multipart==0.0.32
+pydantic==2.14.3
+PyYAML==6.0.3
+pillow==13.0.0; python_version >= "3.11"   # imagem Docker (3.11): 12.x tem CVEs críticas (Trivy)
+pillow==12.3.0; python_version < "3.11"    # venv local de treino (3.10), nunca vai para produção
+numpy==2.2.6
+lap==0.5.14                    # rastreamento ByteTrack no vídeo
+prometheus-client==0.21.1      # GET /metrics (Prometheus/Grafana do 06-devops-cloud)

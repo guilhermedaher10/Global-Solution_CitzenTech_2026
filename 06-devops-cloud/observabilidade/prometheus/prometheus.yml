@@ -1,0 +1,30 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - /etc/prometheus/alertas.yml
+
+scrape_configs:
+  # Visão rodando no docker compose (local)
+  - job_name: visao-local
+    metrics_path: /metrics
+    authorization: # o compose passa o mesmo METRICS_TOKEN para a Visão local
+      type: Bearer
+      credentials_file: /tmp/metrics-token
+    static_configs:
+      - targets: ["visao:8000"]
+        labels: { ambiente: local }
+
+  # Visão publicada na Azure. O endereço vem de alvos/azure.json, gerado por
+  # scripts/alvo-azure.ps1 a partir do "terraform output". Sem o arquivo, o job fica vazio.
+  # O /metrics da nuvem exige token (METRICS_TOKEN): ninguém de fora lê os números do sistema.
+  - job_name: visao-azure
+    scheme: https
+    metrics_path: /metrics
+    authorization:
+      type: Bearer
+      credentials_file: /tmp/metrics-token # criado pelo entrypoint a partir do .env (ver docker-compose.yml)
+    file_sd_configs:
+      - files: ["/etc/prometheus/alvos/azure.json"]
+        refresh_interval: 1m
