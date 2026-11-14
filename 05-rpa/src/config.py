@@ -12,15 +12,21 @@ except ImportError:  # python-dotenv e opcional na hora de rodar testes
 
 RAIZ = Path(__file__).resolve().parent.parent
 
-# Setor responsavel por cada tipo de chamado (fusao.tipos_chamado, contrato da Visao v1.1).
+# Setor responsavel por cada tipo de chamado (fusao.tipos_chamado). trecho_sem_luz e
+# falta_de_energia entraram no contrato da Visao 1.3+ e seguem o mesmo encaminhamento da Visao
+# (04-visao-computacional/configs/regras.yaml, secao encaminhamento).
 SETORES = {
     "conserto_poste": "Iluminação pública: conserto de ponto apagado",
     "instalacao_iluminacao": "Iluminação pública: instalação de novo ponto",
     "poda_ou_obstrucao": "Zeladoria: poda ou obstrução que bloqueia a iluminação",
     "buraco": "Vias públicas: reparo de buraco",
+    "trecho_sem_luz": "Iluminação pública: vistoria de trecho sem iluminação",
+    "falta_de_energia": ("Distribuidora de energia (Enel São Paulo, emergência 0800 72 72 196); "
+                         "Defesa Civil (199) se houver risco"),
 }
 SETOR_PADRAO = "Zeladoria urbana (geral)"
-TIPOS_ILUMINACAO = {"conserto_poste", "instalacao_iluminacao", "poda_ou_obstrucao"}
+TIPOS_ILUMINACAO = {"conserto_poste", "instalacao_iluminacao", "poda_ou_obstrucao", "trecho_sem_luz"}
+TIPOS_ENERGIA = {"falta_de_energia"}
 
 # Texto-base do chamado. CONFIRME com o grupo/professor antes de usar no relatorio.
 FUNDAMENTO_BASE = (
@@ -30,6 +36,10 @@ FUNDAMENTO_BASE = (
 FUNDAMENTO_ILUMINACAO = (
     "A iluminação pública é custeada pela Contribuição para o Custeio do Serviço de "
     "Iluminação Pública (CF/88, art. 149-A)."
+)
+FUNDAMENTO_ENERGIA = (
+    "O fornecimento de energia elétrica é serviço público federal prestado pela distribuidora "
+    "sob concessão (CF/88, art. 21, XII, b), com regulação da ANEEL."
 )
 
 

@@ -12,7 +12,7 @@ Robô da CitizenTech para o tema **ruas escuras priorizadas por risco**. A Visã
 
 ### Onde ele entra na arquitetura
 
-Componente **05 RPA** de [`docs/arquitetura.md`](../docs/arquitetura.md). Consome o JSON da Visão (contrato v1.1, em [`04-visao-computacional/docs/integracao.md`](../04-visao-computacional/docs/integracao.md)) e segue o ciclo de vida do chamado do grupo:
+Componente **05 RPA** de [`docs/arquitetura.md`](../docs/arquitetura.md). Consome o JSON da Visão (contrato v1.1 em diante; os tipos `trecho_sem_luz` e `falta_de_energia` da versão atual, 1.5, já são encaminhados, em [`04-visao-computacional/docs/integracao.md`](../04-visao-computacional/docs/integracao.md)) e segue o ciclo de vida do chamado do grupo:
 
 `recebido` → `validado` (Visão) → `confirmado` (atendente) → **`encaminhado` (RPA)** → `em_reparo` → `resolvido`
 
@@ -80,7 +80,7 @@ No Linux/macOS, use `source .venv/bin/activate` e `cp .env.example .env`.
 
 - `--dry-run`: só decide e registra no log, sem enviar, sem alterar a tabela e sem avisar o n8n.
 - `python scripts/resetar_demo.py`: reconstrói a tabela de exemplo para repetir a demonstração. O robô só processa chamados `confirmado`, então uma segunda execução sem reset não reenvia nada.
-- `python scripts/importar_visao.py <arquivo.jsonl>`: converte respostas da Visão em chamados (`--confirmar` simula o atendente). Aceita um `.json`, um `.jsonl` (como o gerado por `tempo_real.py --eventos` da Visão) ou uma pasta.
+- `python scripts/importar_visao.py <arquivo.jsonl>`: converte respostas da Visão em chamados (`--confirmar` simula o atendente). A Visão não guarda imagem (LGPD); para o chamado sair com foto, a resposta precisa ser pedida com `retornar_imagem=true` (vem a foto anonimizada em `imagem_anonimizada_base64`). Sem foto, o chamado fica em `falha_dados`. Aceita um `.json`, um `.jsonl` (como o gerado por `tempo_real.py --eventos` da Visão) ou uma pasta.
 
 ### Modos de envio (`ENVIO_MODO` no `.env`)
 

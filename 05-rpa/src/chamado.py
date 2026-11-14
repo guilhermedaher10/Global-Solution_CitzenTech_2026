@@ -7,8 +7,8 @@ from pathlib import Path
 from fpdf import FPDF
 
 from . import regras
-from .config import (FUNDAMENTO_BASE, FUNDAMENTO_ILUMINACAO, SETOR_PADRAO, SETORES,
-                     TIPOS_ILUMINACAO, Config)
+from .config import (FUNDAMENTO_BASE, FUNDAMENTO_ENERGIA, FUNDAMENTO_ILUMINACAO, SETOR_PADRAO,
+                     SETORES, TIPOS_ENERGIA, TIPOS_ILUMINACAO, Config)
 
 
 def setores(o: dict) -> list[str]:
@@ -31,6 +31,8 @@ def fundamento(o: dict) -> str:
     texto = FUNDAMENTO_BASE
     if regras.tipos(o) & TIPOS_ILUMINACAO:
         texto += " " + FUNDAMENTO_ILUMINACAO
+    if regras.tipos(o) & TIPOS_ENERGIA:
+        texto += " " + FUNDAMENTO_ENERGIA
     return texto
 
 
