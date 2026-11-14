@@ -131,7 +131,7 @@ publicada na Azure, numa infraestrutura descrita em Terraform, e o Grafana mostr
   <rect class="cx" x="520" y="44" width="186" height="50"/><text class="t" x="532" y="66">Identidade gerenciada</text><text class="s" x="532" y="82">AcrPull + Table Data Contrib.</text>
   <rect class="cx" x="314" y="202" width="186" height="50"/><text class="t" x="326" y="224">Storage · tabela</text><text class="s" x="326" y="240">central de chamados, sem chave</text>
   <rect class="cx" x="520" y="202" width="186" height="50"/><text class="t" x="532" y="224">Log Analytics</text><text class="s" x="532" y="240">30 dias · teto 0,5 GB/dia</text>
-  <rect class="cx" x="314" y="262" width="392" height="36"/><text class="t" x="326" y="285">Orçamento US$ 100/mês</text><text class="s" x="498" y="285">alertas em 50%, 80% e 100%</text>
+  <rect class="cx" x="314" y="262" width="392" height="36"/><text class="t" x="326" y="285">Orçamento R$ 100/mês</text><text class="s" x="498" y="285">alertas em 50%, 80% e 100%</text>
   <path class="l" d="M407 112 L407 96"/><text class="r" x="414" y="108">puxa a imagem</text>
   <path class="l" d="M407 184 L407 200"/>
   <path class="l" d="M613 184 L613 200"/>
@@ -237,6 +237,8 @@ terraform/.gitignore:2:*.tfplan   terraform/central.tfplan
 <span class="com"># versions.tf: backend "azurerm" com use_azuread_auth = true;
 # nomes do state passados por -backend-config, nada da
 # assinatura fica no código</span></pre>
+<figure><img src="../img/az_portal_recursos.png" style="max-height:250px">
+<figcaption>Portal da Azure: o grupo <code>rg-ruasescuras</code> com os 6 recursos criados pelo Terraform, todos em East US</figcaption></figure>
 
 <h3>2.4 Porta de administração nunca aberta</h3>
 <p>Não há VM nem regra de rede com SSH (22) ou RDP (3389): o único ponto de entrada é o <i>ingress</i> HTTPS do Container
@@ -265,10 +267,16 @@ Contributor  ServicePrincipal  …/resourceGroups/rg-ruasescuras
 <span class="cmd">$ az storage account show -n stcentralfoxo70</span>
 chave_compartilhada: <span class="bom">false</span>   tls_minimo: TLS1_2
 acesso_publico_blob: false   so_https: true</pre>
+<div class="duas">
+<figure><img src="../img/az_portal_ingresso.png"><figcaption>Ingress: só HTTP(S), “Insecure connections” <b>desmarcado</b>, nenhuma porta TCP adicional</figcaption></figure>
+<figure><img src="../img/az_portal_escala.png"><figcaption>Escala: mínimo <b>0</b> e máximo <b>2</b> réplicas, regra por requisições simultâneas; 0 réplicas no momento do print (dormindo)</figcaption></figure>
+</div>
+<figure><img src="../img/az_portal_identidade.png" style="max-height:120px"><figcaption>Identidade gerenciada da Visão: apenas <b>AcrPull</b> no registro e <b>Storage Table Data Contributor</b> na conta da central</figcaption></figure>
+<figure><img src="../img/az_portal_storage.png" style="max-height:240px"><figcaption>Storage da central: “Allow storage account key access” <b>Disabled</b>, transferência segura obrigatória, acesso anônimo desligado e TLS 1.2</figcaption></figure>
 <p>Menor privilégio: a identidade do container só pode <b>puxar imagens</b> do registro e <b>escrever na tabela</b> da
 central; a identidade do pipeline é <i>Contributor</i> apenas no grupo da aplicação e não pode conceder permissões.</p>
 
-<h2 class="quebra">3. Pipeline DevSecOps</h2>
+<h2>3. Pipeline DevSecOps</h2>
 <p>O workflow <a href="https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026/blob/main/.github/workflows/06-devops-cloud.yml"><code>.github/workflows/06-devops-cloud.yml</code></a>
 roda a cada push e pull request. Quatro portões correm em paralelo; o deploy depende de todos
 (<code>needs: [gitleaks, semgrep, build, terraform]</code>): <b>qualquer um vermelho, nada é publicado</b>.</p>
@@ -293,6 +301,9 @@ Deploy     {"status":"ok","modelo_carregado":true,...,"versao_contrato":"1.5"}
 Deploy     central respondendo
 Deploy     <span class="bom">no ar: https://ca-ruasescuras-visao.bravehill-24590cb4.eastus.azurecontainerapps.io</span></pre>
 
+<figure><img src="../img/az_portal_tags.png" style="max-height:230px">
+<figcaption>Container Registry: uma imagem por commit publicado (a tag é o hash do commit), todas enviadas pelo pipeline</figcaption></figure>
+
 <h3>3.2 Segredos no GitHub Secrets, nunca no código</h3>
 <div class="duas">
 <pre class="term"><span class="cmd">$ gh secret list   (só os nomes: o valor nunca aparece)</span>
@@ -308,6 +319,19 @@ recebe um token de curta duração, válido só para este repositório (branch <
 identificadores (não senhas), o e-mail do orçamento e o token que protege <code>/metrics</code>. No log, todos
 aparecem como <code>***</code>.</p></div>
 </div>
+
+<pre class="term"><span class="cmd">$ az ad app federated-credential list --id &lt;app gh-ruasescuras-deploy&gt;</span>
+Nome            Subject
+--------------  ------------------------------------------------------------------------
+github-main     repo:guilhermedaher10/Global-Solution_CitzenTech_2026:ref:refs/heads/main
+github-pr       repo:guilhermedaher10/Global-Solution_CitzenTech_2026:pull_request
+github-main-id  repo:guilhermedaher10@346135415/Global-Solution_CitzenTech_2026@1452020905:ref:refs/heads/main
+github-pr-id    repo:guilhermedaher10@346135415/Global-Solution_CitzenTech_2026@1452020905:pull_request
+
+<span class="cmd">$ az ad app credential list --id &lt;app gh-ruasescuras-deploy&gt; --query "length(@)"</span>
+<span class="bom">0</span>     <span class="com"># nenhum segredo de cliente: o pipeline entra só por OIDC</span></pre>
+<p style="font-size:8.6pt;color:var(--cinza)">Saída da linha de comando: na conta Azure for Students, o diretório (Entra ID) não
+libera a tela de registros de aplicativo no portal para o aluno, mas o dono do aplicativo consegue consultá-lo pela CLI.</p>
 
 <h3>3.3 Execução barrada e a corrigida (1): Trivy encontrou 61 vulnerabilidades</h3>
 <div class="duas">
@@ -357,7 +381,9 @@ agregadas: nenhum dado pessoal.</p>
 <figcaption>Prometheus lendo os dois alvos: o MVP <b>publicado na Azure</b> (HTTPS, com token) e a Visão do <code>docker compose</code>. Ambos UP</figcaption></figure>
 <figure><img src="../img/grafana_local.png" style="max-height:520px">
 <figcaption>Painel “Vésper · 4 métricas de ouro” com o ambiente <code>local</code> sob carga de teste (4 clientes simultâneos enviando fotos, consultas e alertas do robô, sem abrir chamados reais): tráfego por rota, 4xx de pedidos inválidos de propósito, latência p50/p95/p99 da análise e saturação (análises simultâneas, CPU e memória)</figcaption></figure>
-<figure><img src="../img/grafana_azure.png" style="max-height:520px">
+<figure><img src="../img/az_portal_metricas.png" style="max-height:260px">
+<figcaption>Azure Monitor do Container App: <b>636 requisições reais</b> nos últimos 7 dias (uso do site, deploys com smoke test e o Prometheus), nas mesmas datas dos testes do MVP</figcaption></figure>
+<figure><img src="../img/grafana_azure.png" style="max-height:280px">
 <figcaption>O mesmo painel com o ambiente <code>azure</code>: o MVP publicado está <b>NO AR</b>, com o modelo carregado, lido pela internet a cada 15 s. Não foi gerada carga artificial na produção; o tráfego mostrado é o real do momento</figcaption></figure>
 <h3>Alerta disparado</h3>
 <p>Para provar que o alerta funciona, a Visão local foi parada de propósito (<code>docker compose stop visao</code>). Em
@@ -373,7 +399,7 @@ API fora do ar. Com <code>docker compose start visao</code>, o alerta foi resolv
 compensa; para uma demonstração sem espera, basta subir <code>visao_min_replicas</code> para 1 no Terraform
 (cenário B da seção 5.3).</p>
 
-<h2 class="quebra">5. Documentação</h2>
+<h2>5. Documentação</h2>
 <h3>5.1 Responsabilidade compartilhada</h3>
 <table>
   <tr><th style="width:22%">Quem</th><th>Cuida de</th></tr>
@@ -397,7 +423,7 @@ passam para a Microsoft; a imagem e tudo o que está dentro dela continuam sendo
 
 <h3>5.3 Custo</h3>
 <p>Preços públicos de tabela (pay-as-you-go, East US, nov/2026; US$ 1 = R$ 5,50). Assinatura <b>Azure for Students</b>,
-com limite de gasto: quando o crédito acaba os recursos param, sem cobrança. Detalhes em
+com limite de gasto: quando o crédito acaba os recursos param, sem cobrança. A fatura dessa assinatura é em <b>reais</b>. Detalhes em
 <a href="https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026/blob/main/06-devops-cloud/docs/custo.md"><code>docs/custo.md</code></a>.</p>
 <div class="duas">
 <table>
@@ -413,13 +439,15 @@ com limite de gasto: quando o crédito acaba os recursos param, sem cobrança. D
   <tr><td><b>A.</b> Escala a zero, ~1.000 análises/mês</td><td class="n">~5</td><td class="n">~28</td></tr>
   <tr><td><b>B.</b> Sempre acordada (1 vCPU, 2 GiB)</td><td class="n">~27</td><td class="n">~150</td></tr>
   <tr><td><b>B'.</b> Sempre acordada (0,5 vCPU, 1 GiB)</td><td class="n">~16</td><td class="n">~90</td></tr>
-  <tr><td><b>Real até 13/11</b> (orçamento da Azure)</td><td class="n"><b>1,40</b></td><td class="n"><b>~7,70</b></td></tr>
+  <tr><td><b>Real em nov/2026, até 13/11</b> (Azure)</td><td class="n"><b>~0,27</b></td><td class="n"><b>1,47</b></td></tr>
 </table>
 </div>
-<pre class="term"><span class="cmd">$ az consumption budget list -g rg-ruasescuras -o table</span>
-Nome                   Valor    Periodo    Gasto_atual
----------------------  -------  ---------  ------------------
-orcamento-ruasescuras  100.0    Monthly    <span class="bom">1.3952804490491806</span></pre>
+<figure><img src="../img/az_portal_custo.png" style="max-height:250px">
+<figcaption>Análise de custo de novembro: <b>R$ 1,47</b> no total, quase tudo do Container Registry (R$ 1,42); o Container Apps custou R$ 0,05 graças à escala a zero</figcaption></figure>
+<pre class="term"><span class="cmd">$ az consumption budget show --budget-name orcamento-ruasescuras -g rg-ruasescuras</span>
+valor: 100.0  (BRL, mensal, alertas em 50%, 80% e 100%)
+gasto: <span class="bom">1.4699 BRL</span>
+<span class="com"># o orçamento é do grupo de recursos; por isso não aparece na tela de Orçamentos da conta de cobrança</span></pre>
 <p><b>Proteções contra gasto inesperado:</b> escala a zero por padrão e teto de 2 réplicas; orçamento com e-mail em 50%,
 80% e 100% do real e em 100% do previsto; cota diária no Log Analytics; e, depois da avaliação,
 <code>terraform destroy</code> e remoção do grupo do state.</p>
