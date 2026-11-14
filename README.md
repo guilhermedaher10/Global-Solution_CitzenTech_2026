@@ -122,6 +122,7 @@ O merge só libera quando:
    - não tem senha ou chave vazada (Gitleaks);
    - não tem `.env`, vídeo, state do Terraform nem arquivo acima de 10 MB;
    - o Python não tem erro de sintaxe nem nome indefinido;
+   - os **testes automatizados** de cada pasta alterada passam (`tests/` com pytest + `requirements.txt` na pasta da matéria);
    - o título está no formato `pasta: descrição` (ex.: `rpa: fluxo de registro dos chamados`).
 2. **Quem abriu o PR faz o merge** (botão **Squash and merge**). Não precisa de aprovação de outra pessoa, mas o robô precisa estar ✅.
 

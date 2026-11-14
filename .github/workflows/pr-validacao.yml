@@ -140,3 +140,46 @@ jobs:
           pip install --quiet ruff
           # Só regras de erro de verdade: não reprova estilo, reprova código que quebra
           ruff check --select E9,F63,F7,F82 --output-format=github "${arquivos[@]}"
+
+  # Roda os testes automatizados de cada pasta de matéria que o PR alterou.
+  # Sempre termina (verde quando nenhuma pasta com testes mudou), para poder ser exigido na proteção da main.
+  # Regra para quem cria testes: pasta tests/ (pytest) + requirements.txt na raiz da matéria.
+  testes-das-pastas:
+    name: testes-das-pastas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Testes das matérias alteradas
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          mapfile -t pastas < <(git diff --name-only "origin/$BASE...HEAD" | grep -oE '^0[1-7]-[^/]+' | sort -u)
+          testou=0
+          for p in "${pastas[@]}"; do
+            [ -d "$p/tests" ] || { echo "$p: sem pasta tests/, nada a rodar"; continue; }
+            echo "::group::$p"
+            python -m venv "$RUNNER_TEMP/venv-$p"
+            source "$RUNNER_TEMP/venv-$p/bin/activate"
+            pip install --quiet --upgrade pip
+            if [ "$p" = "04-visao-computacional" ]; then
+              # sem PyTorch: os testes da Visão usam um detector falso (mesma lista do workflow da pasta 04)
+              pip install --quiet "opencv-python-headless>=4.9,<5" fastapi python-multipart pydantic PyYAML pillow numpy pytest httpx "prometheus-client==0.21.1"
+            else
+              [ -f "$p/requirements.txt" ] && pip install --quiet -r "$p/requirements.txt"
+              pip install --quiet pytest
+            fi
+            (cd "$p" && python -m pytest -q -p no:cacheprovider) || {
+              echo "::error::Testes de $p falharam. Rode 'pytest' dentro de $p/, corrija e dê push de novo."
+              exit 1
+            }
+            deactivate
+            echo "::endgroup::"
+            testou=$((testou+1))
+          done
+          echo "Pastas testadas: $testou"
