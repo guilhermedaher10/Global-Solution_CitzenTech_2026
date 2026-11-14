@@ -17,7 +17,7 @@ def cfg(tmp_path) -> Config:
     shutil.copytree(RAIZ / "data", tmp_path / "data")
     return replace(
         Config(),
-        csv_path=tmp_path / "data" / "ocorrencias.csv",
+        csv_path=tmp_path / "data" / "chamados.csv",
         outbox_dir=tmp_path / "outbox",
         logs_dir=tmp_path / "logs",
         envio_modo="mock",

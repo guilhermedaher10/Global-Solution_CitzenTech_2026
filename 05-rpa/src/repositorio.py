@@ -1,7 +1,8 @@
-"""Leitura/escrita da tabela de ocorrencias.
+"""Leitura/escrita da tabela de chamados.
 
-Aqui o CSV simula a tabela Ouro do pipeline de dados. Para ligar no Databricks/SQL de verdade,
-troque apenas estas duas funcoes (ler/salvar) mantendo a mesma assinatura.
+O arquitetura.md do grupo preve que o RPA leia/escreva "no banco ou na API do backend", mas o
+backend ainda nao foi definido. Por isso o CSV faz o papel do banco de chamados.
+Para ligar no backend real, troque so estas duas funcoes (ler/salvar), mantendo a assinatura.
 """
 from __future__ import annotations
 
@@ -9,10 +10,15 @@ import csv
 import os
 from pathlib import Path
 
+# Colunas vindas do contrato da Visao (ver contrato.de_visao_v11) + status do ciclo de vida
+# + colunas escritas pelo RPA (rpa_etapa, chamado_principal, protocolo, ...).
 CAMPOS_PADRAO = [
-    "id", "poste_id", "data_hora", "latitude", "longitude", "lux_medido", "foto",
-    "descricao_ia", "confianca_ia", "severidade", "escola_proxima", "ponto_onibus_proximo",
-    "status", "prioridade", "protocolo", "data_envio", "chamado_pdf", "observacao",
+    "id_captura", "timestamp", "origem", "latitude", "longitude", "sensor_lux",
+    "status_trecho", "postes_apagados", "tipos_chamado", "confirmacao",
+    "prioridade_nivel", "prioridade_pontuacao", "fatores", "motivos", "modelo", "foto",
+    "status",
+    "rpa_etapa", "chamado_principal", "protocolo", "data_encaminhamento", "chamado_pdf",
+    "motivo_rpa",
 ]
 
 
@@ -34,6 +40,7 @@ def ler(csv_path: Path) -> tuple[list[str], list[dict]]:
 
 def salvar(csv_path: Path, campos: list[str], linhas: list[dict]) -> None:
     """Escrita atomica: grava num temporario e troca, para nao corromper o CSV se o robo cair."""
+    csv_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = csv_path.with_suffix(".tmp")
     with tmp.open("w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=campos, extrasaction="ignore")

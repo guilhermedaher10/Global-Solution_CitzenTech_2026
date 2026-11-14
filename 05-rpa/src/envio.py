@@ -1,4 +1,4 @@
-"""Envio do chamado: mock (.eml em disco), smtp (e-mail real) ou portal (fila para o UiPath)."""
+"""Registro do chamado na prefeitura: mock (.eml em disco), smtp (e-mail real) ou portal (fila UiPath)."""
 from __future__ import annotations
 
 import csv
@@ -10,8 +10,8 @@ from datetime import date
 from email.message import EmailMessage
 from pathlib import Path
 
+from .chamado import descricao_curta, setores
 from .config import Config
-from .regras import Decisao
 
 
 class ErroEnvio(Exception):
@@ -20,9 +20,10 @@ class ErroEnvio(Exception):
 
 @dataclass(frozen=True)
 class ResultadoEnvio:
-    status: str      # ENVIADO | FILA_PORTAL
-    protocolo: str
+    etapa: str          # enviado | na_fila_portal   (coluna rpa_etapa)
+    protocolo: str      # vazio enquanto o portal nao devolve o numero
     canal: str
+    encaminhado: bool   # True: o chamado ja pode passar a status `encaminhado`
 
 
 def com_retry(fn, tentativas: int, espera_base: float, log: logging.Logger, rotulo: str):
@@ -39,33 +40,37 @@ def com_retry(fn, tentativas: int, espera_base: float, log: logging.Logger, rotu
             time.sleep(espera)
 
 
-def _montar_email(o: dict, decisao: Decisao, pdf: Path, cfg: Config) -> EmailMessage:
+def _montar_email(o: dict, n_agrupados: int, pdf: Path, cfg: Config) -> EmailMessage:
+    nivel = o["prioridade_nivel"]
     msg = EmailMessage()
     msg["From"] = cfg.remetente
     msg["To"] = cfg.destino_email
-    msg["Subject"] = f"[{decisao.prioridade}] Iluminacao publica - poste {o['poste_id']} ({o['id']})"
+    msg["Subject"] = f"[{nivel.upper()}] Iluminação pública, chamado {o['id_captura']}"
+    extra = f"Consolida {n_agrupados} chamado(s) do mesmo trecho.\n" if n_agrupados else ""
     msg.set_content(
-        f"Segue chamado de manutencao de iluminacao publica.\n\n"
-        f"Poste: {o['poste_id']}\nPrioridade: {decisao.prioridade} ({decisao.motivo})\n"
-        f"Coordenadas: {o['latitude']}, {o['longitude']}\n\n"
-        f"Detalhes e foto no PDF anexo.\n"
+        f"Segue chamado de manutenção.\n\n"
+        f"Setor: {'; '.join(setores(o))}\n"
+        f"Prioridade: {nivel.upper()} (prazo sugerido: {cfg.prazos.get(nivel, 'a definir')})\n"
+        f"Coordenadas: {o['latitude']}, {o['longitude']}\n"
+        f"{extra}\nDetalhes e foto no PDF anexo.\n"
     )
     msg.add_attachment(pdf.read_bytes(), maintype="application", subtype="pdf", filename=pdf.name)
     return msg
 
 
-def enviar(o: dict, decisao: Decisao, pdf: Path, cfg: Config, hoje: date,
+def enviar(o: dict, n_agrupados: int, pdf: Path, cfg: Config, hoje: date,
            log: logging.Logger) -> ResultadoEnvio:
-    protocolo = f"CH-{hoje:%Y%m%d}-{o['id']}"
+    cid = o["id_captura"]
+    protocolo = f"CH-{hoje:%Y%m%d}-{cid}"  # referencia interna; o portal devolve o numero oficial
 
     if cfg.envio_modo == "mock":
         pasta = cfg.outbox_dir / "emails"
         pasta.mkdir(parents=True, exist_ok=True)
-        (pasta / f"{o['id']}.eml").write_bytes(bytes(_montar_email(o, decisao, pdf, cfg)))
-        return ResultadoEnvio("ENVIADO", protocolo, "mock")
+        (pasta / f"{cid}.eml").write_bytes(bytes(_montar_email(o, n_agrupados, pdf, cfg)))
+        return ResultadoEnvio("enviado", protocolo, "mock", True)
 
     if cfg.envio_modo == "smtp":
-        msg = _montar_email(o, decisao, pdf, cfg)
+        msg = _montar_email(o, n_agrupados, pdf, cfg)
 
         def _smtp():
             with smtplib.SMTP(cfg.smtp_host, cfg.smtp_port, timeout=30) as s:
@@ -74,8 +79,8 @@ def enviar(o: dict, decisao: Decisao, pdf: Path, cfg: Config, hoje: date,
                     s.login(cfg.smtp_user, cfg.smtp_senha)
                 s.send_message(msg)
 
-        com_retry(_smtp, cfg.max_tentativas, cfg.backoff_base_s, log, f"smtp {o['id']}")
-        return ResultadoEnvio("ENVIADO", protocolo, "smtp")
+        com_retry(_smtp, cfg.max_tentativas, cfg.backoff_base_s, log, f"smtp {cid}")
+        return ResultadoEnvio("enviado", protocolo, "smtp", True)
 
     if cfg.envio_modo == "portal":
         cfg.outbox_dir.mkdir(parents=True, exist_ok=True)
@@ -84,10 +89,10 @@ def enviar(o: dict, decisao: Decisao, pdf: Path, cfg: Config, hoje: date,
         with fila.open("a", newline="", encoding="utf-8") as f:
             w = csv.writer(f)
             if novo:
-                w.writerow(["id", "poste_id", "latitude", "longitude", "prioridade",
-                            "descricao", "pdf"])
-            w.writerow([o["id"], o["poste_id"], o["latitude"], o["longitude"],
-                        decisao.prioridade, o.get("descricao_ia", ""), str(pdf)])
-        return ResultadoEnvio("FILA_PORTAL", "", "portal")
+                w.writerow(["id_captura", "latitude", "longitude", "tipos_chamado",
+                            "prioridade", "descricao", "pdf", "agrupados"])
+            w.writerow([cid, o["latitude"], o["longitude"], o["tipos_chamado"],
+                        o["prioridade_nivel"], descricao_curta(o), str(pdf), n_agrupados])
+        return ResultadoEnvio("na_fila_portal", "", "portal", False)
 
     raise ErroEnvio(f"ENVIO_MODO desconhecido: {cfg.envio_modo!r}")

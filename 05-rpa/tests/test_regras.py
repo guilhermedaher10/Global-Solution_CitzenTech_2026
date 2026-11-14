@@ -1,73 +1,69 @@
-from datetime import date
-
 from src import regras
 
-HOJE = date(2026, 11, 9)
 
-
-def ocorrencia(**kw) -> dict:
+def chamado(**kw) -> dict:
     base = {
-        "id": "T-1", "poste_id": "P-101", "latitude": "-23.55", "longitude": "-46.63",
-        "foto": "fotos/P-101.jpg", "confianca_ia": "0.90", "severidade": "moderada",
-        "escola_proxima": "0", "ponto_onibus_proximo": "0", "status": "PENDENTE",
+        "id_captura": "T-1", "latitude": "-23.55", "longitude": "-46.63",
+        "foto": "fotos/C-001.jpg", "prioridade_nivel": "alta", "prioridade_pontuacao": "90",
+        "tipos_chamado": "conserto_poste",
     }
     base.update(kw)
     return base
 
 
-def test_sucesso_normal(cfg):
-    d = regras.avaliar(ocorrencia(), [], HOJE, cfg)
-    assert (d.acao, d.prioridade) == (regras.ENVIAR, "NORMAL")
-
-
-def test_urgente_por_escola(cfg):
-    d = regras.avaliar(ocorrencia(escola_proxima="1"), [], HOJE, cfg)
-    assert (d.acao, d.prioridade) == (regras.ENVIAR, "URGENTE")
-
-
-def test_urgente_por_ponto_de_onibus(cfg):
-    d = regras.avaliar(ocorrencia(ponto_onibus_proximo="1"), [], HOJE, cfg)
-    assert d.prioridade == "URGENTE"
-
-
-def test_urgente_por_escuridao_severa(cfg):
-    d = regras.avaliar(ocorrencia(severidade="severa"), [], HOJE, cfg)
-    assert d.prioridade == "URGENTE"
+def test_dados_validos(cfg):
+    assert regras.avaliar(chamado(), cfg).acao == regras.ENVIAR
 
 
 def test_falha_sem_coordenada(cfg):
-    d = regras.avaliar(ocorrencia(latitude="", longitude=""), [], HOJE, cfg)
+    d = regras.avaliar(chamado(latitude="", longitude=""), cfg)
     assert d.acao == regras.FALHA_DADOS
-    assert "latitude ausente" in d.motivo
+    assert "latitude ausente" in d.motivo and "longitude ausente" in d.motivo
 
 
 def test_falha_coordenada_fora_do_intervalo(cfg):
-    d = regras.avaliar(ocorrencia(latitude="123"), [], HOJE, cfg)
-    assert d.acao == regras.FALHA_DADOS
+    assert regras.avaliar(chamado(latitude="123"), cfg).acao == regras.FALHA_DADOS
+
+
+def test_falha_coordenada_nao_numerica(cfg):
+    assert regras.avaliar(chamado(longitude="abc"), cfg).acao == regras.FALHA_DADOS
+
+
+def test_falha_foto_ausente(cfg):
+    d = regras.avaliar(chamado(foto=""), cfg)
+    assert d.acao == regras.FALHA_DADOS and "foto ausente" in d.motivo
 
 
 def test_falha_foto_inexistente(cfg):
-    d = regras.avaliar(ocorrencia(foto="fotos/nao_existe.jpg"), [], HOJE, cfg)
-    assert d.acao == regras.FALHA_DADOS
+    d = regras.avaliar(chamado(foto="fotos/nao_existe.jpg"), cfg)
+    assert d.acao == regras.FALHA_DADOS and "nao encontrado" in d.motivo
 
 
-def test_duplicado_dentro_da_janela(cfg):
-    anterior = ocorrencia(id="T-0", status="ENVIADO", data_envio="2026-10-25")
-    d = regras.avaliar(ocorrencia(), [anterior], HOJE, cfg)
-    assert d.acao == regras.DESCARTAR_DUPLICADO
+def test_falha_foto_fora_da_pasta_de_dados(cfg):
+    d = regras.avaliar(chamado(foto="../fora.jpg"), cfg)
+    assert d.acao == regras.FALHA_DADOS and "fora da pasta" in d.motivo
 
 
-def test_nao_duplicado_fora_da_janela(cfg):
-    anterior = ocorrencia(id="T-0", status="ENVIADO", data_envio="2026-09-01")
-    d = regras.avaliar(ocorrencia(), [anterior], HOJE, cfg)
-    assert d.acao == regras.ENVIAR
+def test_falha_nivel_de_prioridade_invalido(cfg):
+    assert regras.avaliar(chamado(prioridade_nivel="urgentissima"), cfg).acao == regras.FALHA_DADOS
+    assert regras.avaliar(chamado(prioridade_nivel=""), cfg).acao == regras.FALHA_DADOS
 
 
-def test_revisao_humana_por_baixa_confianca(cfg):
-    d = regras.avaliar(ocorrencia(confianca_ia="0.55"), [], HOJE, cfg)
-    assert d.acao == regras.REVISAO_HUMANA
+def test_falha_pontuacao_invalida(cfg):
+    assert regras.avaliar(chamado(prioridade_pontuacao="muito"), cfg).acao == regras.FALHA_DADOS
 
 
-def test_aprovado_ignora_limiar(cfg):
-    d = regras.avaliar(ocorrencia(confianca_ia="0.55", status="APROVADO"), [], HOJE, cfg)
-    assert d.acao == regras.ENVIAR
+def test_falha_id_com_caminho(cfg):
+    # id_captura vira nome de arquivo (PDF, e-mail): nao pode carregar "../"
+    assert regras.avaliar(chamado(id_captura="../x"), cfg).acao == regras.FALHA_DADOS
+    assert regras.avaliar(chamado(id_captura=""), cfg).acao == regras.FALHA_DADOS
+
+
+def test_tipos_sem_informacao_valem_geral():
+    assert regras.tipos({"tipos_chamado": ""}) == {"geral"}
+    assert regras.tipos({"tipos_chamado": "conserto_poste|buraco"}) == {"conserto_poste", "buraco"}
+
+
+def test_pontuacao_em_branco_vale_zero():
+    assert regras.pontuacao({"prioridade_pontuacao": ""}) == 0
+    assert regras.pontuacao({"prioridade_pontuacao": "87.0"}) == 87
