@@ -1,7 +1,7 @@
 apiVersion: 1
 providers:
   - name: ruas-escuras
-    folder: Ruas Escuras
+    folder: Vésper
     type: file
     disableDeletion: true
     options:

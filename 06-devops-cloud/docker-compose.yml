@@ -7,7 +7,7 @@
 #   Visão (API + /docs) ...... http://localhost:8000/docs
 #   GenAI (assistente) ....... http://localhost:8001/docs
 #   Prometheus ............... http://localhost:9090      (alertas em /alerts)
-#   Grafana .................. http://localhost:3000      (painel "Ruas Escuras · 4 métricas de ouro")
+#   Grafana .................. http://localhost:3000      (painel "Vésper · 4 métricas de ouro")
 #
 # Monitorar a NUVEM em vez do local: ver README (perfil "nuvem").
 name: ruas-escuras

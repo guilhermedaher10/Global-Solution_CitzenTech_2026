@@ -2,11 +2,11 @@
 
 **Professores:** Gabriel Henrique Boyczuk Arcanjo e Cleórbete Santos
 
-**Responsável:** Guilherme Gonçalves Calil Daher · RM 98611
+**Responsável:** Guilherme Daher · RM 98611
 
-**URL pública do MVP:** https://ca-ruasescuras-visao.bravehill-24590cb4.eastus.azurecontainerapps.io/docs · **Vídeo:** _(link)_
+**MVP no ar:** https://ca-ruasescuras-visao.bravehill-24590cb4.eastus.azurecontainerapps.io (API em [/docs](https://ca-ruasescuras-visao.bravehill-24590cb4.eastus.azurecontainerapps.io/docs)) · **Relatório (PDF):** [docs/Relatorio-DevOps-Cloud.pdf](docs/Relatorio-DevOps-Cloud.pdf) · **Vídeo:** _(link)_
 
-O MVP Ruas Escuras vai para a nuvem **sem ninguém clicar em botão**: cada push na `main` passa por um pipeline que
+O MVP **Vésper** vai para a nuvem **sem ninguém clicar em botão**: cada push na `main` passa por um pipeline que
 barra segredo vazado, código inseguro e dependência vulnerável; só então publica na Azure, em infraestrutura
 criada por Terraform, e o Grafana mostra a saúde do sistema com as 4 métricas de ouro.
 
@@ -106,7 +106,7 @@ copy .env.example .env                 # Linux/Mac: cp. Troque GRAFANA_SENHA.
 docker compose up -d --build           # 1ª vez baixa ~1,3 GB de modelos do GenAI
 ```
 Visão: http://localhost:8000/docs · GenAI: http://localhost:8001/docs · Prometheus: http://localhost:9090 ·
-Grafana: http://localhost:3000 (painel **Ruas Escuras · 4 métricas de ouro**).
+Grafana: http://localhost:3000 (painel **Vésper · 4 métricas de ouro**).
 
 Disparar um alerta de propósito (evidência): `docker compose stop visao` → em ~1 min **VisaoForaDoAr** fica
 *firing* em http://localhost:9090/alerts. `docker compose start visao` resolve.
@@ -138,10 +138,11 @@ az group delete -n rg-ruasescuras-tfstate --yes   # state
 az group delete -n rg-ruasescuras --yes
 ```
 
-## Evidências (para o PDF)
-- [ ] Execução **barrada** e **corrigida** do pipeline (Semgrep e Trivy na 1ª execução; Gitleaks no PR #8)
-- [ ] `terraform plan` / `apply` no Actions
-- [ ] URL pública respondendo `/saude` e `/docs`
-- [ ] Painel do Grafana com tráfego, erros, latência e saturação
-- [ ] Alerta **firing** no Prometheus
-- [ ] Recursos no portal da Azure + orçamento configurado
+## Evidências
+Todas reunidas no [relatório em PDF](docs/Relatorio-DevOps-Cloud.pdf) (fonte: [docs/relatorio/relatorio-devops.html](docs/relatorio/relatorio-devops.html)):
+- [x] Execução **barrada** e **corrigida**: Trivy (61 vulnerabilidades → 0) e Semgrep (MD5/SHA1 → 0)
+- [x] `terraform plan` / `apply` no Actions e deploy automático com smoke test
+- [x] URL pública respondendo `/saude` e `/docs`; ingress só HTTPS, sem porta de administração (consulta `az`)
+- [x] Painel do Grafana com tráfego, erros, latência e saturação, lendo a Azure e o local
+- [x] Alerta **firing** no Prometheus
+- [x] Recursos na Azure, papéis de menor privilégio e orçamento (consultas `az`)
