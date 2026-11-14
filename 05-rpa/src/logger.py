@@ -6,7 +6,7 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
-CAMPOS_AUDITORIA = ["timestamp", "execucao_id", "ocorrencia_id", "acao", "resultado", "detalhe"]
+CAMPOS_AUDITORIA = ["timestamp", "execucao_id", "id_captura", "acao", "resultado", "detalhe"]
 
 
 def configurar_logging(logs_dir: Path) -> logging.Logger:
@@ -38,9 +38,9 @@ class Auditoria:
             with self.path.open("w", newline="", encoding="utf-8") as f:
                 csv.writer(f).writerow(CAMPOS_AUDITORIA)
 
-    def registrar(self, ocorrencia_id: str, acao: str, resultado: str, detalhe: str = "") -> None:
+    def registrar(self, id_captura: str, acao: str, resultado: str, detalhe: str = "") -> None:
         with self.path.open("a", newline="", encoding="utf-8") as f:
             csv.writer(f).writerow(
                 [datetime.now().isoformat(timespec="seconds"), self.execucao_id,
-                 ocorrencia_id, acao, resultado, detalhe]
+                 id_captura, acao, resultado, detalhe]
             )

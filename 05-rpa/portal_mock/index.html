@@ -16,14 +16,14 @@
 </head>
 <body>
   <h1>Portal de Zeladoria</h1>
-  <p class="aviso">Portal SIMULADO para demonstracao do robo. Nao e um sistema de nenhuma prefeitura.</p>
+  <p class="aviso">Portal SIMULADO para demonstração do robô. Não é um sistema de nenhuma prefeitura.</p>
 
   <form id="form-chamado">
-    <label for="id_ocorrencia">ID da ocorrencia</label>
-    <input id="id_ocorrencia" name="id_ocorrencia" required>
+    <label for="id_captura">Chamado (id_captura)</label>
+    <input id="id_captura" name="id_captura" required>
 
-    <label for="poste_id">Poste</label>
-    <input id="poste_id" name="poste_id" required>
+    <label for="tipos_chamado">Tipo do chamado</label>
+    <input id="tipos_chamado" name="tipos_chamado" required placeholder="conserto_poste, buraco, ...">
 
     <label for="latitude">Latitude</label>
     <input id="latitude" name="latitude" required>
@@ -33,11 +33,12 @@
 
     <label for="prioridade">Prioridade</label>
     <select id="prioridade" name="prioridade">
-      <option value="NORMAL">Normal</option>
-      <option value="URGENTE">Urgente</option>
+      <option value="alta">Alta</option>
+      <option value="media">Média</option>
+      <option value="baixa">Baixa</option>
     </select>
 
-    <label for="descricao">Descricao</label>
+    <label for="descricao">Descrição</label>
     <textarea id="descricao" name="descricao" rows="3"></textarea>
 
     <button id="btn_enviar" type="submit">Enviar chamado</button>

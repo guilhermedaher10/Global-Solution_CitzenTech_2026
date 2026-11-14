@@ -1,36 +1,46 @@
-"""Volta a tabela de exemplo ao estado inicial para repetir a demonstracao.
+"""Reconstroi a tabela de exemplo (data/chamados.csv) a partir de data/visao_exemplos.jsonl.
 
-Todas as ocorrencias voltam para PENDENTE (a O-010 volta APROVADO, simulando a
-aprovacao humana) e as saidas geradas em outbox/ sao apagadas.
+Estado inicial da demonstracao:
+  - C-000: ja encaminhado em 28/10 (serve para testar o agrupamento com chamado existente)
+  - C-011: `validado`, ainda aguardando o atendente (o robo nao o processa e o n8n avisa)
+  - os demais: `confirmado`, prontos para o robo
+Tambem apaga as saidas geradas em outbox/ (e-mails, PDFs, fila do portal).
 """
-import csv
 import shutil
+import sys
 from pathlib import Path
 
-raiz = Path(__file__).resolve().parent.parent
-p = raiz / "data" / "ocorrencias.csv"
+RAIZ = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(RAIZ))
 
-with p.open(newline="", encoding="utf-8") as f:
-    leitor = csv.DictReader(f)
-    campos = leitor.fieldnames
-    linhas = list(leitor)
+from src import contrato, repositorio  # noqa: E402
 
-for linha in linhas:
-    if linha["id"] == "O-000":  # chamado antigo, usado no teste de duplicidade
-        continue
-    aprovada = linha["id"] == "O-010"
-    linha["status"] = "APROVADO" if aprovada else "PENDENTE"
-    for c in ("prioridade", "protocolo", "data_envio", "chamado_pdf"):
-        linha[c] = ""
-    linha["observacao"] = "aprovado manualmente apos revisao" if aprovada else ""
+EVENTOS = RAIZ / "data" / "visao_exemplos.jsonl"
+CSV = RAIZ / "data" / "chamados.csv"
 
-with p.open("w", newline="", encoding="utf-8") as f:
-    w = csv.DictWriter(f, fieldnames=campos)
-    w.writeheader()
-    w.writerows(linhas)
+ESTADO_INICIAL = {
+    "C-000": {"status": "encaminhado", "rpa_etapa": "enviado", "protocolo": "CH-20261028-C-000",
+              "data_encaminhamento": "2026-10-28", "chamado_pdf": "chamado_C-000.pdf"},
+    "C-011": {"status": "validado"},
+}
 
-for pasta in ("emails", "chamados"):
-    shutil.rmtree(raiz / "outbox" / pasta, ignore_errors=True)
-(raiz / "outbox" / "fila_portal.csv").unlink(missing_ok=True)
-(raiz / "outbox" / "protocolos_portal.csv").unlink(missing_ok=True)
-print("demo resetada")
+
+def main() -> None:
+    linhas = []
+    for ev in contrato.ler_eventos(EVENTOS):
+        linha = contrato.de_visao_v11(ev)
+        linha["foto"] = contrato.foto_do_evento(ev, CSV.parent)
+        linha["status"] = contrato.CONFIRMADO
+        linha.update(ESTADO_INICIAL.get(linha["id_captura"], {}))
+        linhas.append(linha)
+    repositorio.salvar(CSV, repositorio.CAMPOS_PADRAO, linhas)
+
+    for pasta in ("emails", "chamados"):
+        shutil.rmtree(RAIZ / "outbox" / pasta, ignore_errors=True)
+    for nome in ("fila_portal.csv", "protocolos_portal.csv"):
+        (RAIZ / "outbox" / nome).unlink(missing_ok=True)
+    print(f"demo resetada: {len(linhas)} chamados em {CSV}")
+
+
+if __name__ == "__main__":
+    main()
