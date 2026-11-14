@@ -171,7 +171,7 @@ function camadaOSM() {
   });
 }
 function iconeLocal() {
-  const d = el("div", { style: "width:22px;height:22px;border-radius:50%;background:#8fd2a7;box-shadow:0 0 0 6px rgba(143,210,167,.25),0 0 24px #8fd2a7;border:3px solid #0a1e13" });
+  const d = el("div", { style: "width:22px;height:22px;border-radius:50%;background:#ffc86b;box-shadow:0 0 0 6px rgba(255, 200, 107,.25),0 0 24px #ffc86b;border:3px solid #070b16" });
   return L.divIcon({ className: "", html: d.outerHTML, iconSize: [22, 22], iconAnchor: [11, 11] });
 }
 
@@ -454,13 +454,13 @@ function pintarMapaLuz(ctx, grade, w, h) {
   const max = Math.max(30, ...grade.flat()); // relativo à própria foto: o bloco mais claro brilha
   for (let i = 0; i < L; i++) for (let j = 0; j < C; j++) {
     const v = grade[i][j] / max;
-    ctx.fillStyle = v < 0.4 ? `rgba(6, 26, 15, ${0.8 - v * 1.2})` : `rgba(255, 200, 107, ${0.18 + (v - 0.4) * 0.6})`;
+    ctx.fillStyle = v < 0.4 ? `rgba(7, 11, 22, ${0.8 - v * 1.2})` : `rgba(255, 200, 107, ${0.18 + (v - 0.4) * 0.6})`;
     ctx.fillRect(j * cw, i * ch, Math.ceil(cw), Math.ceil(ch));
-    ctx.fillStyle = "rgba(231, 243, 236, .85)";
+    ctx.fillStyle = "rgba(234, 238, 247, .85)";
     ctx.font = `600 ${Math.max(11, Math.round(ch / 6))}px Inter, system-ui, sans-serif`;
     ctx.fillText(String(grade[i][j]), j * cw + 6, i * ch + Math.max(14, ch / 5));
   }
-  ctx.strokeStyle = "rgba(143, 210, 167, .25)"; ctx.lineWidth = 1;
+  ctx.strokeStyle = "rgba(255, 200, 107, .25)"; ctx.lineWidth = 1;
   for (let j = 1; j < C; j++) { ctx.beginPath(); ctx.moveTo(j * cw, 0); ctx.lineTo(j * cw, h); ctx.stroke(); }
   for (let i = 1; i < L; i++) { ctx.beginPath(); ctx.moveTo(0, i * ch); ctx.lineTo(w, i * ch); ctx.stroke(); }
 }
@@ -480,11 +480,11 @@ function desenhar(a) {
     const e = Math.max(3, Math.round(Math.max(img.naturalWidth, img.naturalHeight) / 260));
     ctx.font = `700 ${e * 6}px Inter, system-ui, sans-serif`;
     for (const d of a.deteccoes) {
-      const [x1, y1, x2, y2] = d.bbox, [nome, cor] = CLASSES[d.classe] || [d.classe, "#8fd2a7"];
+      const [x1, y1, x2, y2] = d.bbox, [nome, cor] = CLASSES[d.classe] || [d.classe, "#ffc86b"];
       ctx.lineWidth = e; ctx.strokeStyle = cor; ctx.shadowColor = cor; ctx.shadowBlur = e * 4;
       ctx.strokeRect(x1, y1, x2 - x1, y2 - y1); ctx.shadowBlur = 0;
       const rot = `${nome} ${Math.round(d.confianca * 100)}%`, w = ctx.measureText(rot).width + e * 3, h = e * 8, y = y1 - h < 0 ? y1 : y1 - h;
-      ctx.fillStyle = cor; ctx.fillRect(x1, y, w, h); ctx.fillStyle = "#0a1e13"; ctx.fillText(rot, x1 + e * 1.5, y + h - e * 2);
+      ctx.fillStyle = cor; ctx.fillRect(x1, y, w, h); ctx.fillStyle = "#070b16"; ctx.fillText(rot, x1 + e * 1.5, y + h - e * 2);
     }
   };
   if (a.imagem_anonimizada_base64) img.src = `data:image/jpeg;base64,${a.imagem_anonimizada_base64}`;
@@ -784,10 +784,10 @@ function desenharCentral() {
       .bindPopup(el("div", {}, el("strong", {}, r.titulo), el("br"), `${r.relatos} chamados · ${r.sinais_apagao} sem nenhuma luz`))
       .addTo(estado.camadaCentral);
   }
-  const cor = { alta: "#ff7a6b", media: "#f2d27a", baixa: "#74b08e", nenhuma: "#74b08e" };
+  const cor = { alta: "#ff7a6b", media: "#f2d27a", baixa: "#a6b0c8", nenhuma: "#a6b0c8" };
   const pontos = fila.filter((c) => Number.isFinite(c.lat) && Number.isFinite(c.lon));
   for (const [i, c] of pontos.entries()) {
-    const k = c.status === "resolvido" ? "#ffc86b" : cor[c.nivel];
+    const k = c.status === "resolvido" ? "#4ade80" : cor[c.nivel];
     const desloc = pontos.slice(0, i).filter((o) => o.lat === c.lat && o.lon === c.lon).length * 0.00008; // separa pinos no mesmo ponto
     L.circleMarker([c.lat + desloc, c.lon + desloc], { radius: 7 + c.pontos / 12, color: k, fillColor: k, fillOpacity: c.status === "resolvido" ? 0.9 : 0.5, weight: 2 })
       .bindPopup(el("div", {}, el("strong", {}, `${c.protocolo} · ${c.pontos} pts`), el("br"), nomeTipos(c.tipos), el("br"),
@@ -830,6 +830,17 @@ function abrirDetalhe(protocolo) {
   );
   dlg.showModal();
 }
+
+/* cartões vivos: um holofote acompanha o mouse dentro do cartão (o CSS cuida da subida e da sombra) */
+const CARTOES_VIVOS = ".porta, .jornada li, .garantias li, .disc, .kpi, .opcao, .cartao.info, .regiao, .chamado, .faixa-numeros div";
+document.addEventListener("pointermove", (e) => {
+  if (e.pointerType !== "mouse") return;
+  const c = e.target.closest?.(CARTOES_VIVOS);
+  if (!c) return;
+  const r = c.getBoundingClientRect();
+  c.style.setProperty("--x", `${e.clientX - r.left}px`);
+  c.style.setProperty("--y", `${e.clientY - r.top}px`);
+}, { passive: true });
 
 /* ================================================================== início */
 /* QR de cartaz: ?lat=..&lon=..&ref=.. já marca o local (o cidadão só filma e envia) */
