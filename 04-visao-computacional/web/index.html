@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Vésper · da escuridão à luz</title>
   <meta name="description" content="Rua sem luz ou apagão? Mostre pelo celular. A IA confirma a falha e o chamado chega a quem resolve.">
-  <meta name="theme-color" content="#0a1e13">
+  <meta name="theme-color" content="#070b16">
   <meta property="og:title" content="Vésper · da escuridão à luz">
   <meta property="og:description" content="Rua sem luz? Mostre pelo celular. A IA confirma e encaminha.">
   <link rel="icon" href="/static/icone.svg" type="image/svg+xml">
   <link rel="preload" href="/static/fontes/cormorant-garamond-latin-600-italic.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/static/vendor/leaflet/leaflet.css">
-  <link rel="stylesheet" href="/static/app.css">
+  <link rel="stylesheet" href="/static/app.css?v=paleta-noite">
 </head>
 <body>
   <!-- Ícones de linha (padrão Lucide, ISC), inline: sem CDN e todos com o mesmo traço -->
@@ -43,6 +43,14 @@
     <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
     <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M15 2v2M15 20v2M2 15h2M2 9h2M20 15h2M20 9h2M9 2v2M9 20v2"/></symbol>
     <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.1 12.3a1 1 0 0 1 0-.7 10.8 10.8 0 0 1 19.8 0 1 1 0 0 1 0 .7 10.8 10.8 0 0 1-19.8 0"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M9.9 15.5a2 2 0 0 0-1.4-1.4l-6.1-1.6a.5.5 0 0 1 0-1l6.1-1.6a2 2 0 0 0 1.4-1.4l1.6-6.1a.5.5 0 0 1 1 0l1.6 6.1a2 2 0 0 0 1.4 1.4l6.1 1.6a.5.5 0 0 1 0 1l-6.1 1.6a2 2 0 0 0-1.4 1.4l-1.6 6.1a.5.5 0 0 1-1 0z"/><path d="M20 3v4M22 5h-4"/></symbol>
+    <symbol id="i-workflow" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect x="13" y="13" width="8" height="8" rx="2"/></symbol>
+    <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.7-9h1.8a4.5 4.5 0 1 1 0 9Z"/></symbol>
+    <symbol id="i-trending" viewBox="0 0 24 24"><path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></symbol>
+    <symbol id="i-flashlight" viewBox="0 0 24 24"><path d="M18 6c0 2-2 2-2 4v10a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V10c0-2-2-2-2-4V2h12z"/><path d="M6 6h12M12 12v.01"/></symbol>
   </svg>
 
   <a class="pular" href="#conteudo">Pular para o conteúdo</a>
@@ -126,26 +134,29 @@
         </ol>
       </section>
 
-      <section class="bloco" aria-label="Compromissos">
+      <section class="bloco compromissos" aria-labelledby="t-compromissos">
+        <h2 class="titulo-secao" id="t-compromissos">Nossos compromissos</h2>
         <ul class="garantias">
-          <li><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><div><strong>Privacidade</strong><span>Imagem não guardada, rostos borrados.</span></div></li>
-          <li><svg class="ic" aria-hidden="true"><use href="#i-info"/></svg><div><strong>Decisão explicada</strong><span>Cada prioridade mostra o motivo.</span></div></li>
-          <li><svg class="ic" aria-hidden="true"><use href="#i-users"/></svg><div><strong>Pessoa no circuito</strong><span>A central confirma antes do conserto.</span></div></li>
+          <li><span class="g-icone"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg></span><strong>Privacidade</strong><span>Imagem não guardada e rostos borrados antes de qualquer envio.</span></li>
+          <li><span class="g-icone"><svg class="ic" aria-hidden="true"><use href="#i-info"/></svg></span><strong>Decisão explicada</strong><span>Cada prioridade vem com o motivo, em linguagem simples.</span></li>
+          <li><span class="g-icone"><svg class="ic" aria-hidden="true"><use href="#i-users"/></svg></span><strong>Pessoa no circuito</strong><span>A central confirma o chamado antes de mandar a equipe.</span></li>
         </ul>
       </section>
 
       <section class="bloco construido" aria-labelledby="t-construido">
-        <h2 class="titulo-pequeno" id="t-construido">Como o Vésper foi construído</h2>
-        <dl class="disciplinas">
-          <div><dt>Visão Computacional</dt><dd>detecção de postes, leitura da cena e câmera ao vivo</dd></div>
-          <div><dt>IA Generativa</dt><dd>prazos e canais oficiais, com a fonte citada</dd></div>
-          <div><dt>Maker Lab</dt><dd>robô de patrulha com sensores de luz e distância</dd></div>
-          <div><dt>RPA</dt><dd>despacho automático dos chamados</dd></div>
-          <div><dt>Big Data</dt><dd>bairros mais escuros e tempo até o conserto</dd></div>
-          <div><dt>DevOps e Cloud</dt><dd>Azure, pipeline seguro e monitoramento</dd></div>
-          <div><dt>Negócio e Pitch</dt><dd>modelo de negócio e impacto</dd></div>
-        </dl>
-        <p class="ods">FIAP Global Solution 2026.2 · CitizenTech · ODS 11, 3, 10, 9 e 16</p>
+        <p class="sobretitulo">Como o Vésper foi construído</p>
+        <h2 class="titulo-secao" id="t-construido">Sete disciplinas, um produto</h2>
+        <ul class="disciplinas-cartoes">
+          <li class="disc"><span class="d-icone"><svg class="ic" aria-hidden="true"><use href="#i-eye"/></svg></span><strong>Visão Computacional</strong><span>Detecção de postes, leitura da cena e câmera ao vivo.</span></li>
+          <li class="disc"><span class="d-icone"><svg class="ic" aria-hidden="true"><use href="#i-sparkles"/></svg></span><strong>IA Generativa</strong><span>Prazos e canais oficiais, sempre com a fonte citada.</span></li>
+          <li class="disc"><span class="d-icone"><svg class="ic" aria-hidden="true"><use href="#i-bot"/></svg></span><strong>Maker Lab</strong><span>Robô de patrulha com sensores de luz e distância.</span></li>
+          <li class="disc"><span class="d-icone"><svg class="ic" aria-hidden="true"><use href="#i-workflow"/></svg></span><strong>RPA</strong><span>Despacho automático dos chamados para o órgão certo.</span></li>
+          <li class="disc"><span class="d-icone"><svg class="ic" aria-hidden="true"><use href="#i-database"/></svg></span><strong>Big Data</strong><span>Bairros mais escuros e tempo até o conserto.</span></li>
+          <li class="disc"><span class="d-icone"><svg class="ic" aria-hidden="true"><use href="#i-cloud"/></svg></span><strong>DevOps e Cloud</strong><span>Azure, pipeline seguro e monitoramento.</span></li>
+          <li class="disc"><span class="d-icone"><svg class="ic" aria-hidden="true"><use href="#i-trending"/></svg></span><strong>Negócio e Pitch</strong><span>Modelo de negócio e indicadores de impacto.</span></li>
+          <li class="disc"><span class="d-icone"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg></span><strong>Impacto</strong><span>ODS 11, 3, 10, 9 e 16: cidade mais segura e justa.</span></li>
+        </ul>
+        <p class="ods">FIAP Global Solution 2026.2 · CitizenTech</p>
       </section>
     </section>
 
@@ -413,6 +424,6 @@
   </footer>
 
   <script src="/static/vendor/leaflet/leaflet.js"></script>
-  <script src="/static/app.js"></script>
+  <script src="/static/app.js?v=paleta-noite"></script>
 </body>
 </html>
