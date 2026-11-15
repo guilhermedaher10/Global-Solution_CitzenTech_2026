@@ -11,7 +11,7 @@ luminosidade:               # brilho médio da cena, de 0 (preto) a 255 (branco)
   limiar_breu: 25             # abaixo: breu, quase nenhuma luz; o poste pode nem aparecer na foto
 
 validacao:                  # foto enviada pelo cidadão
-  lado_minimo_px: 320         # imagem menor que isso não serve
+  lado_minimo_px: 224         # medido no teste: mAP50 igual até 224 px (0,49); em 160 px cai para 0,44
   nitidez_minima: 5.0         # ver imagem.nitidez(): fotos boas >= 8, borradas <= 2.6
 
 prioridade:                 # pontuação de 0 a 100, sempre com os fatores explicados

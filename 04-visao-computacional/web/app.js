@@ -477,16 +477,39 @@ function desenhar(a) {
   img.onload = () => {
     canvas.width = img.naturalWidth; canvas.height = img.naturalHeight; ctx.drawImage(img, 0, 0);
     if (estado.mapaLuz && a.cena) pintarMapaLuz(ctx, a.cena.grade_luz, img.naturalWidth, img.naturalHeight);
-    const e = Math.max(3, Math.round(Math.max(img.naturalWidth, img.naturalHeight) / 260));
-    ctx.font = `700 ${e * 6}px Inter, system-ui, sans-serif`;
-    for (const d of a.deteccoes) {
-      const [x1, y1, x2, y2] = d.bbox, [nome, cor] = CLASSES[d.classe] || [d.classe, "#ffc86b"];
-      ctx.lineWidth = e; ctx.strokeStyle = cor; ctx.shadowColor = cor; ctx.shadowBlur = e * 4;
+    // tamanho pensado na TELA (não na foto): 1 px de tela = k px da foto. Assim foto pequena não ganha rótulo gigante.
+    const tela = canvas.parentElement?.clientWidth || img.naturalWidth;
+    const k = Math.max(0.5, img.naturalWidth / Math.max(160, Math.min(tela, 900)));
+    const linha = 2 * k, fonte = 12 * k, alto = fonte * 1.6, folga = fonte * 0.5;
+    ctx.font = `700 ${fonte}px Inter, system-ui, sans-serif`;
+    const ocupados = []; // rótulos já desenhados: o próximo não pode cobrir nenhum
+    const cobre = (r) => ocupados.some((o) => r.x < o.x + o.w && o.x < r.x + r.w && r.y < o.y + o.h && o.y < r.y + r.h);
+    const dets = [...a.deteccoes].sort((p, q) => q.confianca - p.confianca); // o mais confiável ganha o melhor lugar
+    for (const d of dets) {
+      const [x1, y1, x2, y2] = d.bbox, [, cor] = CLASSES[d.classe] || [d.classe, "#ffc86b"];
+      ctx.lineWidth = linha; ctx.strokeStyle = cor; ctx.shadowColor = cor; ctx.shadowBlur = linha * 3;
       ctx.strokeRect(x1, y1, x2 - x1, y2 - y1); ctx.shadowBlur = 0;
-      const rot = `${nome} ${Math.round(d.confianca * 100)}%`, w = ctx.measureText(rot).width + e * 3, h = e * 8, y = y1 - h < 0 ? y1 : y1 - h;
-      ctx.fillStyle = cor; ctx.fillRect(x1, y, w, h); ctx.fillStyle = "#070b16"; ctx.fillText(rot, x1 + e * 1.5, y + h - e * 2);
+    }
+    for (const d of dets) {
+      const [x1, y1, x2, y2] = d.bbox, [nome, cor] = CLASSES[d.classe] || [d.classe, "#ffc86b"];
+      const pct = `${Math.round(d.confianca * 100)}%`;
+      // tenta: nome completo em cima, embaixo; depois só a % em cima, embaixo. Se nada cabe, fica só a caixa.
+      const opcoes = [`${nome} ${pct}`, pct].flatMap((t) => [[t, y1 - alto], [t, y2]]);
+      for (const [t, y0] of opcoes) {
+        const w = ctx.measureText(t).width + folga * 2;
+        const r = { x: Math.min(Math.max(0, x1), img.naturalWidth - w), y: Math.min(Math.max(0, y0), img.naturalHeight - alto), w, h: alto };
+        if (cobre(r)) continue;
+        ocupados.push(r);
+        ctx.fillStyle = cor; ctx.fillRect(r.x, r.y, r.w, r.h);
+        ctx.fillStyle = "#070b16"; ctx.fillText(t, r.x + folga, r.y + alto - fonte * 0.45);
+        break;
+      }
     }
   };
+  // legenda só com as classes que aparecem na foto
+  const presentes = new Set(a.deteccoes.map((d) => CLASSES[d.classe]?.[0]));
+  $$(".legenda .tag").forEach((t) => { t.hidden = !presentes.has(t.classList[1]); });
+  $(".legenda").hidden = !presentes.size;
   if (a.imagem_anonimizada_base64) img.src = `data:image/jpeg;base64,${a.imagem_anonimizada_base64}`;
   else if (estado.arquivo) img.src = URL.createObjectURL(estado.arquivo);
 }
@@ -543,7 +566,7 @@ function mostrarAnalise(a) {
   else if (!a.validacao.foto_valida) veredito("invalida", "camera", "A imagem não serviu de prova", a.validacao.motivos[0] || "Tente outra imagem.");
   else veredito("ok", "sun", "Rua iluminada", "Nenhuma falha encontrada. Nenhum chamado necessário.");
   prioridade(a.prioridade);
-  mostrarCena(a.cena);
+  mostrarCena(a.cena, abre);
   $("#info-trecho").textContent = TRECHOS[r.status_trecho] || r.status_trecho;
   $("#info-postes").textContent = `${r.postes_acesos} aceso${r.postes_acesos === 1 ? "" : "s"} · ${r.postes_apagados} apagado${r.postes_apagados === 1 ? "" : "s"}`;
   $("#info-setor").textContent = tipos.length ? nomeTipos(tipos) : "—";
@@ -561,7 +584,7 @@ function mostrarAnalise(a) {
   $("#tela-reportar").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function mostrarCena(c) {
+function mostrarCena(c, abre = true) {
   const box = $("#cena");
   box.hidden = !c;
   if (!c) return;
@@ -574,7 +597,8 @@ function mostrarCena(c) {
       el("span", {}, `luz no chão ${Math.round(c.luz_no_chao)}/255`),
       el("span", {}, `${Math.round(c.area_iluminada * 100)}% iluminada`)),
     c.possivel_apagao && el("p", { class: "apagao" }, icone("zap"), el("span", {}, el("strong", {}, "Possível apagão na região. "),
-      "Nenhuma luz elétrica na cena. O chamado também vai para a distribuidora de energia.")),
+      abre ? "Nenhuma luz elétrica na cena. O chamado também vai para a distribuidora de energia."
+           : "Nenhuma luz elétrica na cena, mas esta imagem não abre chamado. Envie outra foto do local.")),
   ].filter(Boolean)); // sem apagão, o "false" do && não pode virar texto na tela
 }
 
