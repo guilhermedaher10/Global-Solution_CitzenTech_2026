@@ -50,6 +50,7 @@ def test_tudo_aceso_nao_abre_chamado():
 
 def test_foto_pequena_ou_tremida():
     assert not _validar(lado_menor=200).foto_valida
+    assert _validar(lado_menor=275).foto_valida      # acima do mínimo medido (224 px): o detector acerta igual
     assert not _validar(nitidez=1).foto_valida
 
 
