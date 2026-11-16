@@ -1,0 +1,53 @@
+{
+  "dataset": "Conjunto preparado, separado em CSVs de treino e teste",
+  "classes": [
+    "claro_livre",
+    "claro_obstaculo",
+    "escuro_livre",
+    "escuro_obstaculo"
+  ],
+  "arquivos_treino": {
+    "claro_livre": 4,
+    "claro_obstaculo": 4,
+    "escuro_livre": 4,
+    "escuro_obstaculo": 4
+  },
+  "arquivos_teste": {
+    "claro_livre": 2,
+    "claro_obstaculo": 2,
+    "escuro_livre": 2,
+    "escuro_obstaculo": 2
+  },
+  "janelas_treino": 80,
+  "janelas_teste": 40,
+  "acuracia_teste": 1.0,
+  "matriz_confusao": [
+    [
+      10,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      10,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      10,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      10
+    ]
+  ],
+  "erro_exportacao_max": 0.0,
+  "modelo": "MLP 4-12-4 ReLU/softmax",
+  "alerta": "Acuracia em janelas correlacionadas nao equivale a validacao em ruas reais."
+}
