@@ -35,6 +35,8 @@ input{max-width:135px}label{display:inline-block;margin:5px 2px}#gpsCoords{width
 <label>Sessao<input id="session" value="A" maxlength="20" pattern="[A-Za-z0-9_-]+"></label>
 <div><button id="start" onclick="startCapture()">Gravar 5 segundos</button>
 <a class="download" id="download" href="/coleta.csv" hidden>Baixar CSV</a></div><p class="muted" id="captureMessage"></p></div>
+<div class="box" id="vesperBox"><h2>Central Vesper (nuvem)</h2><pre id="vesper">...</pre>
+<p class="muted">Quando a IA confirma escuro_livre ou escuro_obstaculo, o carrinho envia o alerta para a API do Vesper (POST /v1/alerta-robo) e ele vira suspeita na central de chamados do site. Requer Wi-Fi de casa ou hotspot no Config.h.</p></div>
 <div class="box"><h2>Registro de eventos</h2><pre id="eventos">...</pre><a class="download" href="/eventos.csv">Baixar eventos CSV</a>
 <p class="muted">Eventos guardados temporariamente na memoria RAM; reiniciar o ESP32 apaga o historico. GPS e anexado apenas quando ha FIX valido.</p></div>
 <div class="box" id="control" hidden><h2>Movimento manual</h2><div id="controlMode" class="status"></div>
@@ -62,6 +64,7 @@ const g=s.gps, fix=g.fix&&g.latitude!==null&&g.longitude!==null;
 el('gpsStatus').textContent='Serial GPS: '+(g.recebendo?'OK':'sem dados')+' | Satelites: '+n(g.satelites)+'\nFIX: '+(fix?'SIM':'NAO')+'\nLatitude: '+n(g.latitude)+' | Longitude: '+n(g.longitude);
 el('gpsMap').hidden=!fix;el('copiarGps').disabled=!fix;el('gpsCoords').value=fix?g.latitude.toFixed(6)+','+g.longitude.toFixed(6):'';
 if(fix)el('gpsMap').href='https://www.google.com/maps?q='+g.latitude+','+g.longitude;
+const v=s.vesper;if(v)el('vesper').textContent='Envio: '+v.estado.toUpperCase()+' | enviados: '+v.enviados+' | falhas: '+v.falhas+'\nProtocolo: '+(v.protocolo||'--')+' | LED: '+v.acao_robo+'\n'+v.mensagem;
 el('eventos').textContent=s.ultimo_evento||'Nenhum evento registrado ainda.';
 el('start').disabled=s.coletando;el('download').hidden=!s.csv_pronto;el('captureMessage').textContent=s.coletando?'Gravando '+s.coleta_leituras+'/50':s.coleta_mensagem;
 }catch(e){el('mode').textContent='ESP32 sem comunicacao: '+e.message;}finally{setTimeout(poll,650);}}
