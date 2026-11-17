@@ -311,8 +311,7 @@ def alerta_robo(alerta: AlertaRobo, central: Central = Depends(obter_central)):
     O ponto vira chamado quando uma foto do lugar for enviada a /v1/analisar com os mesmos sensores.
     """
     resposta = triar_alerta(alerta)
-    _registrar_suspeita(central, resposta, "robo",
-                        f"robô: {alerta.sensor_lux} lux, {alerta.sensor_distancia_cm} cm")
+    _registrar_suspeita(central, resposta, "robo", alerta.nota_central())
     metricas.registrar_alerta(resposta)
     return resposta
 

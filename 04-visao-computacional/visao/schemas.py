@@ -203,6 +203,14 @@ class Analise(BaseModel):
     video: Video | None = Field(default=None, description="Só em /v1/analisar-video")
 
 
+class ClasseIARobo(str, Enum):
+    """As 4 classes do TinyML que roda no ESP32 do Maker Lab."""
+    claro_livre = "claro_livre"
+    claro_obstaculo = "claro_obstaculo"
+    escuro_livre = "escuro_livre"
+    escuro_obstaculo = "escuro_obstaculo"
+
+
 class AlertaRobo(BaseModel):
     """O que o robô manda quando um sensor dispara (sem foto)."""
     origem: Origem = Origem.robo
@@ -213,10 +221,27 @@ class AlertaRobo(BaseModel):
     endereco: str | None = Field(default=None, max_length=200)
     alerta: list[TipoAlerta] = Field(default_factory=list,
                                      description="O que disparou; vazio = a API deduz pelas leituras")
+    classe_ia: ClasseIARobo | None = Field(default=None,
+                                           description="Classe do TinyML do carrinho (Maker Lab), se ele mandou")
+    confianca_ia: float | None = Field(default=None, ge=0, le=1, description="Confiança do TinyML (0 a 1)")
 
     model_config = {"json_schema_extra": {"examples": [
         {"origem": "robo", "latitude": -23.55, "longitude": -46.63, "sensor_lux": 3.2,
-         "sensor_distancia_cm": 12, "alerta": ["escuro", "buraco"]}]}}
+         "sensor_distancia_cm": 12, "alerta": ["escuro", "buraco"]},
+        {"origem": "robo", "latitude": -23.5641, "longitude": -46.6412, "alerta": ["escuro"],
+         "classe_ia": "escuro_obstaculo", "confianca_ia": 0.97}]}}
+
+    def nota_central(self) -> str:
+        """Texto curto que fica no histórico da suspeita na central (só o que o robô mandou)."""
+        partes = []
+        if self.classe_ia:
+            ia = f"TinyML: {self.classe_ia.value}"   # .value: no Python 3.11 o f-string do Enum sai "Classe.x"
+            partes.append(f"{ia} ({self.confianca_ia:.0%})" if self.confianca_ia is not None else ia)
+        if self.sensor_lux is not None:
+            partes.append(f"{self.sensor_lux} lux")
+        if self.sensor_distancia_cm is not None:
+            partes.append(f"{self.sensor_distancia_cm} cm")
+        return "robô: " + (", ".join(partes) or "alerta sem leituras")
 
 
 class RespostaAlerta(BaseModel):

@@ -1,4 +1,5 @@
 """Fusão sensor (robô: LDR + ultrassônico) + visão (foto)."""
+import pytest
 from fastapi.testclient import TestClient
 
 from conftest import DetectorFalso, cena, jpeg, poste
@@ -90,6 +91,23 @@ def test_triagem_do_alerta_sem_foto():
     assert so_escuro.acao_robo.value == "led_amarelo" and so_escuro.alertas == [TipoAlerta.escuro]
     nada = triar_alerta(AlertaRobo(latitude=-23.55, longitude=-46.63, sensor_lux=80))
     assert nada.status == "descartado" and nada.acao_robo.value == "nenhuma"
+
+
+def test_alerta_com_tinyml_do_maker_lab():
+    # o carrinho (07) manda a classe do TinyML; escuro + obstáculo sobe para prioridade alta
+    obst = AlertaRobo(latitude=-23.56, longitude=-46.65, alerta=["escuro"],
+                      classe_ia="escuro_obstaculo", confianca_ia=0.97)
+    r = triar_alerta(obst)
+    assert r.acao_robo.value == "led_vermelho" and r.prioridade_previa.pontuacao == 60
+    assert any("TinyML do carrinho: escuro_obstaculo (97%)" in f for f in r.prioridade_previa.fatores)
+    assert obst.nota_central() == "robô: TinyML: escuro_obstaculo (97%)"
+    livre = triar_alerta(AlertaRobo(latitude=-23.56, longitude=-46.65, alerta=["escuro"],
+                                    classe_ia="escuro_livre", confianca_ia=1.0))
+    assert livre.acao_robo.value == "led_amarelo" and livre.prioridade_previa.pontuacao == 30
+    # sem nenhum campo novo continua igual ao contrato antigo
+    assert AlertaRobo(latitude=0, longitude=0, sensor_lux=2).nota_central() == "robô: 2.0 lux"
+    with pytest.raises(ValueError):
+        AlertaRobo(latitude=0, longitude=0, classe_ia="fogo")
 
 
 def test_api_alerta_robo_funciona_sem_modelo():
