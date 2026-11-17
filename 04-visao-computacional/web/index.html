@@ -11,7 +11,7 @@
   <link rel="icon" href="/static/icone.svg" type="image/svg+xml">
   <link rel="preload" href="/static/fontes/cormorant-garamond-latin-600-italic.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/static/vendor/leaflet/leaflet.css">
-  <link rel="stylesheet" href="/static/app.css?v=rotulos-224">
+  <link rel="stylesheet" href="/static/app.css?v=patrulha-1">
 </head>
 <body>
   <!-- Ícones de linha (padrão Lucide, ISC), inline: sem CDN e todos com o mesmo traço -->
@@ -292,68 +292,99 @@
     <!-- =========================================================== ROBÔ -->
     <section class="tela" id="tela-robo" data-tela="robo" hidden>
       <header class="cabecalho-tela">
-        <p class="sobretitulo">Maker Lab</p>
+        <p class="sobretitulo">Maker Lab · patrulha ao vivo</p>
         <h1>O robô <em>desconfia</em>. A foto <em>confirma</em>.</h1>
-        <p class="lead">Um robô de patrulha mede a luz e o chão à noite. Quando algo dispara, envia um alerta com GPS e acende um LED.</p>
+        <p class="lead">Monte a rua: apague postes e coloque obstáculos. O carrinho patrulha sozinho, a IA embarcada do Maker Lab (a mesma que roda no ESP32) decide o que está vendo e, no escuro, avisa a central do Vésper de verdade.</p>
       </header>
 
-      <div class="grade-robo-intro">
-        <figure class="cartao robo-figura">
-          <svg viewBox="0 0 320 220" class="robo-svg" role="img" aria-label="Robô com sensor de luz no topo, sensor ultrassônico na frente e GPS">
-            <rect x="70" y="80" width="180" height="90" rx="18" class="corpo"/>
-            <rect x="95" y="100" width="70" height="40" rx="8" class="tela-robo"/>
-            <circle id="robo-led" cx="215" cy="118" r="12" class="led-robo"/>
-            <circle cx="110" cy="182" r="22" class="roda"/><circle cx="210" cy="182" r="22" class="roda"/>
-            <line x1="160" y1="80" x2="160" y2="50" class="haste"/><circle cx="160" cy="44" r="10" class="ldr"/>
-            <rect x="250" y="112" width="26" height="22" rx="4" class="ultra"/><circle cx="258" cy="123" r="5" class="olho"/><circle cx="270" cy="123" r="5" class="olho"/>
-            <rect x="80" y="62" width="34" height="18" rx="4" class="gps"/>
-            <text x="160" y="22" class="rotulo">sensor de luz (LDR)</text>
-            <text x="300" y="104" class="rotulo fim">ultrassônico</text>
-            <text x="60" y="56" class="rotulo">GPS</text>
-            <text x="215" y="150" class="rotulo">LED</text>
-          </svg>
-        </figure>
-        <ol class="cartao robo-passos">
-          <li><strong>Patrulha:</strong> mede a luz (lux) e a distância até o chão.</li>
-          <li><strong>Dispara</strong> abaixo de 5 lux (escuro) ou com 15 cm de desnível (buraco).</li>
-          <li><strong>Avisa:</strong> envia <code>POST /v1/alerta-robo</code> com as leituras e o GPS.</li>
-          <li><strong>Reage:</strong> LED <span class="pill vermelho">vermelho</span> para prioridade alta, <span class="pill amarelo">amarelo</span> para suspeita.</li>
-          <li><strong>Confirma:</strong> uma foto do mesmo ponto vira chamado.</li>
-        </ol>
+      <div class="cartao patrulha">
+        <div class="patrulha-barra">
+          <div class="patrulha-botoes">
+            <button class="botao primario" id="pt-play" type="button"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg><span>Patrulhar</span></button>
+            <button class="botao" id="pt-reiniciar" type="button"><svg class="ic" aria-hidden="true"><use href="#i-refresh"/></svg>Reiniciar</button>
+            <button class="botao fantasma" id="pt-sortear" type="button"><svg class="ic" aria-hidden="true"><use href="#i-sparkles"/></svg>Rua aleatória</button>
+          </div>
+          <div class="patrulha-opcoes">
+            <label class="chave"><input type="checkbox" id="pt-enviar" checked> Enviar alertas à central</label>
+            <label>Velocidade <select id="pt-vel"><option value="1">1×</option><option value="2" selected>2×</option><option value="4">4×</option></select></label>
+          </div>
+        </div>
+        <canvas id="pt-cena" class="patrulha-cena" role="img" aria-label="Rua vista de cima com postes, obstáculos e o carrinho do Maker Lab patrulhando"></canvas>
+        <p class="patrulha-dica"><svg class="ic" aria-hidden="true"><use href="#i-info"/></svg>Clique num <strong>poste</strong> para apagar ou acender. Clique na <strong>pista</strong> para pôr ou tirar um obstáculo.</p>
       </div>
 
-      <div class="grade-robo">
-        <div class="cartao controles">
-          <h2>Simular leituras</h2>
-          <div class="controle">
-            <label for="lux">Luz (LDR) <strong id="lux-valor">20 lux</strong></label>
-            <input type="range" id="lux" min="0" max="50" step="0.5" value="20">
-            <small>abaixo de 5 lux: trecho escuro</small>
+      <div class="grade-patrulha">
+        <section class="cartao cerebro" aria-labelledby="pt-titulo-ia">
+          <h2 id="pt-titulo-ia"><svg class="ic" aria-hidden="true"><use href="#i-cpu"/></svg>Cérebro do carrinho <small>TinyML · 4 → 12 → 4</small></h2>
+          <div class="sensores-vivo">
+            <div><span>Luz (LDR)</span><strong id="pt-ldr">--</strong></div>
+            <div><span>Ultrassom</span><strong id="pt-dist">--</strong></div>
+            <div><span>GPS</span><strong id="pt-gps">--</strong></div>
           </div>
-          <div class="controle">
-            <label for="dist">Distância ao chão <strong id="dist-valor">8 cm</strong></label>
-            <input type="range" id="dist" min="2" max="40" step="1" value="8">
-            <small>15 cm ou mais: desnível</small>
+          <svg id="pt-rede" class="rede" viewBox="0 0 440 236" role="img" aria-label="Rede neural do carrinho: 4 entradas, 12 neurônios ocultos e 4 saídas"></svg>
+          <ul class="probs" id="pt-probs" aria-label="Probabilidade de cada classe"></ul>
+          <p class="confirmacao" id="pt-conf">Aperte <strong>Patrulhar</strong>: a IA precisa de 1 s de leituras para a primeira decisão.</p>
+        </section>
+        <section class="cartao resposta-patrulha" aria-labelledby="pt-titulo-central">
+          <h2 id="pt-titulo-central"><svg class="ic" aria-hidden="true"><use href="#i-send"/></svg>Central do Vésper</h2>
+          <div class="led-linha">
+            <div class="led pequeno" id="pt-led" data-acao="nenhuma" aria-hidden="true"></div>
+            <div class="robo-resposta" id="pt-resposta"><strong>Nenhum alerta ainda</strong><span>Quando a IA confirmar um trecho escuro, o carrinho envia <code>POST /v1/alerta-robo</code>.</span></div>
           </div>
-          <div class="cenarios">
-            <button class="botao" data-cenario="normal">Rua normal</button>
-            <button class="botao" data-cenario="escuro">Escuro</button>
-            <button class="botao" data-cenario="buraco">Buraco</button>
-            <button class="botao" data-cenario="ambos">Buraco no escuro</button>
-          </div>
-          <button class="botao primario largo" id="enviar-alerta"><svg class="ic" aria-hidden="true"><use href="#i-send"/></svg>Enviar leitura</button>
-          <button class="botao fantasma largo" id="patrulha"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg>Simular patrulha de 12 pontos</button>
-        </div>
-        <div class="cartao painel-robo">
-          <h2>Resposta do Vésper</h2>
-          <div class="led" id="led" data-acao="nenhuma" aria-hidden="true"></div>
-          <div class="robo-resposta" id="robo-resposta"><strong>Aguardando leitura</strong><span>Mova os sensores ou escolha um cenário.</span></div>
-          <ul class="fatores" id="robo-fatores"></ul>
-          <button class="botao" id="confirmar-foto" hidden><svg class="ic" aria-hidden="true"><use href="#i-camera"/></svg>Confirmar com foto</button>
-          <div class="trilha" id="trilha" aria-label="Pontos da patrulha"></div>
-          <details class="codigo"><summary>JSON enviado pelo robô</summary><pre id="json-robo"></pre></details>
-        </div>
+          <ol class="alertas-patrulha" id="pt-alertas"></ol>
+          <a class="botao fantasma" href="#central"><svg class="ic" aria-hidden="true"><use href="#i-layers"/></svg>Abrir a central de chamados</a>
+          <pre class="serial" id="pt-log" aria-label="Monitor serial do carrinho"></pre>
+        </section>
       </div>
+
+      <details class="cartao dobra">
+        <summary>Como funciona, e o que é real</summary>
+        <ol class="robo-passos">
+          <li><strong>Sensores pela cena:</strong> o LDR (digital, como no carrinho) marca escuro fora da luz dos postes; o ultrassom frontal mede até o próximo obstáculo (até 300 cm).</li>
+          <li><strong>A IA do Maker Lab:</strong> a cada 0,2 s resume a janela de 10 leituras (1 s) em 4 números (distância média, mínima, desvio e fração escura) e roda a rede 4 → 12 → 4 com os pesos do <code>ModeloTreinado.h</code>, o mesmo arquivo gravado no ESP32.</li>
+          <li><strong>Confirmação:</strong> a classe só vale depois de 3 decisões seguidas com 70% ou mais, a mesma regra do firmware.</li>
+          <li><strong>Alerta real:</strong> trecho escuro confirmado vira <code>POST /v1/alerta-robo</code> com a classe, a confiança e o GPS. <span class="pill vermelho">escuro + obstáculo</span> é prioridade alta e <span class="pill amarelo">escuro</span> é média. Aqui sai 1 alerta por trecho escuro (mais 1 se a IA achar um obstáculo nele); no carrinho, no máximo 1 a cada 30 s.</li>
+          <li><strong>Obstáculo:</strong> o carrinho para, a IA classifica e ele desvia.</li>
+          <li><strong>Depois:</strong> a suspeita aparece na Central; uma foto do local confirma e vira chamado.</li>
+        </ol>
+        <p class="nota-real">Simulados: a rua e o movimento. Reais: a IA do carrinho, as regras de confirmação, a API e a central do Vésper.</p>
+      </details>
+
+      <details class="cartao dobra">
+        <summary>Modo técnico: enviar leituras manuais (lux e desnível do chão)</summary>
+        <div class="grade-robo">
+          <div class="controles">
+            <h2>Simular leituras</h2>
+            <div class="controle">
+              <label for="lux">Luz (LDR) <strong id="lux-valor">20 lux</strong></label>
+              <input type="range" id="lux" min="0" max="50" step="0.5" value="20">
+              <small>abaixo de 5 lux: trecho escuro</small>
+            </div>
+            <div class="controle">
+              <label for="dist">Distância ao chão <strong id="dist-valor">8 cm</strong></label>
+              <input type="range" id="dist" min="2" max="40" step="1" value="8">
+              <small>15 cm ou mais: desnível</small>
+            </div>
+            <div class="cenarios">
+              <button class="botao" data-cenario="normal">Rua normal</button>
+              <button class="botao" data-cenario="escuro">Escuro</button>
+              <button class="botao" data-cenario="buraco">Buraco</button>
+              <button class="botao" data-cenario="ambos">Buraco no escuro</button>
+            </div>
+            <button class="botao primario largo" id="enviar-alerta"><svg class="ic" aria-hidden="true"><use href="#i-send"/></svg>Enviar leitura</button>
+            <button class="botao fantasma largo" id="patrulha"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg>Simular patrulha de 12 pontos</button>
+          </div>
+          <div class="painel-robo">
+            <h2>Resposta do Vésper</h2>
+            <div class="led" id="led" data-acao="nenhuma" aria-hidden="true"></div>
+            <div class="robo-resposta" id="robo-resposta"><strong>Aguardando leitura</strong><span>Mova os sensores ou escolha um cenário.</span></div>
+            <ul class="fatores" id="robo-fatores"></ul>
+            <button class="botao" id="confirmar-foto" hidden><svg class="ic" aria-hidden="true"><use href="#i-camera"/></svg>Confirmar com foto</button>
+            <div class="trilha" id="trilha" aria-label="Pontos da patrulha"></div>
+            <details class="codigo"><summary>JSON enviado pelo robô</summary><pre id="json-robo"></pre></details>
+          </div>
+        </div>
+      </details>
     </section>
 
     <!-- =========================================================== CENTRAL -->
@@ -424,6 +455,7 @@
   </footer>
 
   <script src="/static/vendor/leaflet/leaflet.js"></script>
-  <script src="/static/app.js?v=rotulos-224"></script>
+  <script src="/static/app.js?v=patrulha-1"></script>
+  <script src="/static/patrulha.js?v=patrulha-1"></script>
 </body>
 </html>
