@@ -235,7 +235,7 @@ class AlertaRobo(BaseModel):
         """Texto curto que fica no histórico da suspeita na central (só o que o robô mandou)."""
         partes = []
         if self.classe_ia:
-            ia = f"TinyML: {self.classe_ia}"
+            ia = f"TinyML: {self.classe_ia.value}"   # .value: no Python 3.11 o f-string do Enum sai "Classe.x"
             partes.append(f"{ia} ({self.confianca_ia:.0%})" if self.confianca_ia is not None else ia)
         if self.sensor_lux is not None:
             partes.append(f"{self.sensor_lux} lux")
