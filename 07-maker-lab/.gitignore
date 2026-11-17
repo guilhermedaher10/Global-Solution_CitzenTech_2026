@@ -1,0 +1,7 @@
+resultado_treinamento_local.json
+__pycache__/
+*.pyc
+.venv/
+.DS_Store
+# Nao publique credenciais ou dados de localizacao pessoal
+eventos_citizentech.csv
