@@ -1,0 +1,822 @@
+[
+  {
+    "id":3500105,
+    "microrregiao":{
+      "id":35035,
+      "mesorregiao":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3508,
+        "nome":"Presidente Prudente"
+      },
+      "nome":"Adamantina"
+    },
+    "nome":"Adamantina",
+    "regiao-imediata":{
+      "id":350019,
+      "nome":"Adamantina - Lucélia",
+      "regiao-intermediaria":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3505,
+        "nome":"Presidente Prudente"
+      }
+    },
+    "arquivo_origem":"municipios_sp_2026-11-15.json"
+  },
+  {
+    "id":3500204,
+    "microrregiao":{
+      "id":35004,
+      "mesorregiao":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3501,
+        "nome":"São José do Rio Preto"
+      },
+      "nome":"São José do Rio Preto"
+    },
+    "nome":"Adolfo",
+    "regiao-imediata":{
+      "id":350025,
+      "nome":"São José do Rio Preto",
+      "regiao-intermediaria":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3507,
+        "nome":"São José do Rio Preto"
+      }
+    },
+    "arquivo_origem":"municipios_sp_2026-11-15.json"
+  },
+  {
+    "id":3500303,
+    "microrregiao":{
+      "id":35029,
+      "mesorregiao":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3507,
+        "nome":"Campinas"
+      },
+      "nome":"Pirassununga"
+    },
+    "nome":"Aguaí",
+    "regiao-imediata":{
+      "id":350044,
+      "nome":"São João da Boa Vista",
+      "regiao-intermediaria":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3510,
+        "nome":"Campinas"
+      }
+    },
+    "arquivo_origem":"municipios_sp_2026-11-15.json"
+  },
+  {
+    "id":3500402,
+    "microrregiao":{
+      "id":35030,
+      "mesorregiao":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3507,
+        "nome":"Campinas"
+      },
+      "nome":"São João da Boa Vista"
+    },
+    "nome":"Águas da Prata",
+    "regiao-imediata":{
+      "id":350044,
+      "nome":"São João da Boa Vista",
+      "regiao-intermediaria":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3510,
+        "nome":"Campinas"
+      }
+    },
+    "arquivo_origem":"municipios_sp_2026-11-15.json"
+  },
+  {
+    "id":3500501,
+    "microrregiao":{
+      "id":35033,
+      "mesorregiao":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3507,
+        "nome":"Campinas"
+      },
+      "nome":"Amparo"
+    },
+    "nome":"Águas de Lindóia",
+    "regiao-imediata":{
+      "id":350048,
+      "nome":"Amparo",
+      "regiao-intermediaria":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3510,
+        "nome":"Campinas"
+      }
+    },
+    "arquivo_origem":"municipios_sp_2026-11-15.json"
+  },
+  {
+    "id":3500550,
+    "microrregiao":{
+      "id":35022,
+      "mesorregiao":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3504,
+        "nome":"Bauru"
+      },
+      "nome":"Avaré"
+    },
+    "nome":"Águas de Santa Bárbara",
+    "regiao-imediata":{
+      "id":350007,
+      "nome":"Avaré",
+      "regiao-intermediaria":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3502,
+        "nome":"Sorocaba"
+      }
+    },
+    "arquivo_origem":"municipios_sp_2026-11-15.json"
+  },
+  {
+    "id":3500600,
+    "microrregiao":{
+      "id":35028,
+      "mesorregiao":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3506,
+        "nome":"Piracicaba"
+      },
+      "nome":"Piracicaba"
+    },
+    "nome":"Águas de São Pedro",
+    "regiao-imediata":{
+      "id":350040,
+      "nome":"Piracicaba",
+      "regiao-intermediaria":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3510,
+        "nome":"Campinas"
+      }
+    },
+    "arquivo_origem":"municipios_sp_2026-11-15.json"
+  },
+  {
+    "id":3500709,
+    "microrregiao":{
+      "id":35020,
+      "mesorregiao":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3504,
+        "nome":"Bauru"
+      },
+      "nome":"Bauru"
+    },
+    "nome":"Agudos",
+    "regiao-imediata":{
+      "id":350009,
+      "nome":"Bauru",
+      "regiao-intermediaria":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3503,
+        "nome":"Bauru"
+      }
+    },
+    "arquivo_origem":"municipios_sp_2026-11-15.json"
+  },
+  {
+    "id":3500758,
+    "microrregiao":{
+      "id":35042,
+      "mesorregiao":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3511,
+        "nome":"Itapetininga"
+      },
+      "nome":"Itapetininga"
+    },
+    "nome":"Alambari",
+    "regiao-imediata":{
+      "id":350006,
+      "nome":"Itapetininga",
+      "regiao-intermediaria":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3502,
+        "nome":"Sorocaba"
+      }
+    },
+    "arquivo_origem":"municipios_sp_2026-11-15.json"
+  },
+  {
+    "id":3500808,
+    "microrregiao":{
+      "id":35036,
+      "mesorregiao":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3508,
+        "nome":"Presidente Prudente"
+      },
+      "nome":"Presidente Prudente"
+    },
+    "nome":"Alfredo Marcondes",
+    "regiao-imediata":{
+      "id":350018,
+      "nome":"Presidente Prudente",
+      "regiao-intermediaria":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3505,
+        "nome":"Presidente Prudente"
+      }
+    },
+    "arquivo_origem":"municipios_sp_2026-11-15.json"
+  },
+  {
+    "id":3500907,
+    "microrregiao":{
+      "id":35004,
+      "mesorregiao":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3501,
+        "nome":"São José do Rio Preto"
+      },
+      "nome":"São José do Rio Preto"
+    },
+    "nome":"Altair",
+    "regiao-imediata":{
+      "id":350025,
+      "nome":"São José do Rio Preto",
+      "regiao-intermediaria":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3507,
+        "nome":"São José do Rio Preto"
+      }
+    },
+    "arquivo_origem":"municipios_sp_2026-11-15.json"
+  },
+  {
+    "id":3501004,
+    "microrregiao":{
+      "id":35015,
+      "mesorregiao":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3502,
+        "nome":"Ribeirão Preto"
+      },
+      "nome":"Batatais"
+    },
+    "nome":"Altinópolis",
+    "regiao-imediata":{
+      "id":350031,
+      "nome":"Ribeirão Preto",
+      "regiao-intermediaria":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3508,
+        "nome":"Ribeirão Preto"
+      }
+    },
+    "arquivo_origem":"municipios_sp_2026-11-15.json"
+  },
+  {
+    "id":3501103,
+    "microrregiao":{
+      "id":35018,
+      "mesorregiao":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3503,
+        "nome":"Araçatuba"
+      },
+      "nome":"Birigui"
+    },
+    "nome":"Alto Alegre",
+    "regiao-imediata":{
+      "id":350023,
+      "nome":"Birigui - Penápolis",
+      "regiao-intermediaria":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3506,
+        "nome":"Araçatuba"
+      }
+    },
+    "arquivo_origem":"municipios_sp_2026-11-15.json"
+  },
+  {
+    "id":3501152,
+    "microrregiao":{
+      "id":35046,
+      "mesorregiao":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3512,
+        "nome":"Macro Metropolitana Paulista"
+      },
+      "nome":"Sorocaba"
+    },
+    "nome":"Alumínio",
+    "regiao-imediata":{
+      "id":350003,
+      "nome":"Sorocaba",
+      "regiao-intermediaria":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3502,
+        "nome":"Sorocaba"
+      }
+    },
+    "arquivo_origem":"municipios_sp_2026-11-15.json"
+  },
+  {
+    "id":3501202,
+    "microrregiao":{
+      "id":35003,
+      "mesorregiao":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3501,
+        "nome":"São José do Rio Preto"
+      },
+      "nome":"Votuporanga"
+    },
+    "nome":"Álvares Florence",
+    "regiao-imediata":{
+      "id":350027,
+      "nome":"Votuporanga",
+      "regiao-intermediaria":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3507,
+        "nome":"São José do Rio Preto"
+      }
+    },
+    "arquivo_origem":"municipios_sp_2026-11-15.json"
+  },
+  {
+    "id":3501301,
+    "microrregiao":{
+      "id":35036,
+      "mesorregiao":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3508,
+        "nome":"Presidente Prudente"
+      },
+      "nome":"Presidente Prudente"
+    },
+    "nome":"Álvares Machado",
+    "regiao-imediata":{
+      "id":350018,
+      "nome":"Presidente Prudente",
+      "regiao-intermediaria":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3505,
+        "nome":"Presidente Prudente"
+      }
+    },
+    "arquivo_origem":"municipios_sp_2026-11-15.json"
+  },
+  {
+    "id":3501400,
+    "microrregiao":{
+      "id":35038,
+      "mesorregiao":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3509,
+        "nome":"Marília"
+      },
+      "nome":"Marília"
+    },
+    "nome":"Álvaro de Carvalho",
+    "regiao-imediata":{
+      "id":350013,
+      "nome":"Marília",
+      "regiao-intermediaria":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3504,
+        "nome":"Marília"
+      }
+    },
+    "arquivo_origem":"municipios_sp_2026-11-15.json"
+  },
+  {
+    "id":3501509,
+    "microrregiao":{
+      "id":35038,
+      "mesorregiao":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3509,
+        "nome":"Marília"
+      },
+      "nome":"Marília"
+    },
+    "nome":"Alvinlândia",
+    "regiao-imediata":{
+      "id":350013,
+      "nome":"Marília",
+      "regiao-intermediaria":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3504,
+        "nome":"Marília"
+      }
+    },
+    "arquivo_origem":"municipios_sp_2026-11-15.json"
+  },
+  {
+    "id":3501608,
+    "microrregiao":{
+      "id":35032,
+      "mesorregiao":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3507,
+        "nome":"Campinas"
+      },
+      "nome":"Campinas"
+    },
+    "nome":"Americana",
+    "regiao-imediata":{
+      "id":350038,
+      "nome":"Campinas",
+      "regiao-intermediaria":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3510,
+        "nome":"Campinas"
+      }
+    },
+    "arquivo_origem":"municipios_sp_2026-11-15.json"
+  },
+  {
+    "id":3501707,
+    "microrregiao":{
+      "id":35024,
+      "mesorregiao":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3505,
+        "nome":"Araraquara"
+      },
+      "nome":"Araraquara"
+    },
+    "nome":"Américo Brasiliense",
+    "regiao-imediata":{
+      "id":350036,
+      "nome":"Araraquara",
+      "regiao-intermediaria":{
+        "UF":{
+          "id":35,
+          "nome":"São Paulo",
+          "regiao":{
+            "id":3,
+            "nome":"Sudeste",
+            "sigla":"SE"
+          },
+          "sigla":"SP"
+        },
+        "id":3509,
+        "nome":"Araraquara"
+      }
+    },
+    "arquivo_origem":"municipios_sp_2026-11-15.json"
+  }
+]
