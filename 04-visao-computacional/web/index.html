@@ -11,7 +11,7 @@
   <link rel="icon" href="/static/icone.svg" type="image/svg+xml">
   <link rel="preload" href="/static/fontes/cormorant-garamond-latin-600-italic.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/static/vendor/leaflet/leaflet.css">
-  <link rel="stylesheet" href="/static/app.css?v=patrulha-1">
+  <link rel="stylesheet" href="/static/app.css?v=ind-1">
 </head>
 <body>
   <!-- Ícones de linha (padrão Lucide, ISC), inline: sem CDN e todos com o mesmo traço -->
@@ -66,6 +66,7 @@
       <a href="#acompanhar" data-rota="acompanhar">Acompanhar</a>
       <a href="#robo" data-rota="robo">Robô</a>
       <a href="#central" data-rota="central">Central</a>
+      <a href="#indicadores" data-rota="indicadores">Indicadores</a>
     </nav>
     <button type="button" class="botao-qr" id="abrir-qr" aria-haspopup="dialog" title="Abrir no celular pelo QR Code"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg><span>No celular</span></button>
     <div class="status-api" id="status-api" role="status" aria-live="polite"><span class="ponto"></span><span class="texto">conectando…</span></div>
@@ -421,6 +422,64 @@
         <form method="dialog" class="detalhe-corpo" id="detalhe-corpo"></form>
       </dialog>
     </section>
+    <!-- =========================================================== INDICADORES (Big Data · Ouro) -->
+    <section class="tela" id="tela-indicadores" data-tela="indicadores" hidden>
+      <header class="cabecalho-tela">
+        <p class="sobretitulo">Big Data · camada Ouro</p>
+        <h1>Onde a cidade <em>fica no escuro</em>.</h1>
+        <p class="lead">Indicadores do pipeline Bronze → Prata → Ouro (Databricks) sobre os chamados reais de iluminação do SP156, cruzados com a população do IBGE. Só números agregados por distrito e zona: nenhum dado pessoal.</p>
+      </header>
+      <p class="erro" id="ind-erro" role="alert" hidden></p>
+      <section class="cartao vesper-vivo" aria-labelledby="ind-t-vivo">
+        <div class="vivo-topo">
+          <h2 id="ind-t-vivo"><span class="ponto-vivo" aria-hidden="true"></span>O Vésper agora</h2>
+          <span class="sub" id="viv-hora">central de chamados ao vivo</span>
+        </div>
+        <div class="vivo-grade">
+          <div class="vivo-total"><strong id="viv-total">--</strong><span>chamados e suspeitas na central</span></div>
+          <div class="vivo-bloco"><span class="rotulo">Origem</span><ul id="viv-origem"></ul></div>
+          <div class="vivo-bloco"><span class="rotulo">Prioridade</span><ul id="viv-prio"></ul></div>
+          <div class="vivo-bloco"><span class="rotulo">Situação</span><ul id="viv-status"></ul></div>
+        </div>
+        <p class="sub vivo-nota">Separado dos números da cidade abaixo: o Vésper é o produto funcionando agora (foto, robô e relato); o Big Data é o histórico oficial do SP156. Atualiza a cada 15 s.</p>
+      </section>
+      <div class="kpis ind-kpis">
+        <div class="kpi"><span>Chamados tratados</span><strong id="ind-total">--</strong><small id="ind-total-sub"></small></div>
+        <div class="kpi"><span>Tempo médio até o conserto</span><strong id="ind-tempo">--</strong><small id="ind-tempo-sub"></small></div>
+        <div class="kpi"><span>Finalizados</span><strong id="ind-final">--</strong><small id="ind-final-sub"></small></div>
+        <div class="kpi"><span>Registros válidos</span><strong id="ind-validos">--</strong><small id="ind-validos-sub"></small></div>
+      </div>
+      <div class="grade-ind">
+        <section class="cartao" aria-labelledby="ind-t-zona">
+          <h2 id="ind-t-zona">Centro × Periferia</h2>
+          <p class="sub">Chamados de iluminação por mil habitantes</p>
+          <div id="ind-zonas" class="barras-zona"></div>
+          <p class="destaque" id="ind-impacto-txt"></p>
+        </section>
+        <section class="cartao" aria-labelledby="ind-t-top">
+          <h2 id="ind-t-top">Distritos com mais chamados</h2>
+          <p class="sub">Top 10 no período · cor pela zona</p>
+          <div class="ind-legenda" id="ind-legenda"></div>
+          <ol id="ind-top" class="barras-h"></ol>
+        </section>
+        <section class="cartao" aria-labelledby="ind-t-mes">
+          <h2 id="ind-t-mes">Chamados por mês</h2>
+          <p class="sub" id="ind-mes-sub"></p>
+          <div id="ind-meses" class="colunas"></div>
+        </section>
+        <section class="cartao" aria-labelledby="ind-t-lin">
+          <h2 id="ind-t-lin">De onde vêm os números</h2>
+          <ol class="linhagem" id="ind-camadas"></ol>
+          <ul class="qualidade" id="ind-qualidade"></ul>
+          <p class="sub" id="ind-origem"></p>
+        </section>
+      </div>
+      <details class="cartao dobra">
+        <summary>Tabela da Ouro consumida pelo MVP (ouro_mvp_mapa)</summary>
+        <div class="tabela-rolagem"><table class="tabela-ind" id="ind-tabela"></table></div>
+        <p class="sub" id="ind-tabela-nota"></p>
+      </details>
+    </section>
   </main>
 
   <!-- câmera ao vivo (getUserMedia): nada é enviado antes de o cidadão tocar em foto ou gravar -->
@@ -457,5 +516,6 @@
   <script src="/static/vendor/leaflet/leaflet.js"></script>
   <script src="/static/app.js?v=patrulha-1"></script>
   <script src="/static/patrulha.js?v=patrulha-1"></script>
+  <script src="/static/indicadores.js?v=ind-1"></script>
 </body>
 </html>

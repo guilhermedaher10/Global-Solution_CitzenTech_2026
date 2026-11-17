@@ -369,6 +369,19 @@ def regioes(central: Central = Depends(obter_central)):
     return agrupar(central.listar(1000))
 
 
+@app.get("/v1/indicadores", tags=["big-data"],
+         summary="Indicadores da camada Ouro do Big Data (pasta 02) para a aba Indicadores")
+def indicadores():
+    """Consumo da Ouro pelo MVP: agregados por distrito/zona/mês do pipeline Bronze → Prata → Ouro
+    (Databricks), sem dado pessoal. Gerado por scripts/exportar_ouro_web.py a partir do Big Data."""
+    import json
+
+    arquivo = WEB / "ouro-bigdata.json"
+    if not arquivo.exists():
+        raise HTTPException(404, "indicadores da Ouro não incluídos nesta imagem")
+    return json.loads(arquivo.read_text(encoding="utf-8"))
+
+
 @app.post("/v1/central/limpar", tags=["central"], include_in_schema=False)
 def limpar_central(authorization: str | None = Header(None), central: Central = Depends(obter_central)):
     """Zera a demonstração. Só com CENTRAL_TOKEN definido e enviado."""
