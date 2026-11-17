@@ -15,6 +15,7 @@
 #include "Config.h"
 #include "Controle.h"
 #include "Pagina.h"
+#include "Vesper.h"   // integracao com a central do Vesper (POST /v1/alerta-robo)
 #if USAR_TINYML
 #include "ModeloTreinado.h"
 static_assert(modelo::ENTRADAS == 4 && modelo::OCULTOS == 12 && modelo::SAIDAS == 4,
@@ -188,6 +189,7 @@ void registrarEvento(Classe c,float confianca){
   if(e.temGps)ultimoEvento+=" | GPS: "+String(e.lat,6)+","+String(e.lon,6);
   else ultimoEvento+=" | sem FIX GPS";
   Serial.printf("[EVENTO] %s | %s\n",ultimoEvento.c_str(),descricaoAlerta(c));
+  vesper::avisar(nomeClasse(c),confianca,e.temGps,e.lat,e.lon);   // escuro_* vira suspeita na central
 }
 
 void inferir(){
@@ -298,7 +300,7 @@ void enviarStatus(){
   const bool fix=gpsFix();
   const bool inferenciaRecente=mlValido && (millis()-mlUltimaEntrada<=cfg::MODELO_MAX_IDADE_MS);
   Classe c=inferenciaRecente?mlClasse:Classe::INDEFINIDA;
-  String s;s.reserve(1450);
+  String s;s.reserve(1750);
   s="{\"tinyml\":"+String(modeloAtivo?"true":"false");
   s+=",\"motores_habilitados\":"+String((HABILITAR_MOTORES && (CONTROLE_MANUAL_INDEPENDENTE || (USAR_TINYML && modeloAtivo)))?"true":"false");
   s+=",\"controle_independente\":"+String(CONTROLE_MANUAL_INDEPENDENTE?"true":"false");
@@ -320,7 +322,8 @@ void enviarStatus(){
        String(WiFi.status()==WL_CONNECTED?WiFi.localIP().toString():"")+"\"}";
   s+=",\"coletando\":"+String(coletando?"true":"false")+",\"csv_pronto\":"+String(csvPronto?"true":"false");
   s+=",\"coleta_leituras\":"+String(coletaTotal)+",\"coleta_mensagem\":\""+coletaMensagem+"\"";
-  s+=",\"ultimo_evento\":\""+ultimoEvento+"\"}";
+  s+=",\"ultimo_evento\":\""+ultimoEvento+"\"";
+  s+=",\"vesper\":"+vesper::statusJson()+"}";
   server.sendHeader("Cache-Control","no-store");
   server.send(200,"application/json; charset=utf-8",s);
 }
@@ -391,6 +394,7 @@ void setup(){
   server.on("/direita",[](){comando(Pedido::DIREITA);});
   server.on("/parar",[](){comando(Pedido::PARAR);});
   server.begin();
+  vesper::iniciar();
   proximaLeitura=millis()+cfg::PERIODO_MS;
   atualizarAcao();
   Serial.printf("[REDE] Wi-Fi direto: %s | abra http://%s\n",cfg::AP_SSID,WiFi.softAPIP().toString().c_str());
@@ -409,5 +413,6 @@ void loop(){
   atualizarAcao();    // Reagir ao resultado do modelo
   lerGps();
   logSerial();
+  vesper::atualizarLed();
   delay(1);
 }

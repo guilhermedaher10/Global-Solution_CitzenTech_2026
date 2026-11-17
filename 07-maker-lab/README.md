@@ -49,6 +49,47 @@ GPS NEO-6M ───────────────┤    (localização qu
 
 O painel apresenta as leituras dos sensores, a classe prevista, a confiança do modelo, o número de inferências e informações do GPS quando disponíveis. O módulo GPS recebe sinais de satélite **sem precisar de internet**; abrir mapas online, porém, pode exigir conexão à internet.
 
+## Integração com o Vésper (sistema da equipe)
+
+O carrinho é uma das **fontes de alerta** do Vésper. Quando o TinyML confirma `escuro_livre` ou `escuro_obstaculo`, o ESP32 avisa a API da Visão Computacional (pasta `04`). O alerta vira uma **suspeita na central de chamados**, aparece no site (lista e mapa, origem "Robô") e no Grafana. Depois, uma foto do mesmo local confirma o problema e o RPA (pasta `05`) encaminha à prefeitura.
+
+```text
+Carrinho (TinyML no ESP32) ──POST /v1/alerta-robo──> API Vésper (Azure) ──> central de chamados
+        ▲                                                │                    ├─> site: lista + mapa
+        └──────── acao_robo: led_vermelho / led_amarelo ─┘                    ├─> Grafana
+                                                                              └─> foto confirma -> RPA -> prefeitura
+```
+
+**Contrato** (o mesmo JSON no firmware e no gêmeo digital):
+
+```json
+POST /v1/alerta-robo
+{"origem":"robo","latitude":-23.5641,"longitude":-46.6412,"alerta":["escuro"],
+ "classe_ia":"escuro_obstaculo","confianca_ia":0.97}
+```
+
+A resposta traz o `protocolo` da suspeita, a prioridade prévia e a `acao_robo`. `escuro_obstaculo` vira prioridade **alta** (LED vermelho) e `escuro_livre`, **média** (LED amarelo).
+
+- **No firmware** (`Vesper.h`): o envio roda numa tarefa separada do ESP32, sem travar sensores nem painel. No máximo 1 alerta a cada 30 s. O LED da placa (GPIO2) mostra a resposta, e o painel local ganhou o quadro "Central Vésper". Requer `WIFI_CASA_SSID`/`WIFI_CASA_SENHA` (Wi-Fi 2,4 GHz ou hotspot do celular). Sem internet, o carrinho continua funcionando sozinho. Sem fix de GPS, usa uma posição padrão e avisa no painel. O LDR é digital, então o carrinho manda o alerta `escuro` decidido pela IA, não um valor em lux.
+- **Status:** a integração foi escrita depois da gravação do vídeo e **ainda não foi testada no carrinho físico**, que está desmontado. Por isso, ela é demonstrada pelo gêmeo digital abaixo.
+
+### Gêmeo digital: a integração sem o carrinho montado
+
+`ia/gemeo_digital.py` faz o papel do carrinho, com a **mesma IA e o mesmo contrato**:
+
+1. lê os pesos de `ModeloTreinado.h`, o mesmo arquivo que vai para o ESP32;
+2. percorre uma rua reproduzindo os **CSVs gravados pelo carrinho real** (`ia/dados/`), 10 leituras por segundo;
+3. calcula os 4 atributos da janela e roda a MLP exatamente como o `.ino`, confirmando a classe após 3 inferências seguidas com confiança ≥ 0,70;
+4. nos trechos escuros, manda o `POST /v1/alerta-robo` e mostra o protocolo e o LED devolvidos pela API.
+
+```powershell
+py ia/gemeo_digital.py                              # envia para a API do Vésper na Azure
+py ia/gemeo_digital.py --api http://localhost:8000  # API rodando no PC
+py ia/gemeo_digital.py --sem-api                    # só mostra o JSON que seria enviado
+```
+
+Depois, abra o site do Vésper, vá na **central de chamados** e veja as suspeitas com origem "Robô" no mapa. Os testes em `tests/` garantem que o gêmeo e o firmware mandam o mesmo JSON e que a IA acerta os CSVs de teste.
+
 ## Modelo de IA (TinyML)
 
 A IA foi treinada em **Python** usando `scikit-learn` (`MLPClassifier`) e seus parâmetros foram exportados para o arquivo `ModeloTreinado.h`, utilizado diretamente pelo firmware C++ do ESP32. A inferência ocorre **localmente**, sem Python nem internet no carrinho.
@@ -109,7 +150,9 @@ MakerLab_Controle_Independente_TinyML/
 ├── Controle.h                                # lógica dos motores
 ├── Pagina.h                                  # interface web
 ├── ModeloTreinado.h                          # pesos da rede neural
+├── Vesper.h                                  # envio dos alertas para a central do Vésper
 ├── treinar_modelo.py                         # treinamento/exportação
+├── gemeo_digital.py                          # carrinho simulado: mesma IA + leituras reais -> Vésper
 ├── resultado_treinamento.json                # métricas do treinamento
 ├── requirements.txt                          # dependências Python
 ├── dados/
