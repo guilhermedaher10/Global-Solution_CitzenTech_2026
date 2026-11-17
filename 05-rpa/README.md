@@ -4,7 +4,7 @@
 
 **Responsável:** Vinicius Santos Yamashita de Farias· RM 550908
 
-**Vídeo (até 3 min):** _(link do YouTube)_
+**Vídeo (até 3 min):** _https://youtu.be/0LxxymH-tZk_
 
 ## Despachante de chamados de iluminação
 
