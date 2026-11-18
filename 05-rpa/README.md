@@ -82,6 +82,26 @@ No Linux/macOS, use `source .venv/bin/activate` e `cp .env.example .env`.
 - `python scripts/resetar_demo.py`: reconstrói a tabela de exemplo para repetir a demonstração. O robô só processa chamados `confirmado`, então uma segunda execução sem reset não reenvia nada.
 - `python scripts/importar_visao.py <arquivo.jsonl>`: converte respostas da Visão em chamados (`--confirmar` simula o atendente). A Visão não guarda imagem (LGPD); para o chamado sair com foto, a resposta precisa ser pedida com `retornar_imagem=true` (vem a foto anonimizada em `imagem_anonimizada_base64`). Sem foto, o chamado fica em `falha_dados`. Aceita um `.json`, um `.jsonl` (como o gerado por `tempo_real.py --eventos` da Visão) ou uma pasta.
 
+### Fonte dos chamados (`RPA_FONTE` no `.env`)
+
+| Fonte | De onde lê | Para onde devolve |
+|---|---|---|
+| `csv` (padrão) | `data/chamados.csv`, que faz o papel do banco | o mesmo CSV (testes e demo offline) |
+| `api` | a **central de chamados do Vésper** (`GET {VESPER_API_URL}/v1/chamados`) | `POST /v1/chamados/{protocolo}/status` → `encaminhado`, com o protocolo da prefeitura na nota. Aparece na linha do tempo do site |
+
+Com `RPA_FONTE=api`, o fluxo é o do produto: o chamado nasce no site (foto, relato ou alerta do robô do Maker Lab), o atendente marca **confirmado** na Central, o robô encaminha e o cidadão vê **"Encaminhado ao responsável"** ao acompanhar o protocolo.
+
+```powershell
+$env:RPA_FONTE = "api"
+$env:VESPER_API_URL = "https://ca-ruasescuras-visao.bravehill-24590cb4.eastus.azurecontainerapps.io"
+python -m src.main
+```
+
+- O `id_captura` do chamado passa a ser o **protocolo do Vésper** (`VSP-XXXXXX`).
+- A central **não guarda fotos** (LGPD): nesse modo o PDF vai sem imagem, com o protocolo e o resumo da IA como evidência.
+- O estado interno do robô (etapa, PDF, protocolo da prefeitura) fica em `data/estado_rpa_api.csv` (fora do Git). Uma segunda execução não repete envio nem aviso à central.
+- Suspeitas do robô ou de relato confirmadas pelo atendente (`suspeita_escuro`, `suspeita_buraco`) vão para a vistoria da iluminação ou das vias.
+
 ### Modos de envio (`ENVIO_MODO` no `.env`)
 
 | Modo | O que faz | Quando usar |
@@ -135,5 +155,5 @@ Resumo esperado da primeira execução: 10 processados, 5 encaminhados (2 alta, 
 | Pega `confirmado` e passa para `encaminhado` | feito |
 | Agrupa duplicados por proximidade | feito (raio e janela configuráveis) |
 | Registra no sistema da prefeitura (portal simulado) | feito (e-mail ou portal mock com UiPath); SP156 real não está integrado |
-| Lê/escreve no banco ou na API do backend | **pendente**: o backend ainda não foi definido. Hoje o CSV faz esse papel e só `ler` e `salvar` em `src/repositorio.py` precisam trocar |
+| Lê/escreve no banco ou na API do backend | feito: `RPA_FONTE=api` lê a central do Vésper (`GET /v1/chamados`) e devolve o `encaminhado` pela API (`POST /v1/chamados/{protocolo}/status`); o CSV continua como modo offline |
 | Texto formal do chamado pela GenAI | **pendente**: a GenAI ainda só responde perguntas (`POST /consulta`); o PDF usa um texto-base próprio (`src/config.py`) |

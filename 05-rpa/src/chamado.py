@@ -55,7 +55,7 @@ def _lista_membros(membros: list[tuple[dict, float]], limite: int = 10) -> str:
     return ", ".join(itens)
 
 
-def gerar_pdf(o: dict, membros: list[tuple[dict, float]], foto_limpa: Path, destino_dir: Path,
+def gerar_pdf(o: dict, membros: list[tuple[dict, float]], foto_limpa: Path | None, destino_dir: Path,
               cfg: Config, hoje: date) -> Path:
     destino_dir.mkdir(parents=True, exist_ok=True)
     nivel = o["prioridade_nivel"]
@@ -101,9 +101,17 @@ def gerar_pdf(o: dict, membros: list[tuple[dict, float]], foto_limpa: Path, dest
     pdf.ln(3)
 
     pdf.set_font("Helvetica", "B", 10)
-    pdf.cell(0, 6, _t("Foto do local (sem metadados; rostos e placas desfocados quando detectados)"),
-             new_x="LMARGIN", new_y="NEXT")
-    pdf.image(str(foto_limpa), w=110)
+    if foto_limpa is None:
+        pdf.cell(0, 6, _t("Evidência"), new_x="LMARGIN", new_y="NEXT")
+        pdf.set_font("Helvetica", "", 10)
+        pdf.multi_cell(0, 5, _t(
+            f"Chamado da central do Vésper (protocolo {o['id_captura']}). A foto foi validada pela IA de "
+            "visão computacional na abertura e não é guardada (LGPD); a evidência é o resumo da IA acima. "
+            "Acompanhe pelo protocolo no site do Vésper."), new_x="LMARGIN", new_y="NEXT")
+    else:
+        pdf.cell(0, 6, _t("Foto do local (sem metadados; rostos e placas desfocados quando detectados)"),
+                 new_x="LMARGIN", new_y="NEXT")
+        pdf.image(str(foto_limpa), w=110)
 
     caminho = destino_dir / f"chamado_{o['id_captura']}.pdf"
     pdf.output(str(caminho))

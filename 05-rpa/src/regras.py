@@ -55,7 +55,10 @@ def validar_dados(o: dict, base_dir: Path) -> list[str]:
 
     foto = (o.get("foto") or "").strip()
     if not foto:
-        erros.append("foto ausente")
+        # Chamados da central do Vésper (RPA_FONTE=api) não trazem foto: a imagem foi validada pela IA
+        # na abertura e não é guardada (LGPD). A evidência é o protocolo VSP + o resumo da IA.
+        if o.get("fonte") != "api":
+            erros.append("foto ausente")
     else:
         caminho = (base_dir / foto).resolve()
         if not caminho.is_relative_to(base_dir.resolve()):

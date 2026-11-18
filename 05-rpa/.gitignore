@@ -13,3 +13,4 @@ logs/auditoria.csv
 outbox/emails/
 outbox/chamados/
 outbox/*.csv
+data/estado_rpa_api.csv
