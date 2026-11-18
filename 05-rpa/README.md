@@ -72,6 +72,7 @@ python -m venv .venv
 pip install -r requirements.txt
 copy .env.example .env
 python -m pytest -q
+python -m http.server 8080 --directory portal_mock
 python -m src.main --dry-run
 python -m src.main
 ```
