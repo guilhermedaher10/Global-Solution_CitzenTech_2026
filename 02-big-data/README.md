@@ -7,6 +7,7 @@ Componente de **Dados** da Global Solution **CitizenTech** (FIAP). Constrói o p
 ## Integrantes
 
 | Nome completo | RM |
+|---|---|
 | Guilherme Daher | 98611 |
 | Gabriel Freitas | 550187 |
 | Heitor Nobre | 551539 |
@@ -35,7 +36,7 @@ flowchart LR
     F --> G[🥉 Bronze<br/>bruto + rastro]
     G --> H[🥈 Prata<br/>tipos, nulos, MERGE, qualidade]
     H --> I[🥇 Ouro<br/>fato + dimensões]
-    I --> J[MVP Vésper<br/>via ouro_mvp_mapa]
+    I --> J[MVP Vésper · aba Indicadores<br/>GET /v1/indicadores]
 ```
 
 `Fontes → Airflow → chegada/ → Volume → Bronze → Prata → Ouro → MVP`
@@ -102,7 +103,7 @@ Catálogo/schema de todas as tabelas: **`workspace.gs`**.
 ## Camadas e tabelas geradas
 
 | Camada | Tabela | Descrição |
-
+|---|---|---|
 | 🥉 Bronze | `bronze_sp156` | Chamados SP156 brutos + `arquivo_origem`, `carregado_em` |
 | 🥉 Bronze | `bronze_clima` | Clima diário (COPY INTO incremental) |
 | 🥉 Bronze | `bronze_ibge` | Municípios de SP (COPY INTO incremental) |
@@ -128,7 +129,38 @@ Catálogo/schema de todas as tabelas: **`workspace.gs`**.
 
 - O SP156 **não traz dados pessoais** do solicitante (nome/telefone/e-mail). O quase-identificador (endereço) fica **fora da Ouro** e é **hasheado** (`sha2`) quando necessário.
 - A Ouro entrega **agregados por distrito**, nunca o indivíduo — alinhado ao discurso do Vésper ("sem cadastro, sem guardar a foto").
-- **Contrato de consumo do MVP:** a tabela **`ouro_mvp_mapa`** (`distrito`, `zona`, `populacao`, `chamados`, `chamados_por_mil_hab`, `tempo_medio_dias`, `pct_finalizado`). A tela **Central** do MVP exibe os chamados por região (mapa + lista), que é o consumo previsto dessa tabela.
+- **Contrato de consumo do MVP:** a tabela **`ouro_mvp_mapa`** (`distrito`, `zona`, `populacao`, `chamados`, `chamados_por_mil_hab`, `tempo_medio_dias`, `pct_finalizado`) e as 5 consultas da Ouro.
+
+### Onde a Ouro aparece no MVP
+
+A aba **Indicadores** do site do Vésper mostra a camada Ouro:
+- os KPIs: 277.009 chamados tratados, 6,5 dias até o conserto (mediana de 1 dia), 76% finalizados e 94,9% válidos;
+- Centro × Periferia por mil habitantes (51,1 × 21,9);
+- o top 10 distritos e os chamados por mês;
+- a linhagem Bronze → Prata → Ouro com as regras de qualidade;
+- a tabela `ouro_mvp_mapa`.
+
+```text
+Databricks (workspace.gs, camada Ouro)
+   └─> resultados do notebook / exportação ouro/ouro_mvp.json
+         └─> 04-visao-computacional/scripts/exportar_ouro_web.py
+               └─> GET /v1/indicadores (API do Vésper)  ->  aba "Indicadores" do site
+```
+
+- **Site:** https://ca-ruasescuras-visao.bravehill-24590cb4.eastus.azurecontainerapps.io/#indicadores
+- **API:** `GET /v1/indicadores` (JSON com os agregados; nenhum dado pessoal).
+- Um teste da Visão (`tests/test_indicadores.py`) falha se o site ficar diferente do resultado da Ouro.
+- Ao lado, o card **"O Vésper agora"** mostra a central de chamados do produto ao vivo. Os dois **não são somados**: o SP156 é o histórico oficial da cidade, e o Vésper é o produto funcionando hoje.
+
+**Tabela completa no site:** o notebook imprime só as 5 primeiras linhas de `ouro_mvp_mapa`. Para o site mostrar os 96 distritos, rode no fim do notebook e salve a saída em `02-big-data/ouro/ouro_mvp.json`:
+
+```python
+import json
+mapa = [r.asDict() for r in spark.table("workspace.gs.ouro_mvp_mapa").collect()]
+print(json.dumps({"mapa": mapa}, ensure_ascii=False, default=str))
+```
+
+Depois, `python 04-visao-computacional/scripts/exportar_ouro_web.py` atualiza o site.
 
 ---
 
