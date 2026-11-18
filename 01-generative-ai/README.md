@@ -12,6 +12,8 @@ GS 2026.2 CitizenTech · FIAP · Generative AI for Engineering
 | Vinicius Yamashita | 550908 |
 | Lucca Alexandre | 99700 |
 
+**Vídeo:** https://youtu.be/jsB1YCe-ZXw · **Relatório:** [RELATORIO.md](RELATORIO.md)
+
 Assistente que recebe uma pergunta sobre iluminação pública (poste apagado, lâmpada piscando, prazo, canal de atendimento) e responde **somente com base em trechos de fontes oficiais**, em JSON, com **citação do trecho** e **recusa** ("não consta") quando a base não cobre. Tudo roda local, com LLM `qwen2.5:1.5b-instruct` e embeddings `nomic-embed-text`, via Ollama. Não usa chave de API nem dado pessoal.
 
 Relatório completo: [RELATORIO.md](RELATORIO.md)
