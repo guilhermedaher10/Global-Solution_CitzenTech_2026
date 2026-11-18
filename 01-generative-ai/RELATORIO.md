@@ -91,4 +91,4 @@ A IA não é um protótipo isolado: ela roda **integrada ao Vésper** como um se
 
 ## Links
 - **Repositório:** https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026
-- **Vídeo:** _colar o link do vídeo_
+- **Vídeo:** https://youtu.be/jsB1YCe-ZXw
