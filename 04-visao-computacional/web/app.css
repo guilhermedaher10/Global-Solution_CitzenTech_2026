@@ -781,3 +781,13 @@ h3 { font-size: 1.05rem; font-weight: 700; }
 .vivo-bloco li.v-alta span::before { content: "● "; color: var(--alerta); }
 .vivo-bloco li.v-resolvido span::before { content: "● "; color: var(--ok); }
 .vivo-nota { margin: 14px 0 0 !important; color: var(--texto-3); font-size: .82rem; }
+
+.ind-escopo { margin: 10px 0 0; color: var(--texto-3); font-size: .86rem; max-width: 62ch; }
+.rotulo-mini { margin: 14px 0 6px; color: var(--texto-3); font-size: .76rem; text-transform: uppercase; letter-spacing: .06em; }
+.incremental { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 6px; font-size: .86rem; }
+.incremental li { display: flex; justify-content: space-between; gap: 12px; color: var(--texto-2); border-bottom: 1px dashed var(--borda); padding-bottom: 4px; }
+.incremental b { color: var(--texto); font-variant-numeric: tabular-nums; }
+.ind-mapa-cartao { margin-top: 20px; }
+.ind-mapa { height: 420px; border-radius: var(--raio); overflow: hidden; border: 1px solid var(--borda); }
+@media (max-width: 560px) { .ind-mapa { height: 320px; } }
+.ind-mapa-cartao .sub { margin: -6px 0 14px; color: var(--texto-3); font-size: .86rem; }

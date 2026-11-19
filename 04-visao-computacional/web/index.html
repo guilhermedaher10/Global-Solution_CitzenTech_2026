@@ -11,7 +11,7 @@
   <link rel="icon" href="/static/icone.svg" type="image/svg+xml">
   <link rel="preload" href="/static/fontes/cormorant-garamond-latin-600-italic.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/static/vendor/leaflet/leaflet.css">
-  <link rel="stylesheet" href="/static/app.css?v=ind-1">
+  <link rel="stylesheet" href="/static/app.css?v=ind-2">
 </head>
 <body>
   <!-- Ícones de linha (padrão Lucide, ISC), inline: sem CDN e todos com o mesmo traço -->
@@ -427,7 +427,8 @@
       <header class="cabecalho-tela">
         <p class="sobretitulo">Big Data · camada Ouro</p>
         <h1>Onde a cidade <em>fica no escuro</em>.</h1>
-        <p class="lead">Indicadores do pipeline Bronze → Prata → Ouro (Databricks) sobre os chamados reais de iluminação do SP156, cruzados com a população do IBGE. Só números agregados por distrito e zona: nenhum dado pessoal.</p>
+        <p class="lead">Indicadores do pipeline Bronze → Prata → Ouro (Databricks) sobre os chamados reais do SP156, cruzados com a população do IBGE. Só números agregados por distrito e zona: nenhum dado pessoal.</p>
+        <p class="sub ind-escopo" id="ind-escopo"></p>
       </header>
       <p class="erro" id="ind-erro" role="alert" hidden></p>
       <section class="cartao vesper-vivo" aria-labelledby="ind-t-vivo">
@@ -444,15 +445,15 @@
         <p class="sub vivo-nota">Separado dos números da cidade abaixo: o Vésper é o produto funcionando agora (foto, robô e relato); o Big Data é o histórico oficial do SP156. Atualiza a cada 15 s.</p>
       </section>
       <div class="kpis ind-kpis">
-        <div class="kpi"><span>Chamados tratados</span><strong id="ind-total">--</strong><small id="ind-total-sub"></small></div>
-        <div class="kpi"><span>Tempo médio até o conserto</span><strong id="ind-tempo">--</strong><small id="ind-tempo-sub"></small></div>
-        <div class="kpi"><span>Finalizados</span><strong id="ind-final">--</strong><small id="ind-final-sub"></small></div>
-        <div class="kpi"><span>Registros válidos</span><strong id="ind-validos">--</strong><small id="ind-validos-sub"></small></div>
+        <div class="kpi"><span>Chamados de poste e fiação</span><strong id="ind-total">--</strong><small id="ind-total-sub"></small></div>
+        <div class="kpi"><span>Tempo até fechar o chamado</span><strong id="ind-tempo">--</strong><small id="ind-tempo-sub"></small></div>
+        <div class="kpi"><span>Fechados no período</span><strong id="ind-final">--</strong><small id="ind-final-sub"></small></div>
+        <div class="kpi"><span>Registros válidos na Prata</span><strong id="ind-validos">--</strong><small id="ind-validos-sub"></small></div>
       </div>
       <div class="grade-ind">
         <section class="cartao" aria-labelledby="ind-t-zona">
           <h2 id="ind-t-zona">Centro × Periferia</h2>
-          <p class="sub">Chamados de iluminação por mil habitantes</p>
+          <p class="sub">Chamados de poste e fiação por 100 mil habitantes</p>
           <div id="ind-zonas" class="barras-zona"></div>
           <p class="destaque" id="ind-impacto-txt"></p>
         </section>
@@ -471,9 +472,16 @@
           <h2 id="ind-t-lin">De onde vêm os números</h2>
           <ol class="linhagem" id="ind-camadas"></ol>
           <ul class="qualidade" id="ind-qualidade"></ul>
+          <p class="rotulo-mini">Prova do incremental (bronze_sp156)</p>
+          <ol class="incremental" id="ind-incremental"></ol>
           <p class="sub" id="ind-origem"></p>
         </section>
       </div>
+      <section class="cartao ind-mapa-cartao" aria-labelledby="ind-t-mapa">
+        <h2 id="ind-t-mapa">Mapa por distrito</h2>
+        <p class="sub" id="ind-mapa-sub">Cada círculo é um distrito, no centro dos seus chamados · tamanho = chamados por 100 mil habitantes · cor pela zona</p>
+        <div id="ind-mapa" class="ind-mapa" role="img" aria-label="Mapa de São Paulo com os chamados de poste e fiação por distrito"></div>
+      </section>
       <details class="cartao dobra">
         <summary>Tabela da Ouro consumida pelo MVP (ouro_mvp_mapa)</summary>
         <div class="tabela-rolagem"><table class="tabela-ind" id="ind-tabela"></table></div>
@@ -516,6 +524,6 @@
   <script src="/static/vendor/leaflet/leaflet.js"></script>
   <script src="/static/app.js?v=patrulha-1"></script>
   <script src="/static/patrulha.js?v=patrulha-1"></script>
-  <script src="/static/indicadores.js?v=ind-1"></script>
+  <script src="/static/indicadores.js?v=ind-2"></script>
 </body>
 </html>

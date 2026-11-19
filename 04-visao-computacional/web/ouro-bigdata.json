@@ -1,132 +1,226 @@
 {
  "fonte": "Big Data (02) · Databricks workspace.gs · camada Ouro",
- "origem": "resultados salvos em 02-big-data/databricks/gs_pipeline.ipynb",
- "completo": false,
+ "origem": "02-big-data/databricks/gs_pipeline.ipynb + amostras/ouro_mvp_mapa.json",
  "periodo": "SP156 · jul–set/2026",
+ "escopo": [
+  "Denunciar Fiação solta na calçada",
+  "Denunciar Poste em mau estado"
+ ],
  "camadas": {
   "bronze_sp156": 968464,
-  "prata_sp156": 277009,
-  "fato_chamado": 277009,
-  "distritos": 96
+  "prata_sp156": 302923,
+  "fato_chamado": 1113,
+  "distritos": 95
  },
+ "incremental": [
+  {
+   "etapa": "1 - so lote 1",
+   "tabela": "bronze_clima",
+   "linhas": 1,
+   "arquivos": 1
+  },
+  {
+   "etapa": "2 - lote 2 enviado",
+   "tabela": "bronze_clima",
+   "linhas": 2,
+   "arquivos": 2
+  },
+  {
+   "etapa": "3 - reexecucao sem arquivo novo",
+   "tabela": "bronze_clima",
+   "linhas": 2,
+   "arquivos": 2
+  },
+  {
+   "etapa": "1 - so lote 1",
+   "tabela": "bronze_ibge",
+   "linhas": 645,
+   "arquivos": 1
+  },
+  {
+   "etapa": "2 - lote 2 enviado",
+   "tabela": "bronze_ibge",
+   "linhas": 1290,
+   "arquivos": 2
+  },
+  {
+   "etapa": "3 - reexecucao sem arquivo novo",
+   "tabela": "bronze_ibge",
+   "linhas": 1290,
+   "arquivos": 2
+  },
+  {
+   "etapa": "1 - so lote 1",
+   "tabela": "bronze_sp156",
+   "linhas": 484232,
+   "arquivos": 1
+  },
+  {
+   "etapa": "2 - lote 2 enviado",
+   "tabela": "bronze_sp156",
+   "linhas": 968464,
+   "arquivos": 2
+  },
+  {
+   "etapa": "3 - reexecucao sem arquivo novo",
+   "tabela": "bronze_sp156",
+   "linhas": 968464,
+   "arquivos": 2
+  }
+ ],
  "qualidade": [
   {
-   "regra": "data_de_abertura preenchida",
-   "ok": 277009,
-   "falha": 0
+   "regra": "R1_data_abertura_valida",
+   "avaliadas": 484232,
+   "barradas": 0,
+   "pct_barrado": 0.0,
+   "medido_em": "2026-11-17T04:06:32.941Z"
   },
   {
-   "regra": "coordenadas validas (caixa SP)",
-   "ok": 264275,
-   "falha": 12734
+   "regra": "R2_fim_depois_do_inicio",
+   "avaliadas": 484232,
+   "barradas": 0,
+   "pct_barrado": 0.0,
+   "medido_em": "2026-11-17T04:06:32.941Z"
   },
   {
-   "regra": "status + distrito preenchidos",
-   "ok": 264195,
-   "falha": 12814
+   "regra": "R3_distrito_preenchido",
+   "avaliadas": 484232,
+   "barradas": 181309,
+   "pct_barrado": 37.44,
+   "medido_em": "2026-11-17T04:06:32.941Z"
+  },
+  {
+   "regra": "TRATADO_coord_fora_sp_virou_null",
+   "avaliadas": 484232,
+   "barradas": 744,
+   "pct_barrado": 0.15,
+   "medido_em": "2026-11-17T04:06:32.941Z"
+  },
+  {
+   "regra": "TOTAL_barrado_por_alguma_regra",
+   "avaliadas": 484232,
+   "barradas": 181309,
+   "pct_barrado": 37.44,
+   "medido_em": "2026-11-17T04:06:32.941Z"
   }
  ],
  "top_distritos": [
   {
    "distrito": "Jabaquara",
    "zona": "Periferia",
-   "chamados": 6283
+   "chamados": 34,
+   "pct": 3.1
   },
   {
-   "distrito": "Grajaú",
+   "distrito": "Penha",
    "zona": "Periferia",
-   "chamados": 5439
+   "chamados": 32,
+   "pct": 2.9
   },
   {
-   "distrito": "Itaquera",
+   "distrito": "Cursino",
    "zona": "Periferia",
-   "chamados": 5046
+   "chamados": 31,
+   "pct": 2.8
+  },
+  {
+   "distrito": "Vila Prudente",
+   "zona": "Periferia",
+   "chamados": 29,
+   "pct": 2.6
+  },
+  {
+   "distrito": "Saúde",
+   "zona": "Periferia",
+   "chamados": 28,
+   "pct": 2.5
   },
   {
    "distrito": "Santana",
    "zona": "Periferia",
-   "chamados": 5004
+   "chamados": 27,
+   "pct": 2.4
   },
   {
-   "distrito": "Capão Redondo",
+   "distrito": "Grajaú",
    "zona": "Periferia",
-   "chamados": 4641
+   "chamados": 27,
+   "pct": 2.4
   },
   {
-   "distrito": "República",
-   "zona": "Centro",
-   "chamados": 4538
+   "distrito": "Vila Maria",
+   "zona": "Periferia",
+   "chamados": 25,
+   "pct": 2.2
   },
   {
    "distrito": "Santo Amaro",
    "zona": "Periferia",
-   "chamados": 4413
+   "chamados": 25,
+   "pct": 2.2
   },
   {
-   "distrito": "Sé",
-   "zona": "Centro",
-   "chamados": 4308
-  },
-  {
-   "distrito": "Jardim São Luís",
+   "distrito": "Capão Redondo",
    "zona": "Periferia",
-   "chamados": 4299
-  },
-  {
-   "distrito": "Cidade Ademar",
-   "zona": "Periferia",
-   "chamados": 4297
+   "chamados": 24,
+   "pct": 2.2
   }
  ],
  "tempo_conserto": {
-  "media_dias": 6.5,
-  "mediana_dias": 1.0,
-  "finalizados": 210825
+  "media_dias": 18.1,
+  "mediana_dias": 11.0,
+  "p90_dias": 41.0,
+  "finalizados": 119
  },
  "por_mes": [
   {
    "ano": 2026,
    "mes": 7,
    "nome_mes": "jul",
-   "chamados": 88795
+   "chamados": 315
   },
   {
    "ano": 2026,
    "mes": 8,
    "nome_mes": "ago",
-   "chamados": 91939
+   "chamados": 354
   },
   {
    "ano": 2026,
    "mes": 9,
    "nome_mes": "set",
-   "chamados": 96275
+   "chamados": 444
   }
  ],
  "validos": [
   {
    "tipo": "valido",
-   "chamados": 262915,
-   "pct": 94.9
+   "chamados": 302923,
+   "pct": 62.6,
+   "no_escopo_vesper": 1113
   },
   {
-   "tipo": "descartado",
-   "chamados": 14094,
-   "pct": 5.1
+   "tipo": "descartado: R3_distrito_preenchido",
+   "chamados": 181309,
+   "pct": 37.4,
+   "no_escopo_vesper": 0
   }
  ],
  "impacto_zona": [
   {
    "zona": "Centro",
-   "chamados": 21620,
+   "chamados": 69,
    "populacao": 423536,
-   "chamados_por_mil_hab": 51.05
+   "chamados_por_mil_hab": 0.163,
+   "chamados_por_100mil_hab": 16.3
   },
   {
    "zona": "Periferia",
-   "chamados": 241295,
+   "chamados": 1044,
    "populacao": 11028463,
-   "chamados_por_mil_hab": 21.88
+   "chamados_por_mil_hab": 0.095,
+   "chamados_por_100mil_hab": 9.5
   }
  ],
  "mapa": [
@@ -134,46 +228,1141 @@
    "distrito": "Jabaquara",
    "zona": "Periferia",
    "populacao": 214982,
-   "chamados": 6283,
-   "chamados_por_mil_hab": 29.23,
-   "tempo_medio_dias": 4.8,
-   "pct_finalizado": 83.7
+   "chamados": 34,
+   "chamados_por_mil_hab": 0.158,
+   "chamados_por_100mil_hab": 15.8,
+   "tempo_medio_dias": 15.8,
+   "pct_finalizado": 26.5,
+   "lat": -23.6468,
+   "lon": -46.6479
+  },
+  {
+   "distrito": "Penha",
+   "zona": "Periferia",
+   "populacao": 132452,
+   "chamados": 32,
+   "chamados_por_mil_hab": 0.242,
+   "chamados_por_100mil_hab": 24.2,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5242,
+   "lon": -46.519
+  },
+  {
+   "distrito": "Cursino",
+   "zona": "Periferia",
+   "populacao": 103171,
+   "chamados": 31,
+   "chamados_por_mil_hab": 0.3,
+   "chamados_por_100mil_hab": 30,
+   "tempo_medio_dias": 19.3,
+   "pct_finalizado": 25.8,
+   "lat": -23.6166,
+   "lon": -46.6191
+  },
+  {
+   "distrito": "Vila Prudente",
+   "zona": "Periferia",
+   "populacao": 105690,
+   "chamados": 29,
+   "chamados_por_mil_hab": 0.274,
+   "chamados_por_100mil_hab": 27.4,
+   "tempo_medio_dias": 22.2,
+   "pct_finalizado": 96.6,
+   "lat": -23.5915,
+   "lon": -46.5769
+  },
+  {
+   "distrito": "Saúde",
+   "zona": "Periferia",
+   "populacao": 128469,
+   "chamados": 28,
+   "chamados_por_mil_hab": 0.218,
+   "chamados_por_100mil_hab": 21.8,
+   "tempo_medio_dias": 27,
+   "pct_finalizado": 7.1,
+   "lat": -23.6142,
+   "lon": -46.6412
   },
   {
    "distrito": "Grajaú",
    "zona": "Periferia",
    "populacao": 384873,
-   "chamados": 5439,
-   "chamados_por_mil_hab": 14.13,
-   "tempo_medio_dias": 5.5,
-   "pct_finalizado": 81.1
-  },
-  {
-   "distrito": "Itaquera",
-   "zona": "Periferia",
-   "populacao": 210960,
-   "chamados": 5046,
-   "chamados_por_mil_hab": 23.92,
-   "tempo_medio_dias": 5.4,
-   "pct_finalizado": 77.5
+   "chamados": 27,
+   "chamados_por_mil_hab": 0.07,
+   "chamados_por_100mil_hab": 7,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.7814,
+   "lon": -46.6904
   },
   {
    "distrito": "Santana",
    "zona": "Periferia",
    "populacao": 115689,
-   "chamados": 5004,
-   "chamados_por_mil_hab": 43.25,
-   "tempo_medio_dias": 4.2,
-   "pct_finalizado": 81.0
+   "chamados": 27,
+   "chamados_por_mil_hab": 0.233,
+   "chamados_por_100mil_hab": 23.3,
+   "tempo_medio_dias": 0,
+   "pct_finalizado": 3.7,
+   "lat": -23.495,
+   "lon": -46.6267
+  },
+  {
+   "distrito": "Santo Amaro",
+   "zona": "Periferia",
+   "populacao": 85349,
+   "chamados": 25,
+   "chamados_por_mil_hab": 0.293,
+   "chamados_por_100mil_hab": 29.3,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.6432,
+   "lon": -46.6987
+  },
+  {
+   "distrito": "Vila Maria",
+   "zona": "Periferia",
+   "populacao": 108543,
+   "chamados": 25,
+   "chamados_por_mil_hab": 0.23,
+   "chamados_por_100mil_hab": 23,
+   "tempo_medio_dias": 2,
+   "pct_finalizado": 12,
+   "lat": -23.5133,
+   "lon": -46.5731
   },
   {
    "distrito": "Capão Redondo",
    "zona": "Periferia",
    "populacao": 270767,
-   "chamados": 4641,
-   "chamados_por_mil_hab": 17.14,
-   "tempo_medio_dias": 6.3,
-   "pct_finalizado": 75.8
+   "chamados": 24,
+   "chamados_por_mil_hab": 0.089,
+   "chamados_por_100mil_hab": 8.9,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.6739,
+   "lon": -46.7804
+  },
+  {
+   "distrito": "Butantã",
+   "zona": "Periferia",
+   "populacao": 51715,
+   "chamados": 23,
+   "chamados_por_mil_hab": 0.445,
+   "chamados_por_100mil_hab": 44.5,
+   "tempo_medio_dias": 26.5,
+   "pct_finalizado": 8.7,
+   "lat": -23.5797,
+   "lon": -46.7295
+  },
+  {
+   "distrito": "Parelheiros",
+   "zona": "Periferia",
+   "populacao": 153687,
+   "chamados": 21,
+   "chamados_por_mil_hab": 0.137,
+   "chamados_por_100mil_hab": 13.7,
+   "tempo_medio_dias": 16.6,
+   "pct_finalizado": 23.8,
+   "lat": -23.8293,
+   "lon": -46.7076
+  },
+  {
+   "distrito": "Liberdade",
+   "zona": "Centro",
+   "populacao": 66056,
+   "chamados": 20,
+   "chamados_por_mil_hab": 0.303,
+   "chamados_por_100mil_hab": 30.3,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5662,
+   "lon": -46.6344
+  },
+  {
+   "distrito": "Pirituba",
+   "zona": "Periferia",
+   "populacao": 179724,
+   "chamados": 20,
+   "chamados_por_mil_hab": 0.111,
+   "chamados_por_100mil_hab": 11.1,
+   "tempo_medio_dias": 9,
+   "pct_finalizado": 10,
+   "lat": -23.4799,
+   "lon": -46.7239
+  },
+  {
+   "distrito": "Vila Mariana",
+   "zona": "Periferia",
+   "populacao": 127286,
+   "chamados": 20,
+   "chamados_por_mil_hab": 0.157,
+   "chamados_por_100mil_hab": 15.7,
+   "tempo_medio_dias": 13.2,
+   "pct_finalizado": 25,
+   "lat": -23.5897,
+   "lon": -46.6316
+  },
+  {
+   "distrito": "Jardim Ângela",
+   "zona": "Periferia",
+   "populacao": 311432,
+   "chamados": 19,
+   "chamados_por_mil_hab": 0.061,
+   "chamados_por_100mil_hab": 6.1,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.7043,
+   "lon": -46.7748
+  },
+  {
+   "distrito": "Tatuapé",
+   "zona": "Periferia",
+   "populacao": 98601,
+   "chamados": 19,
+   "chamados_por_mil_hab": 0.193,
+   "chamados_por_100mil_hab": 19.3,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5377,
+   "lon": -46.5681
+  },
+  {
+   "distrito": "Itaim Bibi",
+   "zona": "Periferia",
+   "populacao": 101452,
+   "chamados": 18,
+   "chamados_por_mil_hab": 0.177,
+   "chamados_por_100mil_hab": 17.7,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.6001,
+   "lon": -46.6857
+  },
+  {
+   "distrito": "Mooca",
+   "zona": "Periferia",
+   "populacao": 80880,
+   "chamados": 18,
+   "chamados_por_mil_hab": 0.223,
+   "chamados_por_100mil_hab": 22.3,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5613,
+   "lon": -46.5967
+  },
+  {
+   "distrito": "Cidade Lider",
+   "zona": "Periferia",
+   "populacao": 136660,
+   "chamados": 17,
+   "chamados_por_mil_hab": 0.124,
+   "chamados_por_100mil_hab": 12.4,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5588,
+   "lon": -46.4901
+  },
+  {
+   "distrito": "Itaquera",
+   "zona": "Periferia",
+   "populacao": 210960,
+   "chamados": 17,
+   "chamados_por_mil_hab": 0.081,
+   "chamados_por_100mil_hab": 8.1,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5323,
+   "lon": -46.4437
+  },
+  {
+   "distrito": "Rio Pequeno",
+   "zona": "Periferia",
+   "populacao": 131631,
+   "chamados": 16,
+   "chamados_por_mil_hab": 0.122,
+   "chamados_por_100mil_hab": 12.2,
+   "tempo_medio_dias": 24,
+   "pct_finalizado": 6.3,
+   "lat": -23.5698,
+   "lon": -46.7543
+  },
+  {
+   "distrito": "Vila Matilde",
+   "zona": "Periferia",
+   "populacao": 103558,
+   "chamados": 16,
+   "chamados_por_mil_hab": 0.155,
+   "chamados_por_100mil_hab": 15.5,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5368,
+   "lon": -46.519
+  },
+  {
+   "distrito": "Cidade Dutra",
+   "zona": "Periferia",
+   "populacao": 182459,
+   "chamados": 15,
+   "chamados_por_mil_hab": 0.082,
+   "chamados_por_100mil_hab": 8.2,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.7289,
+   "lon": -46.7035
+  },
+  {
+   "distrito": "Ipiranga",
+   "zona": "Periferia",
+   "populacao": 116271,
+   "chamados": 14,
+   "chamados_por_mil_hab": 0.12,
+   "chamados_por_100mil_hab": 12,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5861,
+   "lon": -46.6075
+  },
+  {
+   "distrito": "Ponte Rasa",
+   "zona": "Periferia",
+   "populacao": 89881,
+   "chamados": 14,
+   "chamados_por_mil_hab": 0.156,
+   "chamados_por_100mil_hab": 15.6,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5149,
+   "lon": -46.4953
+  },
+  {
+   "distrito": "São Lucas",
+   "zona": "Periferia",
+   "populacao": 138038,
+   "chamados": 14,
+   "chamados_por_mil_hab": 0.101,
+   "chamados_por_100mil_hab": 10.1,
+   "tempo_medio_dias": 13.9,
+   "pct_finalizado": 100,
+   "lat": -23.5996,
+   "lon": -46.54
+  },
+  {
+   "distrito": "Tremembé",
+   "zona": "Periferia",
+   "populacao": 196563,
+   "chamados": 14,
+   "chamados_por_mil_hab": 0.071,
+   "chamados_por_100mil_hab": 7.1,
+   "tempo_medio_dias": 22.2,
+   "pct_finalizado": 35.7,
+   "lat": -23.4504,
+   "lon": -46.5995
+  },
+  {
+   "distrito": "Vila Guilherme",
+   "zona": "Periferia",
+   "populacao": 52587,
+   "chamados": 14,
+   "chamados_por_mil_hab": 0.266,
+   "chamados_por_100mil_hab": 26.6,
+   "tempo_medio_dias": 3,
+   "pct_finalizado": 14.3,
+   "lat": -23.5047,
+   "lon": -46.6044
+  },
+  {
+   "distrito": "Cidade Ademar",
+   "zona": "Periferia",
+   "populacao": 249218,
+   "chamados": 13,
+   "chamados_por_mil_hab": 0.052,
+   "chamados_por_100mil_hab": 5.2,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.6757,
+   "lon": -46.6563
+  },
+  {
+   "distrito": "Morumbi",
+   "zona": "Periferia",
+   "populacao": 43690,
+   "chamados": 13,
+   "chamados_por_mil_hab": 0.298,
+   "chamados_por_100mil_hab": 29.8,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5967,
+   "lon": -46.7141
+  },
+  {
+   "distrito": "Perdizes",
+   "zona": "Periferia",
+   "populacao": 102391,
+   "chamados": 13,
+   "chamados_por_mil_hab": 0.127,
+   "chamados_por_100mil_hab": 12.7,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5347,
+   "lon": -46.6854
+  },
+  {
+   "distrito": "Raposo Tavares",
+   "zona": "Periferia",
+   "populacao": 117738,
+   "chamados": 13,
+   "chamados_por_mil_hab": 0.11,
+   "chamados_por_100mil_hab": 11,
+   "tempo_medio_dias": 1.5,
+   "pct_finalizado": 15.4,
+   "lat": -23.5926,
+   "lon": -46.7794
+  },
+  {
+   "distrito": "Itaim Paulista",
+   "zona": "Periferia",
+   "populacao": 205295,
+   "chamados": 12,
+   "chamados_por_mil_hab": 0.058,
+   "chamados_por_100mil_hab": 5.8,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5048,
+   "lon": -46.3943
+  },
+  {
+   "distrito": "Jaraguá",
+   "zona": "Periferia",
+   "populacao": 211617,
+   "chamados": 12,
+   "chamados_por_mil_hab": 0.057,
+   "chamados_por_100mil_hab": 5.7,
+   "tempo_medio_dias": 0,
+   "pct_finalizado": 8.3,
+   "lat": -23.4421,
+   "lon": -46.7342
+  },
+  {
+   "distrito": "Tucuruvi",
+   "zona": "Periferia",
+   "populacao": 99559,
+   "chamados": 12,
+   "chamados_por_mil_hab": 0.121,
+   "chamados_por_100mil_hab": 12.1,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.4792,
+   "lon": -46.6051
+  },
+  {
+   "distrito": "Cachoeirinha",
+   "zona": "Periferia",
+   "populacao": 143366,
+   "chamados": 11,
+   "chamados_por_mil_hab": 0.077,
+   "chamados_por_100mil_hab": 7.7,
+   "tempo_medio_dias": 2,
+   "pct_finalizado": 18.2,
+   "lat": -23.4635,
+   "lon": -46.6595
+  },
+  {
+   "distrito": "Cangaiba",
+   "zona": "Periferia",
+   "populacao": 141172,
+   "chamados": 11,
+   "chamados_por_mil_hab": 0.078,
+   "chamados_por_100mil_hab": 7.8,
+   "tempo_medio_dias": 19,
+   "pct_finalizado": 9.1,
+   "lat": -23.5042,
+   "lon": -46.524
+  },
+  {
+   "distrito": "Limão",
+   "zona": "Periferia",
+   "populacao": 82373,
+   "chamados": 11,
+   "chamados_por_mil_hab": 0.134,
+   "chamados_por_100mil_hab": 13.4,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.4988,
+   "lon": -46.6773
+  },
+  {
+   "distrito": "Santa Cecília",
+   "zona": "Centro",
+   "populacao": 80972,
+   "chamados": 11,
+   "chamados_por_mil_hab": 0.136,
+   "chamados_por_100mil_hab": 13.6,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.535,
+   "lon": -46.6515
+  },
+  {
+   "distrito": "Sapopemba",
+   "zona": "Periferia",
+   "populacao": 266715,
+   "chamados": 11,
+   "chamados_por_mil_hab": 0.041,
+   "chamados_por_100mil_hab": 4.1,
+   "tempo_medio_dias": 2,
+   "pct_finalizado": 9.1,
+   "lat": -23.6049,
+   "lon": -46.5086
+  },
+  {
+   "distrito": "Vila Curuçá",
+   "zona": "Periferia",
+   "populacao": 140673,
+   "chamados": 11,
+   "chamados_por_mil_hab": 0.078,
+   "chamados_por_100mil_hab": 7.8,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5088,
+   "lon": -46.4151
+  },
+  {
+   "distrito": "Aricanduva",
+   "zona": "Periferia",
+   "populacao": 89574,
+   "chamados": 10,
+   "chamados_por_mil_hab": 0.112,
+   "chamados_por_100mil_hab": 11.2,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.574,
+   "lon": -46.5132
+  },
+  {
+   "distrito": "Campo Limpo",
+   "zona": "Periferia",
+   "populacao": 236162,
+   "chamados": 10,
+   "chamados_por_mil_hab": 0.042,
+   "chamados_por_100mil_hab": 4.2,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.6325,
+   "lon": -46.7612
+  },
+  {
+   "distrito": "Consolação",
+   "zona": "Centro",
+   "populacao": 53144,
+   "chamados": 10,
+   "chamados_por_mil_hab": 0.188,
+   "chamados_por_100mil_hab": 18.8,
+   "tempo_medio_dias": 0,
+   "pct_finalizado": 10,
+   "lat": -23.5488,
+   "lon": -46.665
+  },
+  {
+   "distrito": "Jardim Helena",
+   "zona": "Periferia",
+   "populacao": 129409,
+   "chamados": 10,
+   "chamados_por_mil_hab": 0.077,
+   "chamados_por_100mil_hab": 7.7,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.4819,
+   "lon": -46.4216
+  },
+  {
+   "distrito": "Moema",
+   "zona": "Periferia",
+   "populacao": 81899,
+   "chamados": 10,
+   "chamados_por_mil_hab": 0.122,
+   "chamados_por_100mil_hab": 12.2,
+   "tempo_medio_dias": 38.4,
+   "pct_finalizado": 50,
+   "lat": -23.5963,
+   "lon": -46.66
+  },
+  {
+   "distrito": "Sacomã",
+   "zona": "Periferia",
+   "populacao": 261436,
+   "chamados": 10,
+   "chamados_por_mil_hab": 0.038,
+   "chamados_por_100mil_hab": 3.8,
+   "tempo_medio_dias": 17,
+   "pct_finalizado": 10,
+   "lat": -23.6195,
+   "lon": -46.6031
+  },
+  {
+   "distrito": "Socorro",
+   "zona": "Periferia",
+   "populacao": 38051,
+   "chamados": 10,
+   "chamados_por_mil_hab": 0.263,
+   "chamados_por_100mil_hab": 26.3,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.6829,
+   "lon": -46.7091
+  },
+  {
+   "distrito": "São Mateus",
+   "zona": "Periferia",
+   "populacao": 155682,
+   "chamados": 10,
+   "chamados_por_mil_hab": 0.064,
+   "chamados_por_100mil_hab": 6.4,
+   "tempo_medio_dias": 38,
+   "pct_finalizado": 10,
+   "lat": -23.6001,
+   "lon": -46.4854
+  },
+  {
+   "distrito": "Vila Jacuí",
+   "zona": "Periferia",
+   "populacao": 134189,
+   "chamados": 10,
+   "chamados_por_mil_hab": 0.075,
+   "chamados_por_100mil_hab": 7.5,
+   "tempo_medio_dias": 39,
+   "pct_finalizado": 20,
+   "lat": -23.5068,
+   "lon": -46.4594
+  },
+  {
+   "distrito": "Artur Alvim",
+   "zona": "Periferia",
+   "populacao": 95575,
+   "chamados": 9,
+   "chamados_por_mil_hab": 0.094,
+   "chamados_por_100mil_hab": 9.4,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5399,
+   "lon": -46.4838
+  },
+  {
+   "distrito": "Belém",
+   "zona": "Periferia",
+   "populacao": 55785,
+   "chamados": 9,
+   "chamados_por_mil_hab": 0.161,
+   "chamados_por_100mil_hab": 16.1,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5407,
+   "lon": -46.5938
+  },
+  {
+   "distrito": "Campo Belo",
+   "zona": "Periferia",
+   "populacao": 71034,
+   "chamados": 9,
+   "chamados_por_mil_hab": 0.127,
+   "chamados_por_100mil_hab": 12.7,
+   "tempo_medio_dias": 22,
+   "pct_finalizado": 11.1,
+   "lat": -23.6299,
+   "lon": -46.6654
+  },
+  {
+   "distrito": "Casa Verde",
+   "zona": "Periferia",
+   "populacao": 80536,
+   "chamados": 9,
+   "chamados_por_mil_hab": 0.112,
+   "chamados_por_100mil_hab": 11.2,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.4991,
+   "lon": -46.6578
+  },
+  {
+   "distrito": "Jardim Paulista",
+   "zona": "Periferia",
+   "populacao": 81859,
+   "chamados": 9,
+   "chamados_por_mil_hab": 0.11,
+   "chamados_por_100mil_hab": 11,
+   "tempo_medio_dias": 9,
+   "pct_finalizado": 11.1,
+   "lat": -23.5697,
+   "lon": -46.667
+  },
+  {
+   "distrito": "Jardim São Luís",
+   "zona": "Periferia",
+   "populacao": 259377,
+   "chamados": 9,
+   "chamados_por_mil_hab": 0.035,
+   "chamados_por_100mil_hab": 3.5,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.6642,
+   "lon": -46.7457
+  },
+  {
+   "distrito": "Jaçanã",
+   "zona": "Periferia",
+   "populacao": 87329,
+   "chamados": 9,
+   "chamados_por_mil_hab": 0.103,
+   "chamados_por_100mil_hab": 10.3,
+   "tempo_medio_dias": 36.2,
+   "pct_finalizado": 55.6,
+   "lat": -23.4663,
+   "lon": -46.5781
+  },
+  {
+   "distrito": "Vila Formosa",
+   "zona": "Periferia",
+   "populacao": 92186,
+   "chamados": 9,
+   "chamados_por_mil_hab": 0.098,
+   "chamados_por_100mil_hab": 9.8,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5716,
+   "lon": -46.5389
+  },
+  {
+   "distrito": "Bela Vista",
+   "zona": "Centro",
+   "populacao": 60024,
+   "chamados": 8,
+   "chamados_por_mil_hab": 0.133,
+   "chamados_por_100mil_hab": 13.3,
+   "tempo_medio_dias": 0,
+   "pct_finalizado": 12.5,
+   "lat": -23.5633,
+   "lon": -46.6465
+  },
+  {
+   "distrito": "Campo Grande",
+   "zona": "Periferia",
+   "populacao": 115925,
+   "chamados": 8,
+   "chamados_por_mil_hab": 0.069,
+   "chamados_por_100mil_hab": 6.9,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.6712,
+   "lon": -46.6869
+  },
+  {
+   "distrito": "Ermelino Matarazzo",
+   "zona": "Periferia",
+   "populacao": 112333,
+   "chamados": 8,
+   "chamados_por_mil_hab": 0.071,
+   "chamados_por_100mil_hab": 7.1,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.4973,
+   "lon": -46.4804
+  },
+  {
+   "distrito": "Iguatemi",
+   "zona": "Periferia",
+   "populacao": 149700,
+   "chamados": 8,
+   "chamados_por_mil_hab": 0.053,
+   "chamados_por_100mil_hab": 5.3,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.6067,
+   "lon": -46.4425
+  },
+  {
+   "distrito": "Pedreira",
+   "zona": "Periferia",
+   "populacao": 163586,
+   "chamados": 8,
+   "chamados_por_mil_hab": 0.049,
+   "chamados_por_100mil_hab": 4.9,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.7023,
+   "lon": -46.646
+  },
+  {
+   "distrito": "Vila Andrade",
+   "zona": "Periferia",
+   "populacao": 168669,
+   "chamados": 8,
+   "chamados_por_mil_hab": 0.047,
+   "chamados_por_100mil_hab": 4.7,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.6315,
+   "lon": -46.7368
+  },
+  {
+   "distrito": "Bom Retiro",
+   "zona": "Centro",
+   "populacao": 33520,
+   "chamados": 7,
+   "chamados_por_mil_hab": 0.209,
+   "chamados_por_100mil_hab": 20.9,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.523,
+   "lon": -46.6396
+  },
+  {
+   "distrito": "Brasilândia",
+   "zona": "Periferia",
+   "populacao": 243273,
+   "chamados": 7,
+   "chamados_por_mil_hab": 0.029,
+   "chamados_por_100mil_hab": 2.9,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.4633,
+   "lon": -46.6848
+  },
+  {
+   "distrito": "José Bonifácio",
+   "zona": "Periferia",
+   "populacao": 128243,
+   "chamados": 7,
+   "chamados_por_mil_hab": 0.055,
+   "chamados_por_100mil_hab": 5.5,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.563,
+   "lon": -46.4346
+  },
+  {
+   "distrito": "Lapa",
+   "zona": "Periferia",
+   "populacao": 75533,
+   "chamados": 7,
+   "chamados_por_mil_hab": 0.093,
+   "chamados_por_100mil_hab": 9.3,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5186,
+   "lon": -46.7046
+  },
+  {
+   "distrito": "Parque do Carmo",
+   "zona": "Periferia",
+   "populacao": 74677,
+   "chamados": 7,
+   "chamados_por_mil_hab": 0.094,
+   "chamados_por_100mil_hab": 9.4,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5606,
+   "lon": -46.4611
+  },
+  {
+   "distrito": "Vila Sônia",
+   "zona": "Periferia",
+   "populacao": 123748,
+   "chamados": 7,
+   "chamados_por_mil_hab": 0.057,
+   "chamados_por_100mil_hab": 5.7,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.6007,
+   "lon": -46.7354
+  },
+  {
+   "distrito": "Água Rasa",
+   "zona": "Periferia",
+   "populacao": 85788,
+   "chamados": 7,
+   "chamados_por_mil_hab": 0.082,
+   "chamados_por_100mil_hab": 8.2,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5632,
+   "lon": -46.5735
+  },
+  {
+   "distrito": "Cambuci",
+   "zona": "Centro",
+   "populacao": 45163,
+   "chamados": 6,
+   "chamados_por_mil_hab": 0.133,
+   "chamados_por_100mil_hab": 13.3,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.569,
+   "lon": -46.6214
+  },
+  {
+   "distrito": "Cidade Tiradentes",
+   "zona": "Periferia",
+   "populacao": 194177,
+   "chamados": 6,
+   "chamados_por_mil_hab": 0.031,
+   "chamados_por_100mil_hab": 3.1,
+   "tempo_medio_dias": 23,
+   "pct_finalizado": 16.7,
+   "lat": -23.5854,
+   "lon": -46.4001
+  },
+  {
+   "distrito": "Lajeado",
+   "zona": "Periferia",
+   "populacao": 164391,
+   "chamados": 6,
+   "chamados_por_mil_hab": 0.036,
+   "chamados_por_100mil_hab": 3.6,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5383,
+   "lon": -46.4051
+  },
+  {
+   "distrito": "Mandaqui",
+   "zona": "Periferia",
+   "populacao": 103665,
+   "chamados": 6,
+   "chamados_por_mil_hab": 0.058,
+   "chamados_por_100mil_hab": 5.8,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.4708,
+   "lon": -46.6399
+  },
+  {
+   "distrito": "Pinheiros",
+   "zona": "Periferia",
+   "populacao": 65145,
+   "chamados": 6,
+   "chamados_por_mil_hab": 0.092,
+   "chamados_por_100mil_hab": 9.2,
+   "tempo_medio_dias": 3,
+   "pct_finalizado": 16.7,
+   "lat": -23.5664,
+   "lon": -46.6945
+  },
+  {
+   "distrito": "República",
+   "zona": "Centro",
+   "populacao": 60825,
+   "chamados": 6,
+   "chamados_por_mil_hab": 0.099,
+   "chamados_por_100mil_hab": 9.9,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5464,
+   "lon": -46.643
+  },
+  {
+   "distrito": "Carrão",
+   "zona": "Periferia",
+   "populacao": 84397,
+   "chamados": 5,
+   "chamados_por_mil_hab": 0.059,
+   "chamados_por_100mil_hab": 5.9,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5472,
+   "lon": -46.5398
+  },
+  {
+   "distrito": "Perus",
+   "zona": "Periferia",
+   "populacao": 87716,
+   "chamados": 5,
+   "chamados_por_mil_hab": 0.057,
+   "chamados_por_100mil_hab": 5.7,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.4177,
+   "lon": -46.7545
+  },
+  {
+   "distrito": "São Domingos",
+   "zona": "Periferia",
+   "populacao": 88884,
+   "chamados": 5,
+   "chamados_por_mil_hab": 0.056,
+   "chamados_por_100mil_hab": 5.6,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.4998,
+   "lon": -46.7421
+  },
+  {
+   "distrito": "São Rafael",
+   "zona": "Periferia",
+   "populacao": 148145,
+   "chamados": 5,
+   "chamados_por_mil_hab": 0.034,
+   "chamados_por_100mil_hab": 3.4,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.6238,
+   "lon": -46.4634
+  },
+  {
+   "distrito": "Vila Medeiros",
+   "zona": "Periferia",
+   "populacao": 114939,
+   "chamados": 5,
+   "chamados_por_mil_hab": 0.044,
+   "chamados_por_100mil_hab": 4.4,
+   "tempo_medio_dias": 1,
+   "pct_finalizado": 40,
+   "lat": -23.4908,
+   "lon": -46.5838
+  },
+  {
+   "distrito": "Jaguara",
+   "zona": "Periferia",
+   "populacao": 24730,
+   "chamados": 4,
+   "chamados_por_mil_hab": 0.162,
+   "chamados_por_100mil_hab": 16.2,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5093,
+   "lon": -46.7501
+  },
+  {
+   "distrito": "São Miguel",
+   "zona": "Periferia",
+   "populacao": 81011,
+   "chamados": 4,
+   "chamados_por_mil_hab": 0.049,
+   "chamados_por_100mil_hab": 4.9,
+   "tempo_medio_dias": 5,
+   "pct_finalizado": 25,
+   "lat": -23.5021,
+   "lon": -46.4435
+  },
+  {
+   "distrito": "Alto de Pinheiros",
+   "zona": "Periferia",
+   "populacao": 37359,
+   "chamados": 3,
+   "chamados_por_mil_hab": 0.08,
+   "chamados_por_100mil_hab": 8,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5441,
+   "lon": -46.7093
+  },
+  {
+   "distrito": "Freguesia do Ó",
+   "zona": "Periferia",
+   "populacao": 137240,
+   "chamados": 3,
+   "chamados_por_mil_hab": 0.022,
+   "chamados_por_100mil_hab": 2.2,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.4911,
+   "lon": -46.6893
+  },
+  {
+   "distrito": "Vila Leopoldina",
+   "zona": "Periferia",
+   "populacao": 46875,
+   "chamados": 3,
+   "chamados_por_mil_hab": 0.064,
+   "chamados_por_100mil_hab": 6.4,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5341,
+   "lon": -46.7312
+  },
+  {
+   "distrito": "Anhanguera",
+   "zona": "Periferia",
+   "populacao": 75360,
+   "chamados": 2,
+   "chamados_por_mil_hab": 0.027,
+   "chamados_por_100mil_hab": 2.7,
+   "tempo_medio_dias": 26,
+   "pct_finalizado": 50,
+   "lat": -23.4275,
+   "lon": -46.8043
+  },
+  {
+   "distrito": "Guaianases",
+   "zona": "Periferia",
+   "populacao": 109316,
+   "chamados": 2,
+   "chamados_por_mil_hab": 0.018,
+   "chamados_por_100mil_hab": 1.8,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5628,
+   "lon": -46.4075
+  },
+  {
+   "distrito": "Jaguaré",
+   "zona": "Periferia",
+   "populacao": 55382,
+   "chamados": 2,
+   "chamados_por_mil_hab": 0.036,
+   "chamados_por_100mil_hab": 3.6,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5549,
+   "lon": -46.7444
+  },
+  {
+   "distrito": "Pari",
+   "zona": "Periferia",
+   "populacao": 17359,
+   "chamados": 2,
+   "chamados_por_mil_hab": 0.115,
+   "chamados_por_100mil_hab": 11.5,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5341,
+   "lon": -46.6173
+  },
+  {
+   "distrito": "Barra Funda",
+   "zona": "Periferia",
+   "populacao": 33436,
+   "chamados": 1,
+   "chamados_por_mil_hab": 0.03,
+   "chamados_por_100mil_hab": 3,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5191,
+   "lon": -46.6685
+  },
+  {
+   "distrito": "Brás",
+   "zona": "Periferia",
+   "populacao": 38750,
+   "chamados": 1,
+   "chamados_por_mil_hab": 0.026,
+   "chamados_por_100mil_hab": 2.6,
+   "tempo_medio_dias": null,
+   "pct_finalizado": 0,
+   "lat": -23.5526,
+   "lon": -46.6141
+  },
+  {
+   "distrito": "Sé",
+   "zona": "Centro",
+   "populacao": 23832,
+   "chamados": 1,
+   "chamados_por_mil_hab": 0.042,
+   "chamados_por_100mil_hab": 4.2,
+   "tempo_medio_dias": 0,
+   "pct_finalizado": 100,
+   "lat": -23.5555,
+   "lon": -46.6299
   }
  ]
 }
