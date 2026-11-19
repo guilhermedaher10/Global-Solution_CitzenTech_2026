@@ -42,6 +42,7 @@ alerta_robo:                # alerta só com sensores (sem foto): prioridade pr�
   pontos_escuro: 30
   pontos_buraco: 30
   pontos_escuro_e_buraco: 25
+  pontos_ia_obstaculo_no_escuro: 30   # TinyML do carrinho (07) disse escuro_obstaculo: vira prioridade alta
 
 orientacao:                 # perguntas feitas ao GenAI (01) para cada tipo de chamado confirmado
   perguntas:                # {cidade} = GENAI_CIDADE (padrão São Paulo)

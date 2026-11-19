@@ -23,9 +23,13 @@ SETORES = {
     "trecho_sem_luz": "Iluminação pública: vistoria de trecho sem iluminação",
     "falta_de_energia": ("Distribuidora de energia (Enel São Paulo, emergência 0800 72 72 196); "
                          "Defesa Civil (199) se houver risco"),
+    # suspeitas da central do Vésper (robô ou relato sem foto) confirmadas pelo atendente
+    "suspeita_escuro": "Iluminação pública: vistoria de trecho escuro (alerta do robô ou relato)",
+    "suspeita_buraco": "Vias públicas: vistoria de possível buraco (alerta do robô ou relato)",
 }
 SETOR_PADRAO = "Zeladoria urbana (geral)"
-TIPOS_ILUMINACAO = {"conserto_poste", "instalacao_iluminacao", "poda_ou_obstrucao", "trecho_sem_luz"}
+TIPOS_ILUMINACAO = {"conserto_poste", "instalacao_iluminacao", "poda_ou_obstrucao", "trecho_sem_luz",
+                    "suspeita_escuro"}
 TIPOS_ENERGIA = {"falta_de_energia"}
 
 # Texto-base do chamado. CONFIRME com o grupo/professor antes de usar no relatorio.

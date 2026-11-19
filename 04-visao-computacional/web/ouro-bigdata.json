@@ -1,0 +1,179 @@
+{
+ "fonte": "Big Data (02) · Databricks workspace.gs · camada Ouro",
+ "origem": "resultados salvos em 02-big-data/databricks/gs_pipeline.ipynb",
+ "completo": false,
+ "periodo": "SP156 · jul–set/2026",
+ "camadas": {
+  "bronze_sp156": 968464,
+  "prata_sp156": 277009,
+  "fato_chamado": 277009,
+  "distritos": 96
+ },
+ "qualidade": [
+  {
+   "regra": "data_de_abertura preenchida",
+   "ok": 277009,
+   "falha": 0
+  },
+  {
+   "regra": "coordenadas validas (caixa SP)",
+   "ok": 264275,
+   "falha": 12734
+  },
+  {
+   "regra": "status + distrito preenchidos",
+   "ok": 264195,
+   "falha": 12814
+  }
+ ],
+ "top_distritos": [
+  {
+   "distrito": "Jabaquara",
+   "zona": "Periferia",
+   "chamados": 6283
+  },
+  {
+   "distrito": "Grajaú",
+   "zona": "Periferia",
+   "chamados": 5439
+  },
+  {
+   "distrito": "Itaquera",
+   "zona": "Periferia",
+   "chamados": 5046
+  },
+  {
+   "distrito": "Santana",
+   "zona": "Periferia",
+   "chamados": 5004
+  },
+  {
+   "distrito": "Capão Redondo",
+   "zona": "Periferia",
+   "chamados": 4641
+  },
+  {
+   "distrito": "República",
+   "zona": "Centro",
+   "chamados": 4538
+  },
+  {
+   "distrito": "Santo Amaro",
+   "zona": "Periferia",
+   "chamados": 4413
+  },
+  {
+   "distrito": "Sé",
+   "zona": "Centro",
+   "chamados": 4308
+  },
+  {
+   "distrito": "Jardim São Luís",
+   "zona": "Periferia",
+   "chamados": 4299
+  },
+  {
+   "distrito": "Cidade Ademar",
+   "zona": "Periferia",
+   "chamados": 4297
+  }
+ ],
+ "tempo_conserto": {
+  "media_dias": 6.5,
+  "mediana_dias": 1.0,
+  "finalizados": 210825
+ },
+ "por_mes": [
+  {
+   "ano": 2026,
+   "mes": 7,
+   "nome_mes": "jul",
+   "chamados": 88795
+  },
+  {
+   "ano": 2026,
+   "mes": 8,
+   "nome_mes": "ago",
+   "chamados": 91939
+  },
+  {
+   "ano": 2026,
+   "mes": 9,
+   "nome_mes": "set",
+   "chamados": 96275
+  }
+ ],
+ "validos": [
+  {
+   "tipo": "valido",
+   "chamados": 262915,
+   "pct": 94.9
+  },
+  {
+   "tipo": "descartado",
+   "chamados": 14094,
+   "pct": 5.1
+  }
+ ],
+ "impacto_zona": [
+  {
+   "zona": "Centro",
+   "chamados": 21620,
+   "populacao": 423536,
+   "chamados_por_mil_hab": 51.05
+  },
+  {
+   "zona": "Periferia",
+   "chamados": 241295,
+   "populacao": 11028463,
+   "chamados_por_mil_hab": 21.88
+  }
+ ],
+ "mapa": [
+  {
+   "distrito": "Jabaquara",
+   "zona": "Periferia",
+   "populacao": 214982,
+   "chamados": 6283,
+   "chamados_por_mil_hab": 29.23,
+   "tempo_medio_dias": 4.8,
+   "pct_finalizado": 83.7
+  },
+  {
+   "distrito": "Grajaú",
+   "zona": "Periferia",
+   "populacao": 384873,
+   "chamados": 5439,
+   "chamados_por_mil_hab": 14.13,
+   "tempo_medio_dias": 5.5,
+   "pct_finalizado": 81.1
+  },
+  {
+   "distrito": "Itaquera",
+   "zona": "Periferia",
+   "populacao": 210960,
+   "chamados": 5046,
+   "chamados_por_mil_hab": 23.92,
+   "tempo_medio_dias": 5.4,
+   "pct_finalizado": 77.5
+  },
+  {
+   "distrito": "Santana",
+   "zona": "Periferia",
+   "populacao": 115689,
+   "chamados": 5004,
+   "chamados_por_mil_hab": 43.25,
+   "tempo_medio_dias": 4.2,
+   "pct_finalizado": 81.0
+  },
+  {
+   "distrito": "Capão Redondo",
+   "zona": "Periferia",
+   "populacao": 270767,
+   "chamados": 4641,
+   "chamados_por_mil_hab": 17.14,
+   "tempo_medio_dias": 6.3,
+   "pct_finalizado": 75.8
+  }
+ ]
+}

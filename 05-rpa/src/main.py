@@ -145,11 +145,15 @@ def _despachar(g: Grupo, cfg: Config, hoje: date, log, audit: Auditoria, resumo:
         return
     try:
         pasta = cfg.outbox_dir / "chamados"
-        foto_limpa = pasta / f"foto_{cid}.jpg"
-        regioes = preparar_foto(cfg.base_dir / o["foto"], foto_limpa)
-        if regioes is None:
-            log.warning("%s: desfoque de rostos/placas indisponivel (opencv ou cascatas ausentes); "
-                        "foto enviada apenas sem EXIF", cid)
+        foto_limpa = None
+        if o.get("foto"):
+            foto_limpa = pasta / f"foto_{cid}.jpg"
+            regioes = preparar_foto(cfg.base_dir / o["foto"], foto_limpa)
+            if regioes is None:
+                log.warning("%s: desfoque de rostos/placas indisponivel (opencv ou cascatas ausentes); "
+                            "foto enviada apenas sem EXIF", cid)
+        else:
+            log.info("%s: chamado da central do Vésper, sem foto (a central não guarda imagens)", cid)
         pdf = gerar_pdf(o, g.membros, foto_limpa, pasta, cfg, hoje)
         res = enviar(o, len(g.membros), pdf, cfg, hoje, log)
 

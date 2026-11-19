@@ -71,5 +71,24 @@ Limitações da base: as páginas de Porto Alegre constam como atualizadas em 10
 ## 7. Conclusão técnica
 RAG com um modelo pequeno e local reduziu drasticamente a alucinação: de 10% de acertos sem contexto para 83% com RAG e 73% com o agente verificador, com citações rastreáveis. O verificador trocou cobertura por segurança, e a melhoria mais valiosa é a busca híbrida e uma retentativa melhor, não um modelo maior. Limitações: base de apenas duas cidades e de páginas de 2021 no caso de Porto Alegre; 30 perguntas de teste; ausência de LoRA (a especialização feita foi um agente com verificador, por não haver GPU). Próximos passos: busca híbrida, mais cidades, avaliação com perguntas escritas por pessoas de fora do grupo e revisão por um técnico da prefeitura.
 
-- **Repositório:** _colar o link do GitHub_
-- **Vídeo:** _colar o link do vídeo_
+## 8. Integração com o produto (Vésper)
+
+A IA não é um protótipo isolado: ela roda **integrada ao Vésper** como um serviço próprio, a API `POST /consulta` (FastAPI; porta 8001 no `docker compose`), consumida pela Visão Computacional.
+
+**Como funciona no produto**
+1. O cidadão envia a foto ou o vídeo da rua escura pelo site do Vésper.
+2. A Visão confirma o problema (por exemplo, poste apagado ou falta de energia) e pergunta à nossa IA quem atende, em quanto tempo e por qual canal (`visao/orientacao.py`, variável `GENAI_URL`).
+3. A IA responde no formato `{status, resposta, citacao}`, e o site mostra ao cidadão o prazo e o canal **com o trecho oficial citado**. Quando a base não cobre o caso, a resposta é "não consta", e a Visão repassa isso sem inventar.
+
+**Segurança, explicabilidade e LGPD na integração**
+- A Visão envia à IA **apenas o tipo do chamado e a cidade**: nenhuma foto, localização ou dado pessoal sai da Visão.
+- Cada orientação exibida traz a citação da fonte oficial, e o aviso para confirmar no canal oficial continua valendo (humano no circuito).
+- Se a IA estiver fora do ar ou demorar mais que o limite (`GENAI_TIMEOUT`), a análise da foto continua normalmente: a orientação é um complemento e nunca bloqueia o chamado.
+
+**Onde roda**
+- A integração completa sobe com **um comando**, no `docker compose` do componente de DevOps (`06-devops-cloud/docker-compose.yml`): Visão, esta IA, Ollama (com `qwen2.5:1.5b-instruct` e `nomic-embed-text`), Prometheus e Grafana. A imagem desta API é gerada a partir desta pasta, sem alterar o código (`06-devops-cloud/docker/genai.Dockerfile`).
+- **Decisão de arquitetura:** a versão publicada do Vésper na Azure roda sem a IA generativa ligada. Um modelo local em CPU leva cerca de 1 minuto por resposta e precisa de alguns GB de memória. Como o site pede a orientação a cada análise, ligar a IA na nuvem deixaria o site lento para todos os cidadãos e aumentaria o custo. Por isso a integração é demonstrada no ambiente do `docker compose` (ver o vídeo). Com orçamento de produção, o próximo passo seria uma instância com GPU, onde a mesma resposta cai para alguns segundos, ou o uso da IA de forma assíncrona, sem segurar a resposta do site.
+
+## Links
+- **Repositório:** https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026
+- **Vídeo:** https://youtu.be/jsB1YCe-ZXw

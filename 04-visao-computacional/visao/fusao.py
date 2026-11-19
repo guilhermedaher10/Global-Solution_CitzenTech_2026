@@ -149,6 +149,12 @@ def triar_alerta(alerta: AlertaRobo) -> RespostaAlerta:
     if sinais.escuro and sinais.buraco:
         pontos += p["pontos_escuro_e_buraco"]
         fatores.append(f"+{p['pontos_escuro_e_buraco']}: buraco no escuro (risco de queda)")
+    if alerta.classe_ia is not None:
+        fatores.append(f"TinyML do carrinho: {alerta.classe_ia.value}"
+                       + (f" ({alerta.confianca_ia:.0%})" if alerta.confianca_ia is not None else ""))
+        if sinais.escuro and alerta.classe_ia.value == "escuro_obstaculo":
+            pontos += p["pontos_ia_obstaculo_no_escuro"]
+            fatores.append(f"+{p['pontos_ia_obstaculo_no_escuro']}: obstáculo no escuro (risco de colisão)")
     pontos = min(pontos, 100)
     nivel = (NivelPrioridade.alta if pontos >= faixas["alta"]
              else NivelPrioridade.media if pontos >= faixas["media"] else NivelPrioridade.baixa)

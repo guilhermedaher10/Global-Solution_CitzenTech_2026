@@ -712,7 +712,7 @@ async function enviarAlerta(leitura = { ...posicaoRobo(), sensor_lux: +lux.value
   try {
     const r = await api("/v1/alerta-robo", JSON_POST(corpo));
     $("#led").dataset.acao = r.acao_robo;
-    $("#robo-led").setAttribute("class", `led-robo ${r.acao_robo}`);
+    $("#robo-led")?.setAttribute("class", `led-robo ${r.acao_robo}`);
     const suspeita = r.status === "suspeita";
     $("#robo-resposta").replaceChildren(
       el("strong", {}, suspeita ? `Suspeita registrada · prioridade ${(NIVEIS[r.prioridade_previa.nivel] || "").toLowerCase()} (${r.prioridade_previa.pontuacao})` : "Tudo normal neste ponto"),
