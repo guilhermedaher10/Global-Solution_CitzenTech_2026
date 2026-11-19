@@ -40,7 +40,7 @@ mudança em **Acompanhar** pelo protocolo `VSP-XXXXXX`.
 | 04 | **Visão** (API + site) | Valida a foto, mede a cena, detecta postes e buracos, calcula a prioridade e mantém a **central de chamados** | `POST /v1/analisar`, `/v1/analisar-video`, `/v1/relatos`, `/v1/alerta-robo`; `GET/POST /v1/chamados`; `GET /v1/regioes`; `GET /v1/indicadores` (contrato 1.5, [detalhes](../04-visao-computacional/docs/integracao.md)) | ✅ No ar na Azure |
 | 07 | **Maker Lab** | Carrinho que patrulha e classifica `claro/escuro × livre/obstáculo` com TinyML embarcado | `POST /v1/alerta-robo` com `classe_ia` e `confianca_ia`; a API devolve a prioridade e o LED (`acao_robo`). Escuro + obstáculo = alta | ✅ Firmware compila. A integração é demonstrada pelo **gêmeo digital** (`07-maker-lab/ia/gemeo_digital.py`) e pela **aba Robô**, que rodam os mesmos pesos (`ModeloTreinado.h`). Não foi testada no carrinho físico |
 | 05 | **RPA** | Pega chamados `confirmado`, agrupa os do mesmo trecho, gera o PDF, registra (e-mail, ou portal via UiPath) e avisa o n8n | `RPA_FONTE=api`: `GET /v1/chamados` → `POST /v1/chamados/{protocolo}/status` (`encaminhado` + protocolo da prefeitura). `csv` continua como modo offline | ✅ |
-| 02 | **Big Data** | Coleta diária no Airflow e pipeline Bronze → Prata → Ouro no Databricks (968 mil linhas → 277 mil chamados → 96 distritos) | Ouro (`ouro_mvp_mapa` + 5 consultas) → `scripts/exportar_ouro_web.py` → `GET /v1/indicadores` → aba **Indicadores** | ✅ Os números vêm do notebook executado. A tabela completa entra ao exportar `ouro/ouro_mvp.json` |
+| 02 | **Big Data** | Coleta diária no Airflow e pipeline Bronze → Prata → Ouro no Databricks (968 mil linhas em 2 lotes → 303 mil chamados válidos → 1.113 de poste e fiação em 95 distritos) | Ouro (`ouro_mvp_mapa` + 5 consultas) → `scripts/exportar_ouro_web.py` → `GET /v1/indicadores` → aba **Indicadores** | ✅ Os números vêm do notebook executado e de `amostras/ouro_mvp_mapa.json` (tabela completa, com o mapa por distrito) |
 | 01 | **GenAI** | LLM local com RAG sobre as regras de iluminação pública e o serviço 156: prazo e canal oficial, citando a fonte e recusando quando "não consta" | A Visão chama a GenAI (`GENAI_URL`) quando a análise abre um chamado e anexa a orientação ao resultado | ✅ Via `docker compose` (Ollama). **Não está na Azure:** sem GPU, ~1 min por resposta |
 | 06 | **DevOps** | Imagem da Visão, infraestrutura e entrega contínua com segurança | Terraform: ACR, Container Apps, identidade gerenciada, Storage (Table da central), Log Analytics, orçamento. Actions: Gitleaks, Semgrep, Trivy, `terraform plan/apply`, deploy com smoke test. `/metrics` → Prometheus/Grafana | ✅ |
 | 03 | **Negócio** | Pitch de 5 min com o MVP real, modelo de negócio e KPIs | Números da Ouro (Indicadores) e demo ao vivo | Vídeo |
@@ -57,10 +57,10 @@ mudança em **Acompanhar** pelo protocolo `VSP-XXXXXX`.
 ## Indicadores de impacto
 
 - **Da cidade (Big Data, SP156 jul–set/2026):**
-  - 6,5 dias em média até o conserto (mediana de 1 dia);
-  - 76% dos chamados finalizados;
-  - 94,9% de registros válidos;
-  - o Centro tem 2,3× mais chamados por mil habitantes que a Periferia (51,1 × 21,9).
+  - 1.113 chamados de poste e fiação (o SP156 não tem o serviço "lâmpada apagada");
+  - 18,1 dias em média até fechar o chamado (mediana de 11; 10% passam de 41);
+  - 62,6% dos chamados do SP156 passam nas 3 regras de qualidade da Prata;
+  - o Centro tem 1,7× mais chamados por 100 mil habitantes que a Periferia (16,3 × 9,5).
 - **Do produto (central ao vivo):** chamados por origem (foto, robô, relato), por prioridade e por situação.
 
 ## Princípios da GS e como atendemos
