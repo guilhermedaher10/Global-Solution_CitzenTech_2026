@@ -1,0 +1,456 @@
+{
+ "datasets": [
+  {
+   "name": "ds_kpi",
+   "displayName": "KPIs",
+   "queryLines": [
+    "SELECT SUM(chamados) AS chamados, ROUND(SUM(chamados)*100000.0/SUM(populacao),1) AS por_100mil, COUNT(*) AS distritos FROM workspace.gs.ouro_mvp_mapa"
+   ]
+  },
+  {
+   "name": "ds_zona",
+   "displayName": "Centro x Periferia",
+   "queryLines": [
+    "SELECT zona, SUM(chamados) AS chamados, ROUND(SUM(chamados)*100000.0/SUM(populacao),1) AS chamados_por_100mil_hab FROM workspace.gs.ouro_mvp_mapa GROUP BY zona"
+   ]
+  },
+  {
+   "name": "ds_top",
+   "displayName": "Top 15 distritos",
+   "queryLines": [
+    "SELECT distrito, zona, chamados, chamados_por_100mil_hab FROM workspace.gs.ouro_mvp_mapa ORDER BY chamados_por_100mil_hab DESC LIMIT 15"
+   ]
+  },
+  {
+   "name": "ds_mapa",
+   "displayName": "ouro_mvp_mapa",
+   "queryLines": [
+    "SELECT distrito, zona, populacao, chamados, chamados_por_100mil_hab, tempo_medio_dias, pct_finalizado, lat, lon FROM workspace.gs.ouro_mvp_mapa"
+   ]
+  }
+ ],
+ "pages": [
+  {
+   "name": "pagina_indicadores",
+   "displayName": "Indicadores",
+   "layout": [
+    {
+     "widget": {
+      "name": "w_titulo",
+      "multilineTextboxSpec": {
+       "lines": [
+        "## Vésper — Indicadores da Ouro\n",
+        "Chamados de **poste e fiação** do SP156 (jul–set/2026) por distrito, com população do IBGE 2022. Fonte: `workspace.gs.ouro_mvp_mapa` (agregada por distrito, sem dado pessoal)."
+       ]
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 0,
+      "width": 6,
+      "height": 2
+     }
+    },
+    {
+     "widget": {
+      "name": "w_kpi_total",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_kpi",
+         "fields": [
+          {
+           "name": "chamados",
+           "expression": "`chamados`"
+          }
+         ],
+         "disaggregated": true
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "counter",
+       "encodings": {
+        "value": {
+         "fieldName": "chamados",
+         "displayName": "Chamados de poste/fiação"
+        }
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "Chamados de poste/fiação"
+       }
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 2,
+      "width": 2,
+      "height": 3
+     }
+    },
+    {
+     "widget": {
+      "name": "w_kpi_taxa",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_kpi",
+         "fields": [
+          {
+           "name": "por_100mil",
+           "expression": "`por_100mil`"
+          }
+         ],
+         "disaggregated": true
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "counter",
+       "encodings": {
+        "value": {
+         "fieldName": "por_100mil",
+         "displayName": "Chamados por 100 mil hab. (cidade)"
+        }
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "Chamados por 100 mil hab. (cidade)"
+       }
+      }
+     },
+     "position": {
+      "x": 2,
+      "y": 2,
+      "width": 2,
+      "height": 3
+     }
+    },
+    {
+     "widget": {
+      "name": "w_kpi_distritos",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_kpi",
+         "fields": [
+          {
+           "name": "distritos",
+           "expression": "`distritos`"
+          }
+         ],
+         "disaggregated": true
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "counter",
+       "encodings": {
+        "value": {
+         "fieldName": "distritos",
+         "displayName": "Distritos com chamados"
+        }
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "Distritos com chamados de poste/fiação"
+       }
+      }
+     },
+     "position": {
+      "x": 4,
+      "y": 2,
+      "width": 2,
+      "height": 3
+     }
+    },
+    {
+     "widget": {
+      "name": "w_mapa",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_mapa",
+         "fields": [
+          {
+           "name": "lat",
+           "expression": "`lat`"
+          },
+          {
+           "name": "lon",
+           "expression": "`lon`"
+          },
+          {
+           "name": "chamados_por_100mil_hab",
+           "expression": "`chamados_por_100mil_hab`"
+          },
+          {
+           "name": "zona",
+           "expression": "`zona`"
+          }
+         ],
+         "disaggregated": true
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "symbol-map",
+       "encodings": {
+        "coordinates": {
+         "latitude": {
+          "fieldName": "lat",
+          "displayName": "Latitude"
+         },
+         "longitude": {
+          "fieldName": "lon",
+          "displayName": "Longitude"
+         }
+        },
+        "size": {
+         "fieldName": "chamados_por_100mil_hab",
+         "scale": {
+          "type": "quantitative"
+         },
+         "displayName": "Chamados por 100 mil hab."
+        },
+        "color": {
+         "fieldName": "zona",
+         "scale": {
+          "type": "categorical"
+         },
+         "displayName": "Zona"
+        }
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "Onde a cidade está no escuro (por 100 mil hab.)"
+       }
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 5,
+      "width": 3,
+      "height": 9
+     }
+    },
+    {
+     "widget": {
+      "name": "w_top",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_top",
+         "fields": [
+          {
+           "name": "distrito",
+           "expression": "`distrito`"
+          },
+          {
+           "name": "chamados_por_100mil_hab",
+           "expression": "`chamados_por_100mil_hab`"
+          },
+          {
+           "name": "zona",
+           "expression": "`zona`"
+          }
+         ],
+         "disaggregated": true
+        }
+       }
+      ],
+      "spec": {
+       "version": 3,
+       "widgetType": "bar",
+       "encodings": {
+        "x": {
+         "fieldName": "chamados_por_100mil_hab",
+         "scale": {
+          "type": "quantitative"
+         },
+         "displayName": "Chamados por 100 mil hab."
+        },
+        "y": {
+         "fieldName": "distrito",
+         "scale": {
+          "type": "categorical",
+          "sort": {
+           "by": "x-reversed"
+          }
+         },
+         "displayName": "Distrito"
+        },
+        "color": {
+         "fieldName": "zona",
+         "scale": {
+          "type": "categorical"
+         },
+         "displayName": "Zona"
+        }
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "15 distritos com mais chamados por 100 mil hab."
+       }
+      }
+     },
+     "position": {
+      "x": 3,
+      "y": 5,
+      "width": 3,
+      "height": 9
+     }
+    },
+    {
+     "widget": {
+      "name": "w_zona",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_zona",
+         "fields": [
+          {
+           "name": "zona",
+           "expression": "`zona`"
+          },
+          {
+           "name": "chamados_por_100mil_hab",
+           "expression": "`chamados_por_100mil_hab`"
+          }
+         ],
+         "disaggregated": true
+        }
+       }
+      ],
+      "spec": {
+       "version": 3,
+       "widgetType": "bar",
+       "encodings": {
+        "x": {
+         "fieldName": "zona",
+         "scale": {
+          "type": "categorical"
+         },
+         "displayName": "Zona"
+        },
+        "y": {
+         "fieldName": "chamados_por_100mil_hab",
+         "scale": {
+          "type": "quantitative"
+         },
+         "displayName": "Chamados por 100 mil hab."
+        },
+        "label": {
+         "show": true
+        }
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "Impacto: Centro × Periferia (por 100 mil hab.)"
+       }
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 14,
+      "width": 2,
+      "height": 6
+     }
+    },
+    {
+     "widget": {
+      "name": "w_tabela",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_mapa",
+         "fields": [
+          {
+           "name": "distrito",
+           "expression": "`distrito`"
+          },
+          {
+           "name": "zona",
+           "expression": "`zona`"
+          },
+          {
+           "name": "chamados",
+           "expression": "`chamados`"
+          },
+          {
+           "name": "chamados_por_100mil_hab",
+           "expression": "`chamados_por_100mil_hab`"
+          },
+          {
+           "name": "tempo_medio_dias",
+           "expression": "`tempo_medio_dias`"
+          },
+          {
+           "name": "pct_finalizado",
+           "expression": "`pct_finalizado`"
+          }
+         ],
+         "disaggregated": true
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "table",
+       "encodings": {
+        "columns": [
+         {
+          "fieldName": "distrito",
+          "displayName": "Distrito"
+         },
+         {
+          "fieldName": "zona",
+          "displayName": "Zona"
+         },
+         {
+          "fieldName": "chamados",
+          "displayName": "Chamados"
+         },
+         {
+          "fieldName": "chamados_por_100mil_hab",
+          "displayName": "Por 100 mil hab."
+         },
+         {
+          "fieldName": "tempo_medio_dias",
+          "displayName": "Dias até fechar"
+         },
+         {
+          "fieldName": "pct_finalizado",
+          "displayName": "% finalizado"
+         }
+        ]
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "Tabela da ouro_mvp_mapa"
+       }
+      }
+     },
+     "position": {
+      "x": 2,
+      "y": 14,
+      "width": 4,
+      "height": 6
+     }
+    }
+   ]
+  }
+ ]
+}
