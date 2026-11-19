@@ -63,7 +63,7 @@ O modelo **enxerga**. Quem **decide** são regras auditáveis e, no fim, uma pes
 | **Acompanhar** | Busca pelo protocolo: linha do tempo com datas, órgão responsável, mapa e quantos vizinhos relataram perto |
 | **Robô** | Patrulha ao vivo do carrinho do Maker Lab numa rua com 8 postes. A **mesma IA embarcada (TinyML 4→12→4)** do firmware roda no navegador sobre as leituras de luz e distância e mostra a rede neural, as probabilidades e o log serial. Ao confirmar um trecho escuro, o robô manda um **alerta real** à central (`POST /v1/alerta-robo`); escuro + obstáculo sobe para prioridade alta |
 | **Central** | Visão da prefeitura: fila por prioridade, mapa, filtros, mudança de status e regiões em alerta (atualiza a cada 15 s) |
-| **Indicadores** | A **camada Ouro do Big Data** dentro do produto: 277 mil chamados reais do SP156, tempo até o conserto, Centro × Periferia por mil habitantes, top 10 distritos, chamados por mês e a linhagem Bronze → Prata → Ouro. Ao lado, o card **"O Vésper agora"** mostra a central ao vivo |
+| **Indicadores** | A **camada Ouro do Big Data** dentro do produto: 1.113 chamados reais de poste e fiação do SP156 (jul–set/2026), tempo até fechar o chamado, Centro × Periferia por 100 mil habitantes, top 10 distritos, chamados por mês, **mapa por distrito**, a linhagem Bronze → Prata → Ouro e a prova do incremental. Ao lado, o card **"O Vésper agora"** mostra a central ao vivo |
 
 HTML, CSS e JS puros, com ícones de linha em SVG, Leaflet e OpenStreetMap. Funciona no celular, não exige cadastro e não precisa instalar nada.
 
@@ -175,7 +175,7 @@ manda os alertas para esta API.
 
 ### 8. Indicadores (camada Ouro do Big Data)
 ```bash
-python scripts/exportar_ouro_web.py            # lê os resultados do notebook do 02 e gera web/ouro-bigdata.json
+python scripts/exportar_ouro_web.py            # lê o notebook do 02 e amostras/ouro_mvp_mapa.json e gera web/ouro-bigdata.json
 ```
 Um teste falha se o site ficar diferente dos números da Ouro.
 

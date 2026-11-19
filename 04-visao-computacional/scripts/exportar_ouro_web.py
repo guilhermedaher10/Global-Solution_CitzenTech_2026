@@ -1,10 +1,10 @@
 """Leva a camada OURO do Big Data (pasta 02) para a aba Indicadores do site.
 
-Fonte, em ordem de preferência:
-  1. 02-big-data/ouro/ouro_mvp.json  - exportação completa da Ouro (ouro_mvp_mapa com os 96 distritos + resumo),
-     quando o pipeline do Databricks gravar esse arquivo;
-  2. os resultados SALVOS no notebook 02-big-data/databricks/gs_pipeline.ipynb (as 5 consultas da Ouro, as
-     contagens das camadas e as regras de qualidade, exatamente como o Databricks imprimiu).
+Fontes (as duas são do Big Data, nada é digitado à mão):
+  1. os resultados SALVOS no notebook 02-big-data/databricks/gs_pipeline.ipynb: escopo, prova do incremental da
+     Bronze, regras da Prata e as 5 consultas da Ouro, exatamente como o Databricks exibiu;
+  2. 02-big-data/amostras/ouro_mvp_mapa.json: a tabela ouro_mvp_mapa completa (1 linha por distrito, com o
+     centro do distrito para o mapa), exportada pelo próprio notebook.
 
 Grava web/ouro-bigdata.json, servido por GET /v1/indicadores. Rode de novo quando o Big Data mudar:
 
@@ -16,61 +16,83 @@ from __future__ import annotations
 
 import json
 import re
+from html.parser import HTMLParser
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[1]
 BIGDATA = RAIZ.parent / "02-big-data"
 NOTEBOOK = BIGDATA / "databricks" / "gs_pipeline.ipynb"
-EXPORTACAO = BIGDATA / "ouro" / "ouro_mvp.json"
+MAPA = BIGDATA / "amostras" / "ouro_mvp_mapa.json"
 SAIDA = RAIZ / "web" / "ouro-bigdata.json"
 
 
 def _num(v: str):
     v = v.strip()
-    try:
-        return int(v)
-    except ValueError:
+    if v.lower() in ("null", "none", ""):
+        return None
+    for tipo in (int, float):
         try:
-            return float(v)
+            return tipo(v)
         except ValueError:
-            return v
+            pass
+    return v
 
 
-def _tabelas(texto: str) -> list[list[dict]]:
-    """Lê as tabelas do DataFrame.show() do Spark (+---+ / |a|b|)."""
-    tabelas, atual, cab = [], None, None
-    for linha in texto.splitlines():
-        if linha.startswith("|"):
-            cels = [c.strip() for c in linha.strip().strip("|").split("|")]
-            if cab is None:
-                cab, atual = cels, []
-            else:
-                atual.append({k: _num(v) for k, v in zip(cab, cels)})
-        elif linha.startswith("+") and cab is not None and atual:
-            tabelas.append(atual)
-            cab, atual = None, None
-    return tabelas
+class _Tabela(HTMLParser):
+    """Lê a tabela HTML que o display() do Databricks salva no notebook."""
+
+    def __init__(self):
+        super().__init__()
+        self.linhas, self._linha, self._cel = [], None, None
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "tr":
+            self._linha = []
+        elif tag in ("td", "th") and self._linha is not None:
+            self._cel = ""
+
+    def handle_endtag(self, tag):
+        if tag in ("td", "th") and self._cel is not None:
+            self._linha.append(self._cel.strip())
+            self._cel = None
+        elif tag == "tr" and self._linha:
+            self.linhas.append(self._linha)
+            self._linha = None
+
+    def handle_data(self, data):
+        if self._cel is not None:
+            self._cel += data
 
 
-def _saidas(nb: dict) -> list[tuple[str, str]]:
-    out = []
+def _tabela_html(html: str) -> list[dict]:
+    p = _Tabela()
+    p.feed(html)
+    cab, *linhas = p.linhas
+    return [{k: _num(v) for k, v in zip(cab, l)} for l in linhas]
+
+
+def _celulas(nb: dict) -> dict[str, tuple[str, list[list[dict]]]]:
+    """Título (1ª linha do código) → (texto impresso, tabelas exibidas)."""
+    out = {}
     for c in nb["cells"]:
-        if c["cell_type"] != "code":
+        if c["cell_type"] != "code" or not c["source"]:
             continue
-        txt = "".join("".join(o.get("text", [])) or "".join(o.get("data", {}).get("text/plain", []))
-                      for o in c.get("outputs", []))
-        out.append(("".join(c["source"]).splitlines()[0] if c["source"] else "", txt))
+        texto, tabelas = "", []
+        for o in c.get("outputs", []):
+            texto += "".join(o.get("text", []))
+            if "text/html" in o.get("data", {}):
+                tabelas.append(_tabela_html("".join(o["data"]["text/html"])))
+        out["".join(c["source"]).splitlines()[0]] = (texto, tabelas)
     return out
 
 
 def do_notebook(caminho: Path = NOTEBOOK) -> dict:
-    nb = json.loads(caminho.read_text(encoding="utf-8"))
-    celulas = _saidas(nb)
+    celulas = _celulas(json.loads(caminho.read_text(encoding="utf-8")))
 
-    def celula(prefixo: str) -> str:
-        for titulo, txt in celulas:
+    def celula(prefixo: str) -> tuple[str, list[list[dict]]]:
+        for titulo, conteudo in celulas.items():
             if titulo.startswith(prefixo):
-                return txt
+                return conteudo
         raise ValueError(f"célula '{prefixo}' não encontrada no notebook")
 
     def inteiro(padrao: str, txt: str) -> int:
@@ -79,43 +101,39 @@ def do_notebook(caminho: Path = NOTEBOOK) -> dict:
             raise ValueError(f"não achei '{padrao}'")
         return int(m.group(1))
 
-    prata = celula("# prata_sp156")
-    qual = celula("# 3 regras de qualidade")
-    fato = celula("# fato_chamado")
-    regras = [{"regra": m.group(1).strip(), "ok": int(m.group(2)), "falha": int(m.group(3))}
-              for m in re.finditer(r"R\d \| (.+?):\s+(\d+) ok \|\s+(\d+) falha", qual)]
-    q2 = _tabelas(celula("# Q2"))[0][0]
-    mvp = celula("# Bloco 7")
+    escopo = re.findall(r"'([^']+)'", celula("# CONFIG")[0])
+    incremental = celula("# PROVA DO INCREMENTAL")[1][0]
+    prata_txt, prata_tab = celula("# PRATA")
+    fato_txt = celula("# OURO — dim_tempo")[0]
+    mapa_txt = celula("# OURO_MVP_MAPA")[0]
+    q2 = celula("# Q2")[1][0][0]
+    bronze = max(l["linhas"] for l in incremental if l["tabela"] == "bronze_sp156")
     return {
         "fonte": "Big Data (02) · Databricks workspace.gs · camada Ouro",
-        "origem": "resultados salvos em 02-big-data/databricks/gs_pipeline.ipynb",
-        "completo": False,
+        "origem": "02-big-data/databricks/gs_pipeline.ipynb + amostras/ouro_mvp_mapa.json",
         "periodo": "SP156 · jul–set/2026",
+        "escopo": escopo,
         "camadas": {
-            "bronze_sp156": inteiro(r"bronze_sp156 linhas:\s*(\d+)", prata),
-            "prata_sp156": inteiro(r"prata_sp156\s+linhas:\s*(\d+)", prata),
-            "fato_chamado": inteiro(r"linhas fato_chamado:\s*(\d+)", fato),
-            "distritos": inteiro(r"ouro_mvp_mapa .*?:\s*(\d+) distritos", mvp),
+            "bronze_sp156": bronze,
+            "prata_sp156": inteiro(r"depois:\s*(\d+)", prata_txt),
+            "fato_chamado": inteiro(r"fato_chamado \(escopo\):\s*(\d+)", fato_txt),
+            "distritos": inteiro(r"ouro_mvp_mapa:\s*(\d+) distritos", mapa_txt),
         },
-        "qualidade": regras,
-        "top_distritos": _tabelas(celula("# Q1"))[0],
-        "tempo_conserto": {"media_dias": q2["media_dias"], "mediana_dias": q2["mediana_dias"],
-                           "finalizados": q2["finalizados"]},
-        "por_mes": _tabelas(celula("# Q3"))[0],
-        "validos": _tabelas(celula("# Q4"))[0],
-        "impacto_zona": _tabelas(celula("# Q5"))[0],
-        "mapa": _tabelas(mvp)[0],   # ouro_mvp_mapa: o notebook mostra só as 5 primeiras linhas
+        "incremental": incremental,
+        "qualidade": prata_tab[0],
+        "top_distritos": celula("# Q1")[1][0],
+        "tempo_conserto": {k: q2[k] for k in ("media_dias", "mediana_dias", "p90_dias", "finalizados")},
+        "por_mes": celula("# Q3")[1][0],
+        "validos": celula("# Q4")[1][0],
+        "impacto_zona": celula("# Q5")[1][0],
     }
 
 
 def gerar() -> dict:
-    if EXPORTACAO.exists():
-        dados = json.loads(EXPORTACAO.read_text(encoding="utf-8"))
-        base = do_notebook()
-        base.update({"origem": "02-big-data/ouro/ouro_mvp.json (exportação da Ouro)", "completo": True,
-                     "mapa": dados["mapa"]})
-        return base
-    return do_notebook()
+    dados = do_notebook()
+    mapa = json.loads(MAPA.read_text(encoding="utf-8"))
+    dados["mapa"] = sorted(mapa, key=lambda r: (-r["chamados"], r["distrito"]))
+    return dados
 
 
 if __name__ == "__main__":
