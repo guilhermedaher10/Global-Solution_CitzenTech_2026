@@ -97,4 +97,4 @@ imagens estrangeiras) e os próximos passos: mais imagens brasileiras, rodar no 
 encoberta por árvore (encaminhar para poda), mapa de calor de trechos escuros com o Big Data._
 
 **Links:** repositório: https://github.com/guilhermedaher10/Global-Solution_CitzenTech_2026/tree/main/04-visao-computacional
-· vídeo: _link do YouTube_
+· vídeo: https://youtu.be/NzRRFNjOppE
