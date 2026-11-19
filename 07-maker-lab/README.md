@@ -6,7 +6,7 @@ Protótipo de carrinho robótico com **ESP32**, sensor digital de luminosidade *
 
 ## Vídeo de demonstração
 
-[**Assistir à demonstração do protótipo no YouTube**](https://youtube.com/shorts/BpEB6Awb1jY?feature=share)
+[**Assistir à demonstração do protótipo no YouTube**](https://youtu.be/azXEgvUxBOk)
 
 O vídeo apresenta o funcionamento do carrinho, as informações dos sensores, o monitoramento no terminal e a integração da IA embarcada.
 
