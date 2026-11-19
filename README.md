@@ -68,7 +68,17 @@ Nós não consertamos o poste: somos a **ponte entre o cidadão e quem pode acen
 | Vinicius Yamashita | 550908 | RPA |
 | Lucca Alexandre | 99700 | Big Data · Negócio e Pitch |
 
-> ⚠️ Vários professores tiram nota se faltar **nome completo** ou RM. Cada um confira e complete o seu nome.
+## Entregas por disciplina
+
+| Disciplina | Responsável | Vídeo | Documentação |
+|---|---|---|---|
+| Generative AI | Gabriel Freitas | [YouTube](https://youtu.be/jsB1YCe-ZXw) | [01-generative-ai/RELATORIO.md](01-generative-ai/RELATORIO.md) |
+| Big Data | Lucca Alexandre | não exigido | [02-big-data/README.md](02-big-data/README.md) |
+| Negócio e Pitch | Equipe | _pitch: link em breve_ | entregue no Teams |
+| Visão Computacional | Guilherme Daher | _link em breve_ | [04-visao-computacional/README.md](04-visao-computacional/README.md) |
+| RPA | Vinicius Yamashita | [YouTube](https://youtu.be/CW5plW66gzo) | [05-rpa/README.md](05-rpa/README.md) |
+| DevOps e Cloud | Guilherme Daher | não exigido | [06-devops-cloud/README.md](06-devops-cloud/README.md) |
+| Maker Lab | Heitor Nobre | [YouTube](https://youtu.be/azXEgvUxBOk) | [07-maker-lab/README.md](07-maker-lab/README.md) |
 
 ## Pastas
 
