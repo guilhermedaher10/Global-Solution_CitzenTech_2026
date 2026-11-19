@@ -2,7 +2,7 @@
 
 **Disciplina:** Applied Computer Vision · **Professores:** Arnaldo Viana e Paulo Rodrigues
 
-**Responsável:** Guilherme Daher (RM 98611)
+**Responsável:** Guilherme Gonçalves Calil Daher (RM 98611)
 
 **Vésper: da escuridão à luz.** O cidadão que está numa rua escura, ou sem luz no bairro, abre o site, filma alguns
 segundos e o chamado chega à central já **confirmado, localizado, priorizado e encaminhado ao órgão certo**
@@ -61,8 +61,9 @@ O modelo **enxerga**. Quem **decide** são regras auditáveis e, no fim, uma pes
 | **Início** | Botão principal **"Estou no escuro agora"**: abre a câmera ao vivo e manda o chamado sozinho depois do GPS. Também tem o QR Code que abre direto a câmera |
 | **Reportar** | **Tirar foto** (câmera do celular) ou **Escolher da galeria**. Mostra a imagem marcada, o protocolo, para onde o chamado vai, a leitura da região e o motivo da prioridade |
 | **Acompanhar** | Busca pelo protocolo: linha do tempo com datas, órgão responsável, mapa e quantos vizinhos relataram perto |
-| **Robô** | Simula os sensores do robô (luz e distância): o robô desconfia e pede a foto |
+| **Robô** | Patrulha ao vivo do carrinho do Maker Lab numa rua com 8 postes. A **mesma IA embarcada (TinyML 4→12→4)** do firmware roda no navegador sobre as leituras de luz e distância e mostra a rede neural, as probabilidades e o log serial. Ao confirmar um trecho escuro, o robô manda um **alerta real** à central (`POST /v1/alerta-robo`); escuro + obstáculo sobe para prioridade alta |
 | **Central** | Visão da prefeitura: fila por prioridade, mapa, filtros, mudança de status e regiões em alerta (atualiza a cada 15 s) |
+| **Indicadores** | A **camada Ouro do Big Data** dentro do produto: 277 mil chamados reais do SP156, tempo até o conserto, Centro × Periferia por mil habitantes, top 10 distritos, chamados por mês e a linhagem Bronze → Prata → Ouro. Ao lado, o card **"O Vésper agora"** mostra a central ao vivo |
 
 HTML, CSS e JS puros, com ícones de linha em SVG, Leaflet e OpenStreetMap. Funciona no celular, não exige cadastro e não precisa instalar nada.
 
@@ -75,7 +76,7 @@ HTML, CSS e JS puros, com ícones de linha em SVG, Leaflet e OpenStreetMap. Func
 | `api/main.py` | API FastAPI (rotas abaixo) |
 | `scripts/` | Coleta → unificação → treino → avaliação → tempo real → demonstração |
 | `configs/` | Classes e aliases, regras de negócio, encaminhamento, regiões, fontes de dados |
-| `tests/` | 85 testes (regras, cena, classificador, fusão, EXIF, pipeline, vídeo, central SQLite e Azure Table, API, front), sem GPU |
+| `tests/` | 90 testes (regras, cena, classificador, fusão, EXIF, pipeline, vídeo, central SQLite e Azure Table, API, front, IA do robô e indicadores), sem GPU |
 | `docs/` | [Relatório](docs/Relatorio-Visao-Computacional.pdf) · [Integração/contrato](docs/integracao.md) · [Dataset](docs/dataset.md) · [Ética e LGPD](docs/etica-lgpd.md) · [Roteiro do vídeo](docs/roteiro-video.md) |
 | `results/` | Métricas, curvas, matrizes de confusão e exemplos (gerados pelos scripts) |
 | `models/best.pt` · `models/cena.pt` | Detector YOLO26s · classificador de cena YOLO26n-cls (3 MB) |
@@ -90,6 +91,7 @@ HTML, CSS e JS puros, com ícones de linha em SVG, Leaflet e OpenStreetMap. Func
 | `GET /v1/chamados` · `GET /v1/chamados/{protocolo}` | Fila da central · acompanhamento pelo protocolo |
 | `POST /v1/chamados/{protocolo}/status` | Atendente muda o status (transições validadas) |
 | `GET /v1/regioes` | Trechos escuros recorrentes e possíveis apagões |
+| `GET /v1/indicadores` | Agregados da camada Ouro do Big Data (aba Indicadores), sem dado pessoal |
 | `GET /saude` · `GET /metrics` | Saúde e métricas Prometheus (usadas pelo DevOps) |
 
 ## Como rodar
@@ -103,7 +105,7 @@ python -m venv .venv
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
 pip install -r requirements-dados.txt -r requirements-dev.txt
 
-pytest                                     # 85 testes
+pytest                                     # 90 testes
 ```
 
 ### 1. Dataset → 2. Treino → 3. Avaliação (detector)
@@ -161,10 +163,21 @@ docker build -t vesper-visao . && docker run -p 8000:8000 vesper-visao
 O robô **desconfia** (sensor dispara → `POST /v1/alerta-robo` → suspeita + LED) e a **foto confirma** e diz o tipo
 do chamado: conserto de poste, instalação de iluminação, poda ou buraco. Detalhes e exemplo para ESP32 em
 [docs/integracao.md](docs/integracao.md).
+O alerta leva a classe e a confiança da IA do carrinho (`classe_ia`, `confianca_ia`), e `escuro_obstaculo` vira
+prioridade alta (LED vermelho).
 ```bash
 python scripts/simular_robo.py                 # testa sem o robô físico (API rodando)
 python scripts/simular_robo.py --patrulha 20   # robô andando por uma rua
+python scripts/exportar_tinyml_web.py          # copia os pesos do firmware (07) para a aba Robô
 ```
+O gêmeo digital do carrinho (`07-maker-lab/ia/gemeo_digital.py`) reproduz as leituras reais com os mesmos pesos e
+manda os alertas para esta API.
+
+### 8. Indicadores (camada Ouro do Big Data)
+```bash
+python scripts/exportar_ouro_web.py            # lê os resultados do notebook do 02 e gera web/ouro-bigdata.json
+```
+Um teste falha se o site ficar diferente dos números da Ouro.
 
 ## Resultados
 
