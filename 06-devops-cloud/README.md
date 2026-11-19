@@ -4,7 +4,7 @@
 
 **Responsável:** Guilherme Daher · RM 98611
 
-**MVP no ar:** https://ca-ruasescuras-visao.bravehill-24590cb4.eastus.azurecontainerapps.io (API em [/docs](https://ca-ruasescuras-visao.bravehill-24590cb4.eastus.azurecontainerapps.io/docs)) · **Relatório (PDF):** [docs/Relatorio-DevOps-Cloud.pdf](docs/Relatorio-DevOps-Cloud.pdf) · **Vídeo:** _(link)_
+**MVP no ar:** https://ca-ruasescuras-visao.bravehill-24590cb4.eastus.azurecontainerapps.io (API em [/docs](https://ca-ruasescuras-visao.bravehill-24590cb4.eastus.azurecontainerapps.io/docs)) · **Relatório (PDF):** [docs/Relatorio-DevOps-Cloud.pdf](docs/Relatorio-DevOps-Cloud.pdf)
 
 O MVP **Vésper** vai para a nuvem **sem ninguém clicar em botão**: cada push na `main` passa por um pipeline que
 barra segredo vazado, código inseguro e dependência vulnerável; só então publica na Azure, em infraestrutura
