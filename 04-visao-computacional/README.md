@@ -19,7 +19,7 @@ Os dois rodam **em tempo real**, com rastreamento ByteTrack e painel de realidad
 | **MVP no ar** | https://ca-ruasescuras-visao.bravehill-24590cb4.eastus.azurecontainerapps.io |
 | **Relatório (PDF)** | [docs/Relatorio-Visao-Computacional.pdf](docs/Relatorio-Visao-Computacional.pdf) |
 | **API (Swagger)** | [/docs](https://ca-ruasescuras-visao.bravehill-24590cb4.eastus.azurecontainerapps.io/docs) · contrato **1.5** em [docs/integracao.md](docs/integracao.md) |
-| **Vídeo** | _link do YouTube_ · [roteiro](docs/roteiro-video.md) |
+| **Vídeo** | [YouTube](https://youtu.be/NzRRFNjOppE) · [roteiro](docs/roteiro-video.md) |
 
 ---
 
